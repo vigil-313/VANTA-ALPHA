@@ -47,14 +47,58 @@ This guide identifies all critical documentation files needed to maintain full c
 
 **How to dive deeper:** Each document contains detailed sections that can be explored based on the specific area of interest. For voice processing, focus on the speech naturalization document. For understanding state management, examine the dual processing architecture document. The diagrams file contains visualizations that show the relationships between components.
 
-## Implementation Planning 
-(Note: This section will be expanded as implementation planning progresses)
+## Implementation Planning
 
 | Document | Purpose | When to Access |
 |----------|---------|----------------|
-| `/Development/IMPLEMENTATION_PLAN.md` | High-level implementation plan | For understanding implementation phases |
+| `/Development/IMPLEMENTATION_PLAN.md` | Detailed implementation phases and tasks | **Essential reference** for implementation planning |
+| `/Development/Roadmap/LONG_TERM_ROADMAP.md` | Long-term phased implementation approach | For strategic implementation planning |
+| `/Development/Roadmap/PHASED_APPROACH.md` | Detailed breakdown of implementation phases | For understanding phase capabilities and dependencies |
+| `/Development/Roadmap/RESOURCE_PLANNING.md` | Hardware, software and personnel resources | For resource allocation planning |
 | `/Development/TEST_STRATEGY.md` | Testing approaches and validation criteria | For testing considerations |
 | `/Development/PROMPT_SEQUENCES.md` | Templates for implementation tasks | For implementation task structure |
+
+## Technical Architecture Documentation
+
+| Document | Purpose | When to Access |
+|----------|---------|----------------|
+| `/Development/Architecture/V0_ARCHITECTURE_OVERVIEW.md` | High-level V0 architecture | **Essential reference** for technical design |
+| `/Development/Architecture/DATA_MODELS.md` | Core data structures and schemas | For state and data model understanding |
+| `/Development/Architecture/INTEGRATION_PATTERNS.md` | Patterns for component integration | For inter-component communication design |
+| `/Development/Architecture/ARCHITECTURE_DIAGRAMS.md` | Visual architecture diagrams | For visual understanding of system architecture |
+| `/Development/Architecture/COMPONENT_SPECIFICATIONS/VOICE_PIPELINE.md` | Voice Pipeline component spec | For voice processing implementation details |
+| `/Development/Architecture/COMPONENT_SPECIFICATIONS/DUAL_TRACK_PROCESSING.md` | Dual-track processing spec | For hybrid model implementation details |
+
+**How to dive deeper:** Start with the overview document, then focus on specific component specifications based on implementation needs. Data models provide cross-cutting context for all components. The integration patterns document explains how components work together within the system.
+
+## Implementation Task Templates
+
+| Document | Purpose | When to Access |
+|----------|---------|----------------|
+| `/Development/Tasks/TEMPLATES/README.md` | Guide for task template usage | For understanding task template structure |
+| `/Development/Tasks/TEMPLATES/TASK_TEMPLATE.md` | Base template for implementation tasks | **Essential reference** when creating new tasks |
+| `/Development/Tasks/TEMPLATES/EXAMPLE_VOICE_PIPELINE_TASK.md` | Example STT implementation task | For reference on voice pipeline tasks |
+| `/Development/Tasks/TEMPLATES/EXAMPLE_DUAL_TRACK_TASK.md` | Example Processing Router task | For reference on dual-track processing tasks |
+
+**How to dive deeper:** The README file explains the structure and usage of task templates. The base template provides a comprehensive structure for all implementation tasks. The example tasks demonstrate how to apply the template to specific components and scenarios.
+
+## Visual Implementation Planning
+
+The KNOWLEDGE_GRAPH.md file now contains comprehensive diagrams for implementation planning, including:
+
+1. **Implementation Planning Framework** - Visual overview of the phased approach, task organization, integration patterns, and resource planning
+2. **Task Organization Breakdown** - Hierarchical structure of tasks organized by functional area
+
+These visual representations provide a clear understanding of the implementation structure and relationships between different components of the system.
+
+## Pending Development Tasks
+
+For the next session (SES-V0-007), the following high-priority tasks are planned:
+
+1. **Complete VISTA implementation task templates** - Finalize any remaining template structures and create example tasks for all major components
+2. **Create task template examples for key implementation tasks** - Develop specific examples for priority Foundation phase tasks
+3. **Begin environment configuration for development setup** - Set up Docker environment and development tooling
+4. **Prepare for implementation of foundation phase tasks** - Ready the development environment for actual implementation
 
 ## Session Management
 
@@ -64,6 +108,7 @@ For effective session management:
    - Current session state in SESSION_STATE.md, focusing on the Handoff section
    - Recent decisions and questions that need addressing
    - The progress snapshot to understand overall project status
+   - This CONTEXT_FILES.md document for orientation
 
 2. **When creating new documentation:**
    - Follow VISTA document formatting with unique identifiers (DOC-XX-YY, CON-XX-YY, DEC-XX-YY)
@@ -77,6 +122,53 @@ For effective session management:
    - Update METADATA.json with document versions and cross-references
    - Ensure all new documents are properly referenced in their parent directories
 
+## Implementation Artifacts Location Guide
+
+To assist with locating the appropriate places for different implementation artifacts:
+
+1. **Technical Architecture Docs**: `/Development/Architecture/`
+   - Component specs: `/Development/Architecture/COMPONENT_SPECIFICATIONS/`
+   - Data models: `/Development/Architecture/DATA_MODELS.md`
+   - Visual diagrams: `/Development/Architecture/ARCHITECTURE_DIAGRAMS.md`
+
+2. **Implementation Planning Docs**: `/Development/Roadmap/`
+   - Long-term planning: `/Development/Roadmap/LONG_TERM_ROADMAP.md`
+   - Phased approach: `/Development/Roadmap/PHASED_APPROACH.md`
+   - Resource planning: `/Development/Roadmap/RESOURCE_PLANNING.md`
+
+3. **Implementation Tasks**: `/Development/Tasks/`
+   - Task templates: `/Development/Tasks/TEMPLATES/`
+   - Task registry: `/Development/Tasks/TASK_REGISTRY.md` (to be created)
+   - Module-specific tasks: `/Development/Tasks/MODULE_TASKS/` (to be populated)
+
+4. **Code Implementation**: `/Development/Implementation/v0/`
+   - Voice pipeline: `/Development/Implementation/v0/voice_pipeline/` (to be created)
+   - Memory engine: `/Development/Implementation/v0/memory_engine/` (to be created)
+   - Core components: `/Development/Implementation/v0/core/` (to be created)
+   - Environment setup: `/Development/Implementation/v0/environment/` (to be created)
+
+## Task Definition Guidelines
+
+When defining implementation tasks:
+
+1. **Task IDs**: Follow the ID assignment convention defined in `/Development/Tasks/TEMPLATES/README.md`
+   - Voice Pipeline: TSK-V0-001 to TSK-V0-099
+   - Memory Engine: TSK-V0-100 to TSK-V0-199
+   - Dual-Track Processing: TSK-V0-200 to TSK-V0-299
+   - Integration: TSK-V0-300 to TSK-V0-399
+   - Core Architecture: TSK-V0-400 to TSK-V0-499
+   - Testing: TSK-V0-500 to TSK-V0-599
+
+2. **Task Structure**: Each task should include these essential sections:
+   - Task Identification (ID, component, phase, priority)
+   - Task Description (objective, success criteria)
+   - Implementation Context (dependencies, requirements)
+   - Implementation Details (interfaces, algorithm, error handling)
+   - Validation Criteria (testable success criteria)
+   - Testing Approach (unit, integration, performance tests)
+
+3. **Task Dependencies**: Clearly identify dependencies between tasks to enable proper scheduling and parallel work where possible
+
 ## Continuous Updates
 
 To ensure this context guide remains current:
@@ -88,4 +180,6 @@ To ensure this context guide remains current:
 
 ## Version History
 
+- v0.3.0 - 2025-05-18 - Updated with implementation task templates and visual diagrams from SES-V0-006
+- v0.2.0 - 2025-05-17 - Updated with implementation planning and architecture documents from SES-V0-005
 - v0.1.0 - 2025-05-17 - Initial creation based on project structure and VISTA framework

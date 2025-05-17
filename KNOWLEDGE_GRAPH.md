@@ -20,8 +20,8 @@
 - CON-MET-004: **Implementation Planning**
   - Definition: Organizing development into discrete, manageable tasks
   - Related: CON-MET-001
-  - Documents: Not yet created
-
+  - Documents: DOC-IMP-001
+  
 - CON-MET-005: **Knowledge Persistence**
   - Definition: Maintaining SESSION_STATE.md and KNOWLEDGE_GRAPH.md across planning sessions
   - Related: CON-MET-001, CON-MET-003
@@ -80,7 +80,7 @@
 - CON-VANTA-001: **Voice Pipeline**
   - Definition: System component that handles audio input/output processing, speech recognition, and speech synthesis
   - Related: CON-VANTA-005, CON-VANTA-006
-  - Documents: DOC-TECH-VIS-1
+  - Documents: DOC-TECH-VIS-1, DOC-COMP-001
 
 - CON-VANTA-002: **Memory Engine**
   - Definition: System for storing, retrieving, and managing conversation history and knowledge
@@ -90,47 +90,47 @@
 - CON-VANTA-003: **Activation Modes**
   - Definition: Different methods for initiating interaction with VANTA (continuous, wake word, programmatic)
   - Related: CON-VANTA-001
-  - Documents: Not yet created
+  - Documents: DOC-COMP-001
 
 - CON-VANTA-004: **Deployment Model**
   - Definition: Application architecture approach as a background service with optional UI
   - Related: CON-VANTA-008
-  - Documents: Not yet created
+  - Documents: DOC-ARCH-001
 
 - CON-VANTA-005: **Speech-to-Text**
   - Definition: Component for converting spoken language to text using Whisper or other engines
   - Related: CON-VANTA-001
-  - Documents: Not yet created
+  - Documents: DOC-COMP-001
 
 - CON-VANTA-006: **Text-to-Speech**
   - Definition: Component for converting text to spoken audio output using potentially CSM or other engines
   - Related: CON-VANTA-001
-  - Documents: Not yet created
+  - Documents: DOC-COMP-001
 
 - CON-VANTA-007: **Layered Memory**
   - Definition: Approach to memory that includes raw logs, summaries, and semantic indices
   - Related: CON-VANTA-002
-  - Documents: Not yet created
+  - Documents: DOC-ARCH-002
 
 - CON-VANTA-008: **Docker Environment**
   - Definition: Containerized development and deployment environment for VANTA
   - Related: CON-VANTA-004
-  - Documents: Not yet created
+  - Documents: DOC-ARCH-001
 
 - CON-VANTA-009: **Hybrid Architecture**
   - Definition: Combination of LangGraph for orchestration and MCP for extensibility in VANTA architecture
   - Related: CON-TECH-001, CON-TECH-005
-  - Documents: DOC-RESEARCH-MCP-1, DOC-RESEARCH-SUM-1
+  - Documents: DOC-RESEARCH-MCP-1, DOC-RESEARCH-SUM-1, DOC-ARCH-001
 
 - CON-VANTA-010: **MCP Server Ecosystem**
   - Definition: Collection of specialized MCP servers designed for VANTA functionality
   - Related: CON-TECH-004, CON-VANTA-009
-  - Documents: DOC-RESEARCH-MCP-2
+  - Documents: DOC-RESEARCH-MCP-2, DOC-ARCH-001
 
 - CON-HVA-001: **Dual-track Processing**
   - Definition: Using local models for immediate responses while cloud APIs handle complex reasoning
   - Related: CON-HVA-010, CON-HVA-011, CON-HVA-012, CON-VANTA-009
-  - Documents: DOC-RESEARCH-HVA-1, DOC-RESEARCH-HVA-2, DOC-RESEARCH-HVA-3
+  - Documents: DOC-RESEARCH-HVA-1, DOC-RESEARCH-HVA-2, DOC-RESEARCH-HVA-3, DOC-COMP-002
 
 - CON-HVA-002: **Cognitive Simulation**
   - Definition: Replicating human thought patterns including epiphanic moments, memory retrieval, and natural speech cadence
@@ -170,22 +170,22 @@
 - CON-HVA-009: **Processing Router**
   - Definition: Component that determines which model (local or API) should handle each aspect of conversation
   - Related: CON-HVA-001, CON-HVA-010, CON-HVA-011
-  - Documents: DOC-RESEARCH-HVA-3
+  - Documents: DOC-RESEARCH-HVA-3, DOC-COMP-002
 
 - CON-HVA-010: **Local Model Processing**
   - Definition: Fast, lightweight language model running on device for immediate responses
   - Related: CON-HVA-001, CON-HVA-009, CON-HVA-015
-  - Documents: DOC-RESEARCH-HVA-3
+  - Documents: DOC-RESEARCH-HVA-3, DOC-COMP-002
 
 - CON-HVA-011: **API Model Processing**
   - Definition: Cloud-based language model for complex reasoning and novel insights
   - Related: CON-HVA-001, CON-HVA-009, CON-HVA-016
-  - Documents: DOC-RESEARCH-HVA-3
+  - Documents: DOC-RESEARCH-HVA-3, DOC-COMP-002
 
 - CON-HVA-012: **Response Integration**
   - Definition: Component that combines outputs from both processing streams into coherent conversation
   - Related: CON-HVA-001, CON-HVA-010, CON-HVA-011
-  - Documents: DOC-RESEARCH-HVA-3
+  - Documents: DOC-RESEARCH-HVA-3, DOC-COMP-002
 
 - CON-HVA-013: **Conversational Structure**
   - Definition: Implementation of natural conversation patterns including turn-taking and repair mechanisms
@@ -217,6 +217,76 @@
   - Related: CON-HVA-003, CON-VANTA-007
   - Documents: DOC-RESEARCH-HVA-5
 
+- CON-IMP-001: **Phased Implementation**
+  - Definition: Breaking down VANTA development into progressive phases from foundation to ambient presence
+  - Related: CON-IMP-002, CON-IMP-003, CON-IMP-004, CON-IMP-005
+  - Documents: DOC-IMP-001, DOC-ROADMAP-001
+
+- CON-IMP-002: **Foundation Phase**
+  - Definition: Initial phase focusing on core voice interaction capabilities with minimal intelligence
+  - Related: CON-IMP-001, CON-VANTA-001
+  - Documents: DOC-ROADMAP-001, DOC-PHASE-001
+
+- CON-IMP-003: **Naturalization Phase**
+  - Definition: Phase focusing on making conversations feel more natural and human-like
+  - Related: CON-IMP-001, CON-HVA-005, CON-HVA-013, CON-HVA-014
+  - Documents: DOC-ROADMAP-001, DOC-PHASE-001
+
+- CON-IMP-004: **Memory & Personalization Phase**
+  - Definition: Phase focusing on enhancing memory capabilities and adapting to individual users
+  - Related: CON-IMP-001, CON-VANTA-002, CON-VANTA-007, CON-HVA-006
+  - Documents: DOC-ROADMAP-001, DOC-PHASE-001
+
+- CON-IMP-005: **Cognitive Enhancement Phase**
+  - Definition: Phase focusing on improving reasoning capabilities and task handling
+  - Related: CON-IMP-001, CON-HVA-002, CON-HVA-008
+  - Documents: DOC-ROADMAP-001, DOC-PHASE-001
+
+- CON-IMP-006: **Ambient Presence Phase**
+  - Definition: Final phase enabling VANTA to function as an ambient presence in the user's environment
+  - Related: CON-IMP-001, CON-HVA-002, CON-HVA-013
+  - Documents: DOC-ROADMAP-001, DOC-PHASE-001
+
+- CON-IMP-007: **Task Structure**
+  - Definition: Standardized format for implementation tasks with VISTA identifiers, dependencies, and validation criteria
+  - Related: CON-MET-004, CON-IMP-008
+  - Documents: DOC-IMP-001, DOC-TASK-001
+
+- CON-IMP-008: **Task Dependencies**
+  - Definition: Formal relationships between tasks indicating which tasks must be completed before others can begin
+  - Related: CON-IMP-007
+  - Documents: DOC-IMP-001 
+
+- CON-IMP-009: **Implementation Milestones**
+  - Definition: Key achievements and checkpoints in the implementation process
+  - Related: CON-IMP-001, CON-IMP-007
+  - Documents: DOC-IMP-001, DOC-ROADMAP-001
+
+- CON-ARCH-001: **TypedDict State Model**
+  - Definition: Type-safe state management for conversation context using Python's TypedDict
+  - Related: CON-TECH-007, CON-VANTA-007
+  - Documents: DOC-ARCH-002
+
+- CON-ARCH-002: **LangGraph Node Pattern**
+  - Definition: Standard pattern for implementing processing components as LangGraph nodes with explicit inputs/outputs
+  - Related: CON-TECH-006, CON-TECH-007
+  - Documents: DOC-ARCH-003
+
+- CON-ARCH-003: **Event Bus Pattern**
+  - Definition: Communication pattern for asynchronous messaging between components
+  - Related: CON-VANTA-009, CON-TECH-007
+  - Documents: DOC-ARCH-003
+
+- CON-ARCH-004: **Repository Pattern**
+  - Definition: Data access pattern for consistent storage and retrieval operations
+  - Related: CON-VANTA-007
+  - Documents: DOC-ARCH-003
+
+- CON-ARCH-005: **Adapter Pattern**
+  - Definition: Design pattern for interfacing with external systems and handling format conversions
+  - Related: CON-VANTA-009, CON-TECH-001
+  - Documents: DOC-ARCH-003
+
 ## Relationships
 
 ```mermaid
@@ -228,12 +298,33 @@ graph TD
     CONMET001 --> |includes| CONMET005["CON-MET-005<br/>Knowledge Persistence"]
     CONMET001 --> |applied to| CONPRJ001["CON-PRJ-001<br/>VANTA Project"]
     
+    %% Implementation Planning relationships
+    CONMET004 --> |implemented via| CONIMP001["CON-IMP-001<br/>Phased Implementation"]
+    CONMET004 --> |defines| CONIMP007["CON-IMP-007<br/>Task Structure"]
+    CONIMP007 --> |organizes| CONIMP008["CON-IMP-008<br/>Task Dependencies"]
+    CONIMP001 --> |tracks| CONIMP009["CON-IMP-009<br/>Implementation Milestones"]
+    
+    %% Phased Implementation relationships
+    CONIMP001 --> |phase 1| CONIMP002["CON-IMP-002<br/>Foundation Phase"]
+    CONIMP001 --> |phase 2| CONIMP003["CON-IMP-003<br/>Naturalization Phase"]
+    CONIMP001 --> |phase 3| CONIMP004["CON-IMP-004<br/>Memory & Personalization Phase"]
+    CONIMP001 --> |phase 4| CONIMP005["CON-IMP-005<br/>Cognitive Enhancement Phase"]
+    CONIMP001 --> |phase 5| CONIMP006["CON-IMP-006<br/>Ambient Presence Phase"]
+    
+    %% Architecture Pattern relationships
+    CONARCH001["CON-ARCH-001<br/>TypedDict State Model"] --> |implements| CONTECH007["CON-TECH-007<br/>State Management"]
+    CONARCH002["CON-ARCH-002<br/>LangGraph Node Pattern"] --> |implements| CONTECH006["CON-TECH-006<br/>Graph-Based Workflow"]
+    CONARCH003["CON-ARCH-003<br/>Event Bus Pattern"] --> |supports| CONVANTA009["CON-VANTA-009<br/>Hybrid Architecture"]
+    CONARCH004["CON-ARCH-004<br/>Repository Pattern"] --> |structures| CONVANTA007["CON-VANTA-007<br/>Layered Memory"]
+    CONARCH005["CON-ARCH-005<br/>Adapter Pattern"] --> |connects| CONVANTA009
+
     %% VANTA Project relationships
     CONPRJ001 --> |consists of| CONVANTA001["CON-VANTA-001<br/>Voice Pipeline"]
     CONPRJ001 --> |consists of| CONVANTA002["CON-VANTA-002<br/>Memory Engine"]
     CONPRJ001 --> |deployed via| CONVANTA004["CON-VANTA-004<br/>Deployment Model"]
-    CONPRJ001 --> |may integrate| CONTECH001["CON-TECH-001<br/>Model Context Protocol"]
-    CONPRJ001 --> |may use| CONTECH005["CON-TECH-005<br/>LangGraph"]
+    CONPRJ001 --> |integrates| CONTECH001["CON-TECH-001<br/>Model Context Protocol"]
+    CONPRJ001 --> |uses| CONTECH005["CON-TECH-005<br/>LangGraph"]
+    CONPRJ001 --> |follows| CONIMP001
     
     %% Voice Pipeline relationships
     CONVANTA001 --> |includes| CONVANTA005["CON-VANTA-005<br/>Speech-to-Text"]
@@ -258,7 +349,7 @@ graph TD
     CONTECH005 --> |supports| CONTECH008["CON-TECH-008<br/>Persistence Layer"]
     
     %% Hybrid Architecture relationships
-    CONVANTA009["CON-VANTA-009<br/>Hybrid Architecture"] --> |combines| CONTECH001
+    CONVANTA009 --> |combines| CONTECH001
     CONVANTA009 --> |combines| CONTECH005
     CONVANTA009 --> |implements| CONHVA001["CON-HVA-001<br/>Dual-track Processing"]
     
@@ -268,6 +359,8 @@ graph TD
     
     %% Styling
     classDef methodology fill:#e0f7fa,stroke:#006064,stroke-width:1px
+    classDef implementation fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    classDef architecture fill:#f1f8e9,stroke:#33691e,stroke-width:1px
     classDef project fill:#e8f5e9,stroke:#1b5e20,stroke-width:1px
     classDef vanta fill:#f3e5f5,stroke:#4a148c,stroke-width:1px
     classDef mcp fill:#fff3e0,stroke:#e65100,stroke-width:1px
@@ -275,6 +368,8 @@ graph TD
     classDef hva fill:#ede7f6,stroke:#4527a0,stroke-width:1px
     
     class CONMET001,CONMET002,CONMET003,CONMET004,CONMET005 methodology
+    class CONIMP001,CONIMP002,CONIMP003,CONIMP004,CONIMP005,CONIMP006,CONIMP007,CONIMP008,CONIMP009 implementation
+    class CONARCH001,CONARCH002,CONARCH003,CONARCH004,CONARCH005 architecture
     class CONPRJ001 project
     class CONVANTA001,CONVANTA002,CONVANTA003,CONVANTA004,CONVANTA005,CONVANTA006,CONVANTA007,CONVANTA008,CONVANTA009,CONVANTA010 vanta
     class CONTECH001,CONTECH002,CONTECH003,CONTECH004 mcp
@@ -407,5 +502,81 @@ graph TD
     class HVA1A,HVA1B,HVA1C,HVA1D,HVA2A,HVA2B,HVA2C,HVA3A,HVA3B,HVA3C,HVA4A,HVA4B,HVA4C,HVA4D sub
 ```
 
+### Implementation Planning
+
+```mermaid
+graph TD
+    IP["Implementation<br/>Planning"] --> IP1["Phased<br/>Approach"]
+    IP --> IP2["Task<br/>Organization"]
+    IP --> IP3["Integration<br/>Patterns"]
+    IP --> IP4["Resource<br/>Planning"]
+    
+    IP1 --> IP1A["Foundation<br/>Phase"]
+    IP1 --> IP1B["Naturalization<br/>Phase"]
+    IP1 --> IP1C["Memory &<br/>Personalization<br/>Phase"]
+    IP1 --> IP1D["Cognitive<br/>Enhancement<br/>Phase"]
+    IP1 --> IP1E["Ambient<br/>Presence<br/>Phase"]
+    
+    IP2 --> IP2A["VISTA Task<br/>Structure"]
+    IP2 --> IP2B["Dependency<br/>Mapping"]
+    IP2 --> IP2C["Validation<br/>Criteria"]
+    IP2 --> IP2D["Effort<br/>Estimation"]
+    
+    IP3 --> IP3A["LangGraph<br/>Node Pattern"]
+    IP3 --> IP3B["Event Bus<br/>Pattern"]
+    IP3 --> IP3C["Repository<br/>Pattern"]
+    IP3 --> IP3D["Adapter<br/>Pattern"]
+    
+    IP4 --> IP4A["Hardware<br/>Requirements"]
+    IP4 --> IP4B["Software<br/>Dependencies"]
+    IP4 --> IP4C["API<br/>Utilization"]
+    IP4 --> IP4D["Performance<br/>Targets"]
+    
+    classDef main fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    classDef sub fill:#f5f5f5,stroke:#616161,stroke-width:1px
+    
+    class IP main
+    class IP1,IP2,IP3,IP4 main
+    class IP1A,IP1B,IP1C,IP1D,IP1E,IP2A,IP2B,IP2C,IP2D,IP3A,IP3B,IP3C,IP3D,IP4A,IP4B,IP4C,IP4D sub
+```
+
+### Task Organization
+
+```mermaid
+graph TD
+    TO["Task<br/>Organization"] --> TO1["Voice<br/>Pipeline Tasks"]
+    TO --> TO2["State<br/>Management Tasks"]
+    TO --> TO3["Memory<br/>Engine Tasks"]
+    TO --> TO4["Integration<br/>Tasks"]
+    TO --> TO5["Testing &<br/>Validation Tasks"]
+    
+    TO1 --> TO1A["STT<br/>Integration"]
+    TO1 --> TO1B["TTS<br/>Integration"]
+    TO1 --> TO1C["Voice Activity<br/>Detection"]
+    
+    TO2 --> TO2A["TypedDict<br/>Implementation"]
+    TO2 --> TO2B["LangGraph<br/>Nodes"]
+    TO2 --> TO2C["State<br/>Persistence"]
+    
+    TO3 --> TO3A["Raw<br/>Storage"]
+    TO3 --> TO3B["Summary<br/>Generation"]
+    TO3 --> TO3C["Semantic<br/>Search"]
+    
+    TO4 --> TO4A["Dual-Track<br/>Router"]
+    TO4 --> TO4B["Local Model<br/>Integration"]
+    TO4 --> TO4C["API<br/>Integration"]
+    
+    TO5 --> TO5A["Unit<br/>Tests"]
+    TO5 --> TO5B["Integration<br/>Tests"]
+    TO5 --> TO5C["System<br/>Tests"]
+    
+    classDef main fill:#bbdefb,stroke:#1976d2,stroke-width:1px
+    classDef sub fill:#f5f5f5,stroke:#616161,stroke-width:1px
+    
+    class TO main
+    class TO1,TO2,TO3,TO4,TO5 main
+    class TO1A,TO1B,TO1C,TO2A,TO2B,TO2C,TO3A,TO3B,TO3C,TO4A,TO4B,TO4C,TO5A,TO5B,TO5C sub
+```
+
 ## Last Updated
-2025-05-17T15:00:00Z | SES-V0-004 | Added Hybrid Voice Architecture concepts and research findings with Mermaid visualizations
+2025-05-18T09:30:00Z | SES-V0-006 | Added Implementation Planning concepts and research findings with Mermaid visualizations
