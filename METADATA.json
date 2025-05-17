@@ -1,7 +1,7 @@
 {
   "project": "V0_VANTA",
   "version": "0.4.0",
-  "last_updated": "2025-05-17T15:00:00Z",
+  "last_updated": "2025-05-17T15:30:00Z",
   "last_session_id": "SES-V0-004",
   "document_versions": {
     "README.md": {
@@ -11,7 +11,7 @@
     },
     "SESSION_STATE.md": {
       "version": "0.4.0",
-      "last_updated": "2025-05-17T15:00:00Z",
+      "last_updated": "2025-05-17T15:30:00Z",
       "change_type": "Modification"
     },
     "KNOWLEDGE_GRAPH.md": {
@@ -202,6 +202,21 @@
       "source": "KNOWLEDGE_GRAPH.md:CON-HVA-002",
       "target": "research/hybrid_voice_architecture/design/HYBRID_COGNITIVE_MODEL.md",
       "relationship": "DefinedBy"
+    },
+    {
+      "source": "KNOWLEDGE_GRAPH.md:CON-HVA-009",
+      "target": "research/hybrid_voice_architecture/design/DUAL_PROCESSING_ARCHITECTURE.md",
+      "relationship": "DefinedBy"
+    },
+    {
+      "source": "KNOWLEDGE_GRAPH.md:CON-HVA-013",
+      "target": "research/hybrid_voice_architecture/design/SPEECH_NATURALIZATION.md",
+      "relationship": "DefinedBy"
+    },
+    {
+      "source": "KNOWLEDGE_GRAPH.md:CON-HVA-015",
+      "target": "research/hybrid_voice_architecture/implementation_notes/IMPLEMENTATION_CONSIDERATIONS.md",
+      "relationship": "DefinedBy"
     }
   ],
   "session_history": [
@@ -222,10 +237,11 @@
     },
     {
       "session_id": "SES-V0-004",
-      "date": "2025-05-17T15:00:00Z",
+      "date": "2025-05-17T15:30:00Z",
       "focus": "Hybrid voice architecture research and dual-track processing model"
     }
   ],
+  "next_session_id": "SES-V0-005",
   "research_findings": [
     {
       "id": "RES-001",
@@ -251,6 +267,36 @@
         "research/hybrid_voice_architecture/diagrams/HYBRID_ARCHITECTURE_DIAGRAM.md"
       ],
       "date": "2025-05-17T15:00:00Z"
+    }
+  ],
+  "upcoming_tasks": [
+    {
+      "id": "TASK-001",
+      "description": "Create prototype of dual-track processing system",
+      "related_documents": ["research/hybrid_voice_architecture/design/DUAL_PROCESSING_ARCHITECTURE.md"],
+      "priority": "high",
+      "target_session": "SES-V0-005"
+    },
+    {
+      "id": "TASK-002",
+      "description": "Evaluate LLM options for local processing",
+      "related_documents": ["research/hybrid_voice_architecture/implementation_notes/IMPLEMENTATION_CONSIDERATIONS.md"],
+      "priority": "high",
+      "target_session": "SES-V0-005"
+    },
+    {
+      "id": "TASK-003",
+      "description": "Benchmark speech processing performance on target hardware",
+      "related_documents": ["research/hybrid_voice_architecture/implementation_notes/IMPLEMENTATION_CONSIDERATIONS.md"],
+      "priority": "medium",
+      "target_session": "SES-V0-005"
+    },
+    {
+      "id": "TASK-004",
+      "description": "Develop naturalization layer for TTS output",
+      "related_documents": ["research/hybrid_voice_architecture/design/SPEECH_NATURALIZATION.md"],
+      "priority": "medium",
+      "target_session": "SES-V0-005"
     }
   ]
 }
