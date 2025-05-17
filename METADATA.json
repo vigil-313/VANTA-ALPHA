@@ -1,8 +1,8 @@
 {
   "project": "V0_VANTA",
-  "version": "0.3.0",
-  "last_updated": "2025-05-16T17:00:00Z",
-  "last_session_id": "SES-V0-003",
+  "version": "0.4.0",
+  "last_updated": "2025-05-17T15:00:00Z",
+  "last_session_id": "SES-V0-004",
   "document_versions": {
     "README.md": {
       "version": "0.1.0",
@@ -10,13 +10,13 @@
       "change_type": "Addition"
     },
     "SESSION_STATE.md": {
-      "version": "0.3.0",
-      "last_updated": "2025-05-16T17:00:00Z",
+      "version": "0.4.0",
+      "last_updated": "2025-05-17T15:00:00Z",
       "change_type": "Modification"
     },
     "KNOWLEDGE_GRAPH.md": {
-      "version": "0.3.0",
-      "last_updated": "2025-05-16T17:00:00Z",
+      "version": "0.4.0",
+      "last_updated": "2025-05-17T15:00:00Z",
       "change_type": "Modification"
     },
     "CLAUDE.md": {
@@ -52,6 +52,51 @@
     "research/INTEGRATION_FINDINGS_SUMMARY.md": {
       "version": "0.1.0",
       "last_updated": "2025-05-16T16:00:00Z",
+      "change_type": "Addition"
+    },
+    "research/hybrid_voice_architecture/README.md": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-17T15:00:00Z",
+      "change_type": "Addition"
+    },
+    "research/hybrid_voice_architecture/design/HYBRID_COGNITIVE_MODEL.md": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-17T15:00:00Z",
+      "change_type": "Addition"
+    },
+    "research/hybrid_voice_architecture/design/DUAL_PROCESSING_ARCHITECTURE.md": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-17T15:00:00Z",
+      "change_type": "Addition"
+    },
+    "research/hybrid_voice_architecture/design/SPEECH_NATURALIZATION.md": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-17T15:00:00Z",
+      "change_type": "Addition"
+    },
+    "research/hybrid_voice_architecture/implementation_notes/IMPLEMENTATION_CONSIDERATIONS.md": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-17T15:00:00Z",
+      "change_type": "Addition"
+    },
+    "research/hybrid_voice_architecture/diagrams/HYBRID_ARCHITECTURE_DIAGRAM.md": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-17T15:00:00Z",
+      "change_type": "Addition"
+    },
+    "LICENSE.txt": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-17T14:30:00Z",
+      "change_type": "Addition"
+    },
+    "LICENSE_PUBLIC.txt": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-17T14:30:00Z",
+      "change_type": "Addition"
+    },
+    "NOTICE.md": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-17T14:30:00Z",
       "change_type": "Addition"
     }
   },
@@ -132,6 +177,31 @@
       "source": "Technical/MCP_REFERENCE.md:DOC-TECH-MCP-1",
       "target": "KNOWLEDGE_GRAPH.md:CON-TECH-001",
       "relationship": "Defines"
+    },
+    {
+      "source": "SESSION_STATE.md:DEC-004-001",
+      "target": "research/hybrid_voice_architecture/design/DUAL_PROCESSING_ARCHITECTURE.md",
+      "relationship": "Supports"
+    },
+    {
+      "source": "SESSION_STATE.md:DEC-004-002",
+      "target": "research/hybrid_voice_architecture/implementation_notes/IMPLEMENTATION_CONSIDERATIONS.md",
+      "relationship": "Supports"
+    },
+    {
+      "source": "SESSION_STATE.md:DEC-004-003",
+      "target": "research/hybrid_voice_architecture/design/SPEECH_NATURALIZATION.md",
+      "relationship": "Supports"
+    },
+    {
+      "source": "KNOWLEDGE_GRAPH.md:CON-HVA-001",
+      "target": "research/hybrid_voice_architecture/README.md",
+      "relationship": "DefinedBy"
+    },
+    {
+      "source": "KNOWLEDGE_GRAPH.md:CON-HVA-002",
+      "target": "research/hybrid_voice_architecture/design/HYBRID_COGNITIVE_MODEL.md",
+      "relationship": "DefinedBy"
     }
   ],
   "session_history": [
@@ -149,6 +219,11 @@
       "session_id": "SES-V0-003",
       "date": "2025-05-16T16:30:00Z",
       "focus": "LangGraph and MCP framework evaluation and integration planning"
+    },
+    {
+      "session_id": "SES-V0-004",
+      "date": "2025-05-17T15:00:00Z",
+      "focus": "Hybrid voice architecture research and dual-track processing model"
     }
   ],
   "research_findings": [
@@ -163,6 +238,19 @@
       "topic": "MCP Integration",
       "documents": ["research/mcp/integration_patterns/MCP_LANGGRAPH_INTEGRATION.md", "research/mcp/server_designs/VANTA_MCP_SERVERS.md", "research/INTEGRATION_FINDINGS_SUMMARY.md"],
       "date": "2025-05-16T15:00:00Z"
+    },
+    {
+      "id": "RES-003",
+      "topic": "Hybrid Voice Architecture",
+      "documents": [
+        "research/hybrid_voice_architecture/README.md", 
+        "research/hybrid_voice_architecture/design/HYBRID_COGNITIVE_MODEL.md",
+        "research/hybrid_voice_architecture/design/DUAL_PROCESSING_ARCHITECTURE.md",
+        "research/hybrid_voice_architecture/design/SPEECH_NATURALIZATION.md",
+        "research/hybrid_voice_architecture/implementation_notes/IMPLEMENTATION_CONSIDERATIONS.md",
+        "research/hybrid_voice_architecture/diagrams/HYBRID_ARCHITECTURE_DIAGRAM.md"
+      ],
+      "date": "2025-05-17T15:00:00Z"
     }
   ]
 }

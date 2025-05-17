@@ -127,6 +127,96 @@
   - Related: CON-TECH-004, CON-VANTA-009
   - Documents: DOC-RESEARCH-MCP-2
 
+- CON-HVA-001: **Dual-track Processing**
+  - Definition: Using local models for immediate responses while cloud APIs handle complex reasoning
+  - Related: CON-HVA-010, CON-HVA-011, CON-HVA-012, CON-VANTA-009
+  - Documents: DOC-RESEARCH-HVA-1, DOC-RESEARCH-HVA-2, DOC-RESEARCH-HVA-3
+
+- CON-HVA-002: **Cognitive Simulation**
+  - Definition: Replicating human thought patterns including epiphanic moments, memory retrieval, and natural speech cadence
+  - Related: CON-HVA-006, CON-HVA-007, CON-HVA-008
+  - Documents: DOC-RESEARCH-HVA-2
+
+- CON-HVA-003: **Hardware Optimization**
+  - Definition: Making efficient use of available computing resources (M4 MacBook Pro)
+  - Related: CON-HVA-015, CON-HVA-017, CON-HVA-018
+  - Documents: DOC-RESEARCH-HVA-1, DOC-RESEARCH-HVA-3, DOC-RESEARCH-HVA-5
+
+- CON-HVA-004: **Latency Management**
+  - Definition: Creating the perception of real-time conversation despite processing delays
+  - Related: CON-HVA-001, CON-HVA-016
+  - Documents: DOC-RESEARCH-HVA-1, DOC-RESEARCH-HVA-3, DOC-RESEARCH-HVA-5
+
+- CON-HVA-005: **Prosody Control**
+  - Definition: Implementing natural pauses, emphasis, and rhythm in speech output
+  - Related: CON-HVA-014
+  - Documents: DOC-RESEARCH-HVA-1, DOC-RESEARCH-HVA-4
+
+- CON-HVA-006: **Natural Memory Patterns**
+  - Definition: Simulating human memory characteristics like recency, primacy, and associative recall
+  - Related: CON-HVA-002, CON-VANTA-007
+  - Documents: DOC-RESEARCH-HVA-2
+
+- CON-HVA-007: **Conversational Transitions**
+  - Definition: Natural language transitions between topics and thought processes
+  - Related: CON-HVA-002, CON-HVA-013
+  - Documents: DOC-RESEARCH-HVA-2, DOC-RESEARCH-HVA-4
+
+- CON-HVA-008: **Cognitive Load Simulation**
+  - Definition: Modeling human-like cognitive resource allocation and limitations
+  - Related: CON-HVA-002
+  - Documents: DOC-RESEARCH-HVA-2
+
+- CON-HVA-009: **Processing Router**
+  - Definition: Component that determines which model (local or API) should handle each aspect of conversation
+  - Related: CON-HVA-001, CON-HVA-010, CON-HVA-011
+  - Documents: DOC-RESEARCH-HVA-3
+
+- CON-HVA-010: **Local Model Processing**
+  - Definition: Fast, lightweight language model running on device for immediate responses
+  - Related: CON-HVA-001, CON-HVA-009, CON-HVA-015
+  - Documents: DOC-RESEARCH-HVA-3
+
+- CON-HVA-011: **API Model Processing**
+  - Definition: Cloud-based language model for complex reasoning and novel insights
+  - Related: CON-HVA-001, CON-HVA-009, CON-HVA-016
+  - Documents: DOC-RESEARCH-HVA-3
+
+- CON-HVA-012: **Response Integration**
+  - Definition: Component that combines outputs from both processing streams into coherent conversation
+  - Related: CON-HVA-001, CON-HVA-010, CON-HVA-011
+  - Documents: DOC-RESEARCH-HVA-3
+
+- CON-HVA-013: **Conversational Structure**
+  - Definition: Implementation of natural conversation patterns including turn-taking and repair mechanisms
+  - Related: CON-HVA-007, CON-HVA-014
+  - Documents: DOC-RESEARCH-HVA-4
+
+- CON-HVA-014: **Social Speech Elements**
+  - Definition: Features that enhance social aspects of conversation including backchanneling and emotional mirroring
+  - Related: CON-HVA-005, CON-HVA-013
+  - Documents: DOC-RESEARCH-HVA-4
+
+- CON-HVA-015: **Local LLM Performance**
+  - Definition: Strategies to optimize local language model performance within hardware constraints
+  - Related: CON-HVA-003, CON-HVA-010
+  - Documents: DOC-RESEARCH-HVA-5
+
+- CON-HVA-016: **API Integration and Latency**
+  - Definition: Techniques for managing API latency while maintaining conversational flow
+  - Related: CON-HVA-004, CON-HVA-011
+  - Documents: DOC-RESEARCH-HVA-5
+
+- CON-HVA-017: **Voice Pipeline Optimization**
+  - Definition: Strategies for achieving low-latency speech processing with high quality
+  - Related: CON-HVA-003, CON-VANTA-001
+  - Documents: DOC-RESEARCH-HVA-5
+
+- CON-HVA-018: **Memory Management**
+  - Definition: Techniques for maintaining conversation context within memory constraints
+  - Related: CON-HVA-003, CON-VANTA-007
+  - Documents: DOC-RESEARCH-HVA-5
+
 ## Relationships
 
 ```mermaid
@@ -170,6 +260,7 @@ graph TD
     %% Hybrid Architecture relationships
     CONVANTA009["CON-VANTA-009<br/>Hybrid Architecture"] --> |combines| CONTECH001
     CONVANTA009 --> |combines| CONTECH005
+    CONVANTA009 --> |implements| CONHVA001["CON-HVA-001<br/>Dual-track Processing"]
     
     %% MCP Server Ecosystem relationships
     CONVANTA010["CON-VANTA-010<br/>MCP Server Ecosystem"] --> |extends| CONTECH004
@@ -181,12 +272,14 @@ graph TD
     classDef vanta fill:#f3e5f5,stroke:#4a148c,stroke-width:1px
     classDef mcp fill:#fff3e0,stroke:#e65100,stroke-width:1px
     classDef langgraph fill:#e8eaf6,stroke:#1a237e,stroke-width:1px
+    classDef hva fill:#ede7f6,stroke:#4527a0,stroke-width:1px
     
     class CONMET001,CONMET002,CONMET003,CONMET004,CONMET005 methodology
     class CONPRJ001 project
     class CONVANTA001,CONVANTA002,CONVANTA003,CONVANTA004,CONVANTA005,CONVANTA006,CONVANTA007,CONVANTA008,CONVANTA009,CONVANTA010 vanta
     class CONTECH001,CONTECH002,CONTECH003,CONTECH004 mcp
     class CONTECH005,CONTECH006,CONTECH007,CONTECH008 langgraph
+    class CONHVA001 hva
 ```
 
 ## Research Findings
@@ -279,5 +372,40 @@ graph TD
     class HA3,HA3A,HA3B comm
 ```
 
+### Hybrid Voice Architecture
+
+```mermaid
+graph TD
+    HVA["Hybrid Voice<br/>Architecture"] --> HVA1["Dual-track<br/>Processing"]
+    HVA --> HVA2["Cognitive<br/>Simulation"]
+    HVA --> HVA3["Speech<br/>Naturalization"]
+    HVA --> HVA4["Hardware<br/>Optimization"]
+    
+    HVA1 --> HVA1A["Processing<br/>Router"]
+    HVA1 --> HVA1B["Local Model<br/>Processing"]
+    HVA1 --> HVA1C["API Model<br/>Processing"]
+    HVA1 --> HVA1D["Response<br/>Integration"]
+    
+    HVA2 --> HVA2A["Natural Memory<br/>Patterns"]
+    HVA2 --> HVA2B["Conversational<br/>Transitions"]
+    HVA2 --> HVA2C["Cognitive Load<br/>Simulation"]
+    
+    HVA3 --> HVA3A["Prosody<br/>Control"]
+    HVA3 --> HVA3B["Conversational<br/>Structure"]
+    HVA3 --> HVA3C["Social Speech<br/>Elements"]
+    
+    HVA4 --> HVA4A["Local LLM<br/>Performance"]
+    HVA4 --> HVA4B["API Integration<br/>& Latency"]
+    HVA4 --> HVA4C["Voice Pipeline<br/>Optimization"]
+    HVA4 --> HVA4D["Memory<br/>Management"]
+    
+    classDef main fill:#ede7f6,stroke:#4527a0,stroke-width:1px
+    classDef sub fill:#f5f5f5,stroke:#616161,stroke-width:1px
+    
+    class HVA main
+    class HVA1,HVA2,HVA3,HVA4 main
+    class HVA1A,HVA1B,HVA1C,HVA1D,HVA2A,HVA2B,HVA2C,HVA3A,HVA3B,HVA3C,HVA4A,HVA4B,HVA4C,HVA4D sub
+```
+
 ## Last Updated
-2025-05-16T17:00:00Z | SES-V0-003 | Added LangGraph concepts and research findings with Mermaid visualizations
+2025-05-17T15:00:00Z | SES-V0-004 | Added Hybrid Voice Architecture concepts and research findings with Mermaid visualizations

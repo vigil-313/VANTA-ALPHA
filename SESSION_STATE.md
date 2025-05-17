@@ -1,21 +1,31 @@
 # Current Session State
 
 ## Session Information
-- Session ID: SES-V0-003
-- Previous Session: SES-V0-002
-- Timestamp: 2025-05-16T16:30:00Z
+- Session ID: SES-V0-004
+- Previous Session: SES-V0-003
+- Timestamp: 2025-05-17T15:00:00Z
 - Template Version: v1.0.0
 
 ## Knowledge State
-This session focused on evaluating technical frameworks for the V0_VANTA architecture, specifically examining LangGraph and Model Context Protocol (MCP) for their potential in building a robust voice assistant system. We've conducted in-depth analysis of both frameworks and documented how they could be integrated to create a flexible, modular architecture for VANTA.
+This session focused on developing a hybrid voice architecture approach for VANTA that combines local and cloud-based language models to create natural, human-like conversational interactions. We've explored how to simulate the dual-process cognitive model of human conversation, including fast/instinctive responses and deeper/more deliberative thinking.
 
-LangGraph provides powerful orchestration capabilities through its graph-based workflow engine, which aligns well with VANTA's need for stateful processing and conversation management. MCP offers standardized interfaces for accessing diverse data sources and tools, which would enable extensibility and clean separation of concerns in the VANTA architecture.
+The hybrid voice architecture addresses several critical challenges:
+1. Making effective use of the available hardware (MacBook Pro M4 with 24GB RAM)
+2. Creating conversational experiences that feel indistinguishable from talking to a human
+3. Managing the latency inherent in API-based language models
+4. Implementing natural prosody, conversation structure, and social speech elements
 
-We've identified a potential hybrid architecture that leverages LangGraph for core workflow orchestration and MCP for standardized access to external capabilities. This approach would allow for modular development and flexible deployment options.
+We've documented a comprehensive architecture that utilizes local models for immediate responses (backchanneling, simple answers, emotional reactions) while leveraging cloud API models (GPT/Claude) for complex reasoning, synthesis, and "aha moments." This creates a cognitive simulation where responses can transition naturally between quick reactions and thoughtful insights.
 
-Research findings have been documented in several detailed reports, covering implementation strategies, architectural considerations, and server designs. These documents provide a solid foundation for further exploration before making architectural decisions.
+Detailed documentation has been created covering:
+1. The overall hybrid cognitive model and its theoretical basis
+2. Dual processing architecture showing components and their interactions
+3. Speech naturalization techniques focusing on prosody, conversation structure, and social elements
+4. Implementation considerations for the target hardware environment
 
-Rather than moving directly to detailed technical architecture and design decisions, we've determined that further exploration, tutorial development, and research is needed. This will include creating more visual documentation, step-by-step guides, and conducting web searches for the latest information and best practices.
+The architecture extends our previous work on LangGraph and MCP integration, showing how the dual-processing approach can be implemented using LangGraph's graph-based workflow engine. We've added visual diagrams illustrating the architecture from multiple perspectives, including system components, cognitive model, information flow, hardware resource allocation, and LangGraph implementation.
+
+All documentation follows the VISTA methodology with proper cross-referencing and concept definitions in the Knowledge Graph.
 
 ## Decision Record
 - DEC-001-001: Adoption of VISTA methodology for V0_VANTA project planning and implementation
@@ -60,6 +70,21 @@ Rather than moving directly to detailed technical architecture and design decisi
   - Rationale: Further knowledge building and practical examples needed before architecture decisions
   - Status: 🟢 Approved
   - Notes: Focus on tutorial development, visual guides, and research before finalizing architecture
+
+- DEC-004-001: Adopt dual-track processing architecture
+  - Rationale: Combining local and API models creates more natural conversation flow while working within hardware constraints
+  - Status: 🟡 In Progress
+  - Notes: Architecture defined but implementation details need further development
+
+- DEC-004-002: Target M4 MacBook Pro as reference hardware
+  - Rationale: Need to define hardware profile to establish performance targets and optimization strategies
+  - Status: 🟢 Approved
+  - Notes: Development will target 24GB RAM configuration to ensure mainstream compatibility
+
+- DEC-004-003: Implement natural conversational features
+  - Rationale: Human-like conversation patterns are critical for creating an ambient presence
+  - Status: 🟡 In Progress
+  - Notes: Speech naturalization patterns defined but require implementation refinement
 
 ## Open Questions
 - QUE-001-001: What were the specific failure points in the original VANTA implementation?
@@ -110,6 +135,18 @@ Rather than moving directly to detailed technical architecture and design decisi
 - QUE-003-004: What case studies or examples exist for successful MCP deployments?
   - Status: 🔴 Not Started
   - Notes: Research and web searches needed in future sessions
+
+- QUE-004-001: What latency is acceptable for natural conversation?
+  - Status: 🟡 In Progress
+  - Notes: Initial targets set (1.5s for local, 3.0s for API responses) but need validation
+
+- QUE-004-002: How should the system handle backchanneling during API processing?
+  - Status: 🟡 In Progress
+  - Answer: Local model should generate appropriate acknowledgments while waiting for API responses
+
+- QUE-004-003: What prosodic features are most important for natural speech?
+  - Status: 🟡 In Progress
+  - Answer: Variable speech rate, natural pauses/hesitations, and intonation/emphasis identified as key elements
 
 ## Action Items
 - ACT-001-001: Create core VISTA documentation structure
@@ -182,25 +219,66 @@ Rather than moving directly to detailed technical architecture and design decisi
   - Status: 🔴 Not Started
   - Deadline: 2025-05-21
 
+- ACT-004-004: Document hybrid voice architecture approach
+  - Owner: Project Team
+  - Status: 🟢 Completed
+  - Deadline: 2025-05-17
+
+- ACT-004-005: Create diagrams for hybrid voice architecture components
+  - Owner: Project Team
+  - Status: 🟢 Completed
+  - Deadline: 2025-05-17
+
+- ACT-004-006: Document implementation considerations for target hardware
+  - Owner: Project Team
+  - Status: 🟢 Completed
+  - Deadline: 2025-05-17
+
+- ACT-004-007: Integrate hybrid voice architecture with existing research
+  - Owner: Project Team
+  - Status: 🟢 Completed
+  - Deadline: 2025-05-17
+
+- ACT-005-001: Create prototype of dual-track processing system
+  - Owner: Project Team
+  - Status: 🔴 Not Started
+  - Deadline: 2025-05-25
+
+- ACT-005-002: Evaluate LLM options for local processing
+  - Owner: Project Team
+  - Status: 🔴 Not Started
+  - Deadline: 2025-05-23
+
+- ACT-005-003: Benchmark speech processing performance on target hardware
+  - Owner: Project Team
+  - Status: 🔴 Not Started
+  - Deadline: 2025-05-24
+
+- ACT-005-004: Develop naturalization layer for TTS output
+  - Owner: Project Team
+  - Status: 🔴 Not Started
+  - Deadline: 2025-05-26
+
 ## Progress Snapshot
 ```
-┌─ Project Initialization Status ──────────┐
-│                                          │
-│  VISTA Documentation Structure   🟢 100% │
-│  Analysis of Original VANTA      🟡 50%  │
-│  Technical Research              🟢 100% │
-│  MCP Integration Research        🟢 100% │
-│  LangGraph Evaluation           🟢 100% │
-│  Educational Content Creation    🔴  0%  │
-│  Web Research                    🔴  0%  │
-│  Component Design Specifications 🟡 60%  │
-│                                          │
-└──────────────────────────────────────────┘
+┌─ Project Initialization Status ────────────────┐
+│                                                │
+│  VISTA Documentation Structure         🟢 100% │
+│  Analysis of Original VANTA            🟡 50%  │
+│  Technical Research                    🟢 100% │
+│  MCP Integration Research              🟢 100% │
+│  LangGraph Evaluation                 🟢 100% │
+│  Educational Content Creation          🔴  0%  │
+│  Web Research                          🔴  0%  │
+│  Component Design Specifications       🟡 70%  │
+│  Hybrid Voice Architecture Research    🟢 100% │
+│                                                │
+└────────────────────────────────────────────────┘
 ```
 
 ## Next Session Focus Areas
-1. Create visual tutorials and learning materials for LangGraph
-2. Develop step-by-step guides for MCP integration patterns
-3. Conduct web searches for the latest best practices and case studies
-4. Research existing implementations for insights and lessons learned
-5. Continue building a stronger knowledge foundation before architecture decisions
+1. Create prototype implementation of the dual-track processing system
+2. Evaluate specific LLM options for local model processing
+3. Benchmark speech processing performance on target hardware
+4. Develop prosody control layer for more natural speech output
+5. Begin integration of hybrid voice architecture with existing components
