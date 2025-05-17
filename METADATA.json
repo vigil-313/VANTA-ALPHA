@@ -272,29 +272,43 @@
   "upcoming_tasks": [
     {
       "id": "TASK-001",
-      "description": "Create prototype of dual-track processing system",
-      "related_documents": ["research/hybrid_voice_architecture/design/DUAL_PROCESSING_ARCHITECTURE.md"],
+      "description": "Create long-term implementation roadmap with phased approach",
+      "related_documents": ["research/hybrid_voice_architecture/README.md"],
       "priority": "high",
       "target_session": "SES-V0-005"
     },
     {
       "id": "TASK-002",
-      "description": "Evaluate LLM options for local processing",
-      "related_documents": ["research/hybrid_voice_architecture/implementation_notes/IMPLEMENTATION_CONSIDERATIONS.md"],
+      "description": "Design technical architecture for V0 implementation",
+      "related_documents": ["research/hybrid_voice_architecture/design/DUAL_PROCESSING_ARCHITECTURE.md"],
       "priority": "high",
       "target_session": "SES-V0-005"
     },
     {
       "id": "TASK-003",
-      "description": "Benchmark speech processing performance on target hardware",
-      "related_documents": ["research/hybrid_voice_architecture/implementation_notes/IMPLEMENTATION_CONSIDERATIONS.md"],
-      "priority": "medium",
+      "description": "Create detailed V0 implementation plan with VISTA task identifiers",
+      "related_documents": ["Development/IMPLEMENTATION_PLAN.md"],
+      "priority": "high",
       "target_session": "SES-V0-005"
     },
     {
       "id": "TASK-004",
-      "description": "Develop naturalization layer for TTS output",
-      "related_documents": ["research/hybrid_voice_architecture/design/SPEECH_NATURALIZATION.md"],
+      "description": "Develop VISTA implementation task templates",
+      "related_documents": ["Development/PROMPT_SEQUENCES.md"],
+      "priority": "medium",
+      "target_session": "SES-V0-005"
+    },
+    {
+      "id": "TASK-005",
+      "description": "Create organized directory structure for implementation planning",
+      "related_documents": ["Development/README.md"],
+      "priority": "high",
+      "target_session": "SES-V0-005"
+    },
+    {
+      "id": "TASK-006",
+      "description": "Generate visual diagrams for implementation plan",
+      "related_documents": ["Development/IMPLEMENTATION_PLAN.md"],
       "priority": "medium",
       "target_session": "SES-V0-005"
     }
