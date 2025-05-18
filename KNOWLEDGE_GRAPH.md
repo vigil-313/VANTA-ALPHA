@@ -114,7 +114,7 @@
 
 - CON-VANTA-008: **Docker Environment**
   - Definition: Containerized development and deployment environment for VANTA
-  - Related: CON-VANTA-004
+  - Related: CON-VANTA-004, CON-IMP-011
   - Documents: DOC-ARCH-001
 
 - CON-VANTA-009: **Hybrid Architecture**
@@ -262,6 +262,41 @@
   - Related: CON-IMP-001, CON-IMP-007
   - Documents: DOC-IMP-001, DOC-ROADMAP-001
 
+- CON-IMP-010: **Implementation Prompts**
+  - Definition: Structured guidance for Claude Code to implement specific tasks following the VISTA methodology
+  - Related: CON-IMP-007, CON-MET-004, CON-IMP-011, CON-IMP-012, CON-IMP-013
+  - Documents: DOC-IMP-001, DOC-PROMPT-001
+
+- CON-IMP-011: **Docker Environment Setup**
+  - Definition: Configuration of containerized development environment with all dependencies for VANTA
+  - Related: CON-VANTA-008, CON-IMP-002
+  - Documents: DOC-PROMPT-ENV-002
+
+- CON-IMP-012: **Model Preparation**
+  - Definition: Download, conversion, and management of machine learning models for VANTA development
+  - Related: CON-HVA-010, CON-HVA-011, CON-VANTA-005, CON-VANTA-006, CON-IMP-015, CON-IMP-016
+  - Documents: DOC-PROMPT-ENV-003, DOC-IMP-002
+
+- CON-IMP-015: **Model Registry**
+  - Definition: Centralized tracking system for managing model metadata, versions, and verification
+  - Related: CON-IMP-012, CON-IMP-016
+  - Documents: DOC-IMP-002
+
+- CON-IMP-016: **Model Management Tools**
+  - Definition: Scripts and utilities for downloading, verifying, and testing machine learning models
+  - Related: CON-IMP-012, CON-IMP-015
+  - Documents: DOC-IMP-002
+
+- CON-IMP-013: **Test Framework**
+  - Definition: Comprehensive testing infrastructure for validating VANTA components and overall system
+  - Related: CON-IMP-007, CON-IMP-014
+  - Documents: DOC-PROMPT-ENV-004
+
+- CON-IMP-014: **Validation Criteria**
+  - Definition: Specific requirements that must be met for a task to be considered successfully implemented
+  - Related: CON-IMP-007, CON-IMP-013
+  - Documents: DOC-IMP-001, DOC-TASK-001
+
 - CON-ARCH-001: **TypedDict State Model**
   - Definition: Type-safe state management for conversation context using Python's TypedDict
   - Related: CON-TECH-007, CON-VANTA-007
@@ -287,6 +322,16 @@
   - Related: CON-VANTA-009, CON-TECH-001
   - Documents: DOC-ARCH-003
 
+- CON-DEV-001: **Prompt Organization**
+  - Definition: Hierarchical structure for organizing implementation prompts by phase and component
+  - Related: CON-IMP-010, CON-DEV-002
+  - Documents: DOC-PROMPT-001
+
+- CON-DEV-002: **Development Workflow**
+  - Definition: Process for implementing VANTA components using Claude Code with VISTA methodology
+  - Related: CON-DEV-001, CON-MET-001
+  - Documents: DOC-PROMPT-001
+
 ## Relationships
 
 ```mermaid
@@ -310,6 +355,15 @@ graph TD
     CONIMP001 --> |phase 3| CONIMP004["CON-IMP-004<br/>Memory & Personalization Phase"]
     CONIMP001 --> |phase 4| CONIMP005["CON-IMP-005<br/>Cognitive Enhancement Phase"]
     CONIMP001 --> |phase 5| CONIMP006["CON-IMP-006<br/>Ambient Presence Phase"]
+    
+    %% Implementation Prompt relationships
+    CONIMP010["CON-IMP-010<br/>Implementation Prompts"] --> |organizes| CONDEV001["CON-DEV-001<br/>Prompt Organization"]
+    CONIMP010 --> |phase 0| CONIMP011["CON-IMP-011<br/>Docker Environment Setup"] 
+    CONIMP010 --> |phase 0| CONIMP012["CON-IMP-012<br/>Model Preparation"]
+    CONIMP010 --> |phase 0| CONIMP013["CON-IMP-013<br/>Test Framework"]
+    CONIMP007 --> |defines| CONIMP014["CON-IMP-014<br/>Validation Criteria"]
+    CONIMP013 --> |implements| CONIMP014
+    CONDEV001 --> |supports| CONDEV002["CON-DEV-002<br/>Development Workflow"]
     
     %% Architecture Pattern relationships
     CONARCH001["CON-ARCH-001<br/>TypedDict State Model"] --> |implements| CONTECH007["CON-TECH-007<br/>State Management"]
@@ -336,6 +390,7 @@ graph TD
     
     %% Deployment Model relationships
     CONVANTA004 --> |uses| CONVANTA008["CON-VANTA-008<br/>Docker Environment"]
+    CONVANTA008 --> |implemented by| CONIMP011
     
     %% MCP relationships
     CONTECH001 --> |defined by| CONTECH002["CON-TECH-002<br/>MCP Architecture"]
@@ -366,15 +421,17 @@ graph TD
     classDef mcp fill:#fff3e0,stroke:#e65100,stroke-width:1px
     classDef langgraph fill:#e8eaf6,stroke:#1a237e,stroke-width:1px
     classDef hva fill:#ede7f6,stroke:#4527a0,stroke-width:1px
+    classDef dev fill:#ffebee,stroke:#b71c1c,stroke-width:1px
     
     class CONMET001,CONMET002,CONMET003,CONMET004,CONMET005 methodology
-    class CONIMP001,CONIMP002,CONIMP003,CONIMP004,CONIMP005,CONIMP006,CONIMP007,CONIMP008,CONIMP009 implementation
+    class CONIMP001,CONIMP002,CONIMP003,CONIMP004,CONIMP005,CONIMP006,CONIMP007,CONIMP008,CONIMP009,CONIMP010,CONIMP011,CONIMP012,CONIMP013,CONIMP014 implementation
     class CONARCH001,CONARCH002,CONARCH003,CONARCH004,CONARCH005 architecture
     class CONPRJ001 project
     class CONVANTA001,CONVANTA002,CONVANTA003,CONVANTA004,CONVANTA005,CONVANTA006,CONVANTA007,CONVANTA008,CONVANTA009,CONVANTA010 vanta
     class CONTECH001,CONTECH002,CONTECH003,CONTECH004 mcp
     class CONTECH005,CONTECH006,CONTECH007,CONTECH008 langgraph
     class CONHVA001 hva
+    class CONDEV001,CONDEV002 dev
 ```
 
 ## Research Findings
@@ -578,5 +635,48 @@ graph TD
     class TO1A,TO1B,TO1C,TO2A,TO2B,TO2C,TO3A,TO3B,TO3C,TO4A,TO4B,TO4C,TO5A,TO5B,TO5C sub
 ```
 
+### Implementation Workflow
+
+```mermaid
+graph TD
+    IW["Implementation<br/>Workflow"] --> IW1["Task<br/>Selection"]
+    IW1 --> IW2["Prompt<br/>Creation"]
+    IW2 --> IW3["Claude Code<br/>Session"]
+    IW3 --> IW4["Code<br/>Implementation"]
+    IW4 --> IW5["Testing<br/>and Validation"]
+    IW5 --> IW6["Documentation<br/>Update"]
+    IW6 --> IW1
+    
+    IW2 -.- IWP["Prompt Organization"]
+    IWP --> IWP1["Phase0_Setup"]
+    IWP --> IWP2["Phase1_Core"]
+    IWP --> IWP3["Phase2_Workflow"]
+    IWP --> IWP4["Phase3_Integration"]
+    IWP --> IWP5["Phase4_Release"]
+    
+    IWP2 --> IWP2A["VoicePipeline"]
+    IWP2 --> IWP2B["LocalModel"]
+    IWP2 --> IWP2C["APIModel"]
+    IWP2 --> IWP2D["Memory"]
+    
+    IW3 -.- IWS["Script"]
+    IWS --> IWS1["generate_dev_session.sh"]
+    
+    IW6 -.- IWD["Documentation"]
+    IWD --> IWD1["SESSION_STATE.md"]
+    IWD --> IWD2["KNOWLEDGE_GRAPH.md"]
+    
+    classDef main fill:#e1bee7,stroke:#4a148c,stroke-width:1px
+    classDef sub fill:#f3e5f5,stroke:#4a148c,stroke-width:1px
+    classDef org fill:#bbdefb,stroke:#1976d2,stroke-width:1px
+    classDef doc fill:#c8e6c9,stroke:#2e7d32,stroke-width:1px
+    
+    class IW main
+    class IW1,IW2,IW3,IW4,IW5,IW6 main
+    class IWP,IWP1,IWP2,IWP3,IWP4,IWP5,IWP2A,IWP2B,IWP2C,IWP2D org
+    class IWS,IWS1 sub
+    class IWD,IWD1,IWD2 doc
+```
+
 ## Last Updated
-2025-05-18T09:30:00Z | SES-V0-006 | Added Implementation Planning concepts and research findings with Mermaid visualizations
+2025-05-19T11:30:00Z | SES-V0-007 | Completed and verified all implementation concepts, relationships, and workflow diagrams

@@ -1,0 +1,44 @@
+# TASK-REF: ENV_002 - Docker Environment Setup
+# CONCEPT-REF: CON-VANTA-008 - Docker Environment
+# CONCEPT-REF: CON-VANTA-004 - Deployment Model
+# DOC-REF: DOC-ARCH-001 - V0 Architecture Overview
+
+version: '3.8'
+
+services:
+  vanta:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ..:/app
+      - ../data:/app/data
+      - ../logs:/app/logs
+      - ../models:/app/models
+    ports:
+      - "8000:8000"  # API port
+      - "8501:8501"  # UI port (if needed)
+    environment:
+      - PYTHONPATH=/app
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    # Enable GPU support if available
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # Keep container running
+    tty: true
+
+  # Optional: Add vector database service
+  chroma:
+    image: ghcr.io/chroma-core/chroma:latest
+    volumes:
+      - ../data/chromadb:/chroma/chroma
+    ports:
+      - "8001:8000"
+    environment:
+      - ALLOW_RESET=true

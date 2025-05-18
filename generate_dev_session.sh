@@ -5,30 +5,49 @@
 set -e
 
 if [ "$#" -lt 1 ]; then
-  echo "Usage: $0 <task_number>"
-  echo "  task_number: The implementation task number to work on"
+  echo "Usage: $0 <prompt_path_or_task_number>"
+  echo "  prompt_path_or_task_number: Either a full path to a prompt file (e.g., Development/Prompts/Phase0_Setup/ENV_002_Docker_Environment.md)"
+  echo "                             or just the task number (e.g., 002) to use legacy pattern matching"
   exit 1
 fi
 
-TASK_NUM="$1"
-SESSION_FILE="claude_code_session_${TASK_NUM}.txt"
-
-echo "Generating Claude Code session for Implementation Task ${TASK_NUM}..."
-
-# First check if there's a standalone task file - using proper pattern matching
-if ls Development/Prompts/TASK${TASK_NUM}_*.md 1> /dev/null 2>&1; then
-  TASK_FILE=$(ls Development/Prompts/TASK${TASK_NUM}_*.md | head -n 1)
-  echo "Found task prompt file: $TASK_FILE"
+INPUT="$1"
+# Check if input is a path to an existing file
+if [ -f "$INPUT" ]; then
+  TASK_FILE="$INPUT"
+  # Extract task identifier from filename for the session name
+  FILENAME=$(basename "$TASK_FILE")
+  TASK_ID=$(echo "$FILENAME" | grep -oE '[A-Z]+_[0-9]+' | head -n 1)
+  if [ -z "$TASK_ID" ]; then
+    # Fallback if no pattern match
+    TASK_ID="${FILENAME%.*}"
+  fi
+  SESSION_FILE="claude_code_session_${TASK_ID}.txt"
+  echo "Using prompt file: $TASK_FILE"
   PROMPT=$(cat "$TASK_FILE")
 else
-  # Extract the prompt template from PROMPT_SEQUENCES.md as fallback
-  echo "No standalone task prompt file found, extracting from PROMPT_SEQUENCES.md..."
-  PROMPT=$(grep -A 50 "IMPLEMENTATION TASK ${TASK_NUM}:" Development/PROMPT_SEQUENCES.md)
+  # Assume it's a task number and use legacy behavior
+  TASK_NUM="$INPUT"
+  SESSION_FILE="claude_code_session_${TASK_NUM}.txt"
   
-  if [ -z "$PROMPT" ]; then
-    echo "Error: Implementation Task ${TASK_NUM} not found in Development/PROMPT_SEQUENCES.md"
-    echo "Please create a file named TASK${TASK_NUM}_NAME.md in Development/Prompts/ directory"
-    exit 1
+  echo "Generating Claude Code session for Implementation Task ${TASK_NUM}..."
+  
+  # First check if there's a standalone task file - using proper pattern matching
+  if ls Development/Prompts/TASK${TASK_NUM}_*.md 1> /dev/null 2>&1; then
+    TASK_FILE=$(ls Development/Prompts/TASK${TASK_NUM}_*.md | head -n 1)
+    echo "Found task prompt file: $TASK_FILE"
+    PROMPT=$(cat "$TASK_FILE")
+  else
+    # Extract the prompt template from PROMPT_SEQUENCES.md as fallback
+    echo "No standalone task prompt file found, extracting from PROMPT_SEQUENCES.md..."
+    PROMPT=$(grep -A 50 "IMPLEMENTATION TASK ${TASK_NUM}:" Development/PROMPT_SEQUENCES.md)
+    
+    if [ -z "$PROMPT" ]; then
+      echo "Error: Implementation Task ${TASK_NUM} not found in Development/PROMPT_SEQUENCES.md"
+      echo "Please create a file named TASK${TASK_NUM}_NAME.md in Development/Prompts/ directory"
+      echo "Or provide a full path to a prompt file: $0 Development/Prompts/Phase0_Setup/ENV_002_Docker_Environment.md"
+      exit 1
+    fi
   fi
 fi
 

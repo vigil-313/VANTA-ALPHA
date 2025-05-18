@@ -82,6 +82,34 @@ This guide identifies all critical documentation files needed to maintain full c
 
 **How to dive deeper:** The README file explains the structure and usage of task templates. The base template provides a comprehensive structure for all implementation tasks. The example tasks demonstrate how to apply the template to specific components and scenarios.
 
+## Implementation Prompts
+
+| Document | Purpose | When to Access |
+|----------|---------|----------------|
+| `/Development/Prompts/README.md` | Guide for prompt organization and usage | **Essential reference** before creating new prompts |
+
+**Prompt Directory Structure:**
+```
+/Development/Prompts/
+├── Phase0_Setup/              # Environment and setup tasks
+├── Phase1_Core/               # Core component implementation
+│   ├── VoicePipeline/         # Audio processing, STT, TTS
+│   ├── LocalModel/            # Local LLM integration
+│   ├── APIModel/              # API model integration
+│   └── Memory/                # Memory and storage systems
+├── Phase2_Workflow/           # Workflow and orchestration
+│   ├── LangGraph/             # LangGraph implementation
+│   ├── DualTrack/             # Dual-track processing
+│   └── StateManagement/       # Configuration and state
+├── Phase3_Integration/        # System integration
+│   ├── Integration/           # Component integration
+│   ├── Testing/               # Testing implementation
+│   └── Optimization/          # Performance optimization
+└── Phase4_Release/            # Release preparation
+```
+
+**How to dive deeper:** The README in the Prompts directory explains the naming convention and content requirements for implementation prompts. Each phase directory will contain prompts for specific implementation tasks as detailed in the Implementation Plan.
+
 ## Visual Implementation Planning
 
 The KNOWLEDGE_GRAPH.md file now contains comprehensive diagrams for implementation planning, including:
@@ -99,6 +127,29 @@ For the next session (SES-V0-007), the following high-priority tasks are planned
 2. **Create task template examples for key implementation tasks** - Develop specific examples for priority Foundation phase tasks
 3. **Begin environment configuration for development setup** - Set up Docker environment and development tooling
 4. **Prepare for implementation of foundation phase tasks** - Ready the development environment for actual implementation
+
+## Development Workflow
+
+The implementation process follows this workflow:
+
+1. **Task Selection**: Choose next task from IMPLEMENTATION_PLAN.md based on dependencies
+2. **Prompt Creation**: Create or update prompt in appropriate subdirectory of Development/Prompts/
+3. **Implementation Session**: Use generate_dev_session.sh to create Claude Code session
+4. **Code Creation**: Implement in Development/Implementation/ following the project structure
+5. **Post-Implementation**: Update documentation with update_documentation.sh
+
+```mermaid
+graph TD
+    A[Select Task from Implementation Plan] --> B[Create/Update Prompt]
+    B --> C[Run generate_dev_session.sh]
+    C --> D[Implement in Claude Code]
+    D --> E[Save to Implementation Directory]
+    E --> F[Run Tests]
+    F --> G[Update Documentation]
+    G --> H[Update SESSION_STATE.md]
+    H --> I[Update KNOWLEDGE_GRAPH.md]
+    I --> A
+```
 
 ## Session Management
 
@@ -141,7 +192,12 @@ To assist with locating the appropriate places for different implementation arti
    - Task registry: `/Development/Tasks/TASK_REGISTRY.md` (to be created)
    - Module-specific tasks: `/Development/Tasks/MODULE_TASKS/` (to be populated)
 
-4. **Code Implementation**: `/Development/Implementation/v0/`
+4. **Implementation Prompts**: `/Development/Prompts/`
+   - Phase-specific directories: `/Development/Prompts/Phase{N}_{PhaseName}/`
+   - Component-specific directories: `/Development/Prompts/Phase1_Core/{ComponentName}/`
+   - Prompt files: `{COMPONENT_ID}_{TASK_NAME}.md`
+
+5. **Code Implementation**: `/Development/Implementation/v0/`
    - Voice pipeline: `/Development/Implementation/v0/voice_pipeline/` (to be created)
    - Memory engine: `/Development/Implementation/v0/memory_engine/` (to be created)
    - Core components: `/Development/Implementation/v0/core/` (to be created)
@@ -180,6 +236,7 @@ To ensure this context guide remains current:
 
 ## Version History
 
+- v0.4.0 - 2025-05-18 - Updated with reorganized implementation prompt directory structure
 - v0.3.0 - 2025-05-18 - Updated with implementation task templates and visual diagrams from SES-V0-006
 - v0.2.0 - 2025-05-17 - Updated with implementation planning and architecture documents from SES-V0-005
 - v0.1.0 - 2025-05-17 - Initial creation based on project structure and VISTA framework

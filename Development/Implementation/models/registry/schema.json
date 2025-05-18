@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VANTA Model Registry",
+  "type": "object",
+  "properties": {
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["whisper", "llm", "embedding", "tts"] },
+          "version": { "type": "string" },
+          "path": { "type": "string" },
+          "size": { "type": "string" },
+          "format": { "type": "string" },
+          "quantization": { "type": ["string", "null"] },
+          "date_added": { "type": "string", "format": "date-time" },
+          "hash": { "type": "string" },
+          "parameters": { "type": "object" },
+          "hardware_requirements": {
+            "type": "object",
+            "properties": {
+              "min_ram": { "type": "string" },
+              "gpu_recommended": { "type": "boolean" },
+              "metal_supported": { "type": "boolean" }
+            }
+          },
+          "metadata": { "type": "object" }
+        },
+        "required": ["id", "name", "type", "version", "path", "date_added"]
+      }
+    }
+  }
+}

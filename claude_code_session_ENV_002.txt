@@ -1,0 +1,505 @@
+# Claude Code Implementation Session
+
+This file contains the prompt to be used with claude.ai/code for implementing this specific task.
+Copy the entire content between the START PROMPT and END PROMPT markers into Claude Code.
+
+-------------------START PROMPT-------------------
+# IMPLEMENTATION TASK: ENV_002 Docker Environment Setup
+
+## Context
+The VANTA system requires a consistent, reproducible development environment across different machines. Docker has been selected (DEC-002-005) to provide containerization for development, ensuring that all dependencies are properly managed and isolated. This task involves setting up the Docker environment with all necessary configurations for VANTA development.
+
+This is a foundational task (TASK-ENV-002) in the implementation plan and is a prerequisite for model preparation, testing framework setup, and all component development work.
+
+## Objective
+Create a Docker-based development environment that provides all required dependencies for VANTA development, including Python, audio processing libraries, machine learning frameworks, and development tools.
+
+## Requirements
+1. Create a Dockerfile for the VANTA development environment
+2. Set up Docker Compose configuration for multi-container development
+3. Include all necessary dependencies for:
+   - Audio processing (PyAudio, librosa, etc.)
+   - Speech recognition (Whisper)
+   - Text-to-speech synthesis
+   - LangGraph framework
+   - Local model support (llama.cpp)
+   - API client capabilities
+4. Ensure hardware acceleration support (GPU/Metal)
+5. Configure proper volume mounting for code changes
+6. Create development convenience scripts
+7. Document usage instructions
+
+## References
+- [DOC-ARCH-001]: Development/Architecture/V0_ARCHITECTURE_OVERVIEW.md - For overall architecture understanding
+- [DOC-DEV-IMPL-1]: Development/IMPLEMENTATION_PLAN.md - For task dependencies
+- [External]: Docker documentation at https://docs.docker.com/
+- [External]: LangGraph setup at https://github.com/langchain-ai/langgraph
+- [External]: Whisper setup at https://github.com/openai/whisper
+
+## Steps
+
+### 1. Create Base Dockerfile
+
+Create a Dockerfile in the project root with the following specifications:
+
+```dockerfile
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH="/app:$PYTHONPATH"
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libportaudio2 \
+    libportaudiocpp0 \
+    portaudio19-dev \
+    ffmpeg \
+    libsndfile1 \
+    git \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /app/models
+
+# Default command
+CMD ["bash"]
+```
+
+### 2. Create requirements.txt File
+
+Create a comprehensive requirements.txt file with all necessary Python packages:
+
+```
+# Core dependencies
+numpy>=1.24.0
+scipy>=1.10.0
+pandas>=2.0.0
+
+# Audio processing
+librosa>=0.10.0
+soundfile>=0.12.1
+pyaudio>=0.2.13
+pydub>=0.25.1
+
+# Speech recognition
+openai-whisper>=20231117
+transformers>=4.30.0
+accelerate>=0.20.0
+
+# LLM integration
+langchain>=0.0.267
+langgraph>=0.0.15
+langchain-community>=0.0.10
+pydantic>=2.0.0
+
+# Vector storage
+chromadb>=0.4.18
+sentence-transformers>=2.2.2
+
+# API clients
+openai>=1.3.0
+anthropic>=0.5.0
+
+# Development tools
+pytest>=7.3.1
+black>=23.3.0
+isort>=5.12.0
+mypy>=1.3.0
+ruff>=0.0.272
+
+# Monitoring and logging
+prometheus-client>=0.17.0
+python-json-logger>=2.0.7
+```
+
+### 3. Create Docker Compose Configuration
+
+Create a docker-compose.yml file in the project root:
+
+```yaml
+version: '3.8'
+
+services:
+  vanta:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./models:/app/models
+    ports:
+      - "8000:8000"  # API port
+      - "8501:8501"  # UI port (if needed)
+    environment:
+      - PYTHONPATH=/app
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    # Enable GPU support if available
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # Keep container running
+    tty: true
+
+  # Optional: Add vector database service
+  chroma:
+    image: ghcr.io/chroma-core/chroma:latest
+    volumes:
+      - ./data/chromadb:/chroma/chroma
+    ports:
+      - "8001:8000"
+    environment:
+      - ALLOW_RESET=true
+```
+
+### 4. Create .env File Template
+
+Create a .env.template file (users will copy this to .env and fill in their own keys):
+
+```
+# API Keys
+OPENAI_API_KEY=your_openai_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+
+# Environment Configuration
+ENVIRONMENT=development
+LOG_LEVEL=INFO
+
+# Hardware Acceleration
+USE_GPU=true
+```
+
+### 5. Create Development Convenience Scripts
+
+Create a scripts directory with helper scripts:
+
+#### scripts/dev_setup.sh
+```bash
+#!/bin/bash
+# Initial setup script for development environment
+
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo "Docker is not installed. Please install Docker first."
+    exit 1
+fi
+
+# Check if Docker Compose is installed
+if ! command -v docker-compose &> /dev/null; then
+    echo "Docker Compose is not installed. Please install Docker Compose first."
+    exit 1
+fi
+
+# Create .env file if it doesn't exist
+if [ ! -f .env ]; then
+    cp .env.template .env
+    echo "Created .env file from template. Please edit it with your API keys."
+fi
+
+# Create necessary directories
+mkdir -p data/chromadb logs models
+
+# Build Docker images
+docker-compose build
+
+echo "Development environment setup complete."
+echo "To start the environment, run: ./scripts/dev_start.sh"
+```
+
+#### scripts/dev_start.sh
+```bash
+#!/bin/bash
+# Start the development environment
+
+# Start Docker containers
+docker-compose up -d
+
+# Print status
+echo "Development environment started."
+echo "To open a shell in the container, run: ./scripts/dev_shell.sh"
+```
+
+#### scripts/dev_shell.sh
+```bash
+#!/bin/bash
+# Open a shell in the development container
+
+docker-compose exec vanta bash
+```
+
+#### scripts/dev_stop.sh
+```bash
+#!/bin/bash
+# Stop the development environment
+
+docker-compose down
+echo "Development environment stopped."
+```
+
+### 6. Create GPU/Metal Support Configuration
+
+For macOS with Apple Silicon (M1/M2/M3), create additional configuration for Metal acceleration:
+
+#### Dockerfile.mac
+```dockerfile
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH="/app:$PYTHONPATH"
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libportaudio2 \
+    libportaudiocpp0 \
+    portaudio19-dev \
+    ffmpeg \
+    libsndfile1 \
+    git \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# For Mac M1/M2/M3 support - tensorflow-metal
+RUN pip install tensorflow-macos tensorflow-metal
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /app/models
+
+# Default command
+CMD ["bash"]
+```
+
+#### scripts/mac_dev_setup.sh
+```bash
+#!/bin/bash
+# Initial setup script for Mac development environment
+
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo "Docker is not installed. Please install Docker first."
+    exit 1
+fi
+
+# Create .env file if it doesn't exist
+if [ ! -f .env ]; then
+    cp .env.template .env
+    echo "Created .env file from template. Please edit it with your API keys."
+fi
+
+# Create necessary directories
+mkdir -p data/chromadb logs models
+
+# Build using Mac-specific Dockerfile
+docker build -f Dockerfile.mac -t vanta-dev .
+
+echo "Development environment setup complete."
+echo "To start a shell in the container, run: ./scripts/mac_dev_shell.sh"
+```
+
+#### scripts/mac_dev_shell.sh
+```bash
+#!/bin/bash
+# Run the container with necessary volume mounts
+
+docker run -it --rm \
+  -v "$(pwd):/app" \
+  -v "$(pwd)/data:/app/data" \
+  -v "$(pwd)/logs:/app/logs" \
+  -v "$(pwd)/models:/app/models" \
+  -p 8000:8000 \
+  -p 8501:8501 \
+  --env-file .env \
+  vanta-dev bash
+```
+
+### 7. Create Docker Usage Documentation
+
+Create a DOCKER.md file with usage instructions:
+
+```markdown
+# VANTA Docker Development Environment
+
+This document provides instructions for setting up and using the Docker-based development environment for VANTA.
+
+## Prerequisites
+
+- Docker installed on your system
+- Docker Compose installed on your system
+- Git for cloning the repository
+
+## Setup Instructions
+
+### Standard Setup
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/VANTA-ALPHA.git
+   cd VANTA-ALPHA
+   ```
+
+2. Run the setup script:
+   ```
+   chmod +x scripts/dev_setup.sh
+   ./scripts/dev_setup.sh
+   ```
+
+3. Edit the `.env` file with your API keys.
+
+### macOS Setup (Apple Silicon)
+
+For macOS users with Apple Silicon (M1/M2/M3):
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/VANTA-ALPHA.git
+   cd VANTA-ALPHA
+   ```
+
+2. Run the Mac-specific setup script:
+   ```
+   chmod +x scripts/mac_dev_setup.sh
+   ./scripts/mac_dev_setup.sh
+   ```
+
+3. Edit the `.env` file with your API keys.
+
+## Usage
+
+### Starting the Environment
+
+Standard setup:
+```
+./scripts/dev_start.sh
+```
+
+Mac setup:
+```
+./scripts/mac_dev_shell.sh
+```
+
+### Opening a Shell in the Container
+
+Standard setup:
+```
+./scripts/dev_shell.sh
+```
+
+Mac setup: The shell opens automatically when using `mac_dev_shell.sh`.
+
+### Stopping the Environment
+
+Standard setup:
+```
+./scripts/dev_stop.sh
+```
+
+Mac setup: Press Ctrl+D or type `exit` to exit the container.
+
+## Directory Structure
+
+- `/app`: The project root (mapped to your local repository)
+- `/app/data`: Persistent data storage
+- `/app/logs`: Log files
+- `/app/models`: Downloaded model files
+
+## Using GPU Acceleration
+
+For systems with NVIDIA GPUs, GPU acceleration is enabled by default. For Mac systems with Apple Silicon, Metal acceleration is supported through tensorflow-metal.
+
+## Troubleshooting
+
+If you encounter permission issues with the scripts, make them executable:
+```
+chmod +x scripts/*.sh
+```
+
+For audio device access issues, you may need to grant Docker permission to access your microphone.
+```
+
+## Validation
+
+This implementation should be validated by:
+
+1. Verifying that the Docker environment builds successfully:
+   ```
+   docker-compose build
+   ```
+
+2. Checking that the container can run without errors:
+   ```
+   docker-compose up -d
+   docker-compose logs
+   ```
+
+3. Ensuring Python dependencies are installed correctly:
+   ```
+   docker-compose exec vanta pip list
+   ```
+
+4. Testing audio libraries functionality:
+   ```
+   docker-compose exec vanta python -c "import pyaudio; print('PyAudio available')"
+   docker-compose exec vanta python -c "import librosa; print('librosa available')"
+   ```
+
+5. Verifying LangGraph installation:
+   ```
+   docker-compose exec vanta python -c "import langgraph; print('LangGraph version:', langgraph.__version__)"
+   ```
+
+6. Testing that volume mounting works correctly by creating a file in the container and verifying it appears in the host filesystem.
+
+7. Verifying environment variables are properly passed to the container.
+
+## Notes and Considerations
+
+- The Docker environment includes all dependencies required for VANTA development but does not include actual model weights. Those will be downloaded separately during the model preparation task (TASK-ENV-003).
+
+- The environment supports both standard Linux environments with NVIDIA GPU acceleration and macOS environments with Apple Silicon.
+
+- Audio device access may require additional configuration depending on the host operating system. This will be addressed during testing.
+
+- API keys are stored in a .env file that is not committed to version control for security.
+
+- This setup is for development only. A production deployment would require additional security considerations and optimizations.
+-------------------END PROMPT-------------------
+
+## After Implementation
+
+Once Claude Code has completed this implementation task:
+
+1. Save all generated code to the appropriate locations in Development/Implementation/
+2. Update the session state and development documentation
+3. Mark the implementation task as complete in the Implementation Plan
+4. Ensure all files are in their proper directories according to VISTA structure
+5. Prepare for the next implementation task

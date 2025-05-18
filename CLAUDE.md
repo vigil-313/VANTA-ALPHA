@@ -48,3 +48,55 @@ When developing this project:
 ## Important Notes
 - When making commits, please DO NOT include references to Claude, Claude Code, or Anthropic in the commit messages.
 - THROUGHOUT ALL STEPS, SESSION_STATE.md AND KNOWLEDGE_GRAPH.md MUST BE UPDATED USING VISTA PROTOCOL!
+
+## VANTA Code Organization Rule: VISTA Documentation References
+
+  RULE: All code implementations must include references to related VISTA documentation using standardized tags.
+
+  Standard Tag Formats
+
+  1. Task References:
+  # TASK-REF: ENV_002 - Docker Environment Setup
+  2. Concept References:
+  # CONCEPT-REF: CON-VANTA-008 - Docker Environment
+  3. Documentation References:
+  # DOC-REF: DOC-ARCH-001 - V0 Architecture Overview
+  4. Decision References:
+  # DECISION-REF: DEC-002-005 - Use Docker for development environment
+
+  Placement Rules
+
+  1. Place tags at the top of files, immediately after any license/copyright notices
+  2. For functions, classes, or significant code blocks, place tags immediately above the definition
+  3. Group related tags together
+  4. Always include at least one task reference for any implementation file
+
+  Example
+
+  #!/usr/bin/env python3
+  # -*- coding: utf-8 -*-
+  """
+  VANTA Voice Pipeline Implementation
+  """
+  # TASK-REF: ENV_002 - Docker Environment Setup
+  # CONCEPT-REF: CON-VANTA-008 - Docker Environment
+  # DOC-REF: DOC-ARCH-001 - V0 Architecture Overview
+  # DECISION-REF: DEC-002-005 - Use Docker for development environment
+
+  import os
+  import sys
+  import logging
+
+  # More code...
+
+  class AudioProcessor:
+      """
+      Audio processing component for voice pipeline.
+      """
+      # TASK-REF: VOICE_001 - Audio Processing Component
+      # CONCEPT-REF: CON-VANTA-001 - Voice Pipeline
+
+      def __init__(self):
+          # Implementation...
+
+  This rule ensures all code is traceable back to its VISTA documentation, maintains knowledge continuity, and helps future developers understand the context and purpose of each implementation element.
