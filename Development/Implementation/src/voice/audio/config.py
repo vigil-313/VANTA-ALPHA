@@ -86,6 +86,33 @@ class AudioConfig:
                 "confidence_threshold": 0.4
             }
         },
+        # TTS configuration
+        "tts": {
+            "engine": {
+                "engine_type": "system",  # "api", "local", "system"
+                "voice_id": "default",
+                "model_path": None,  # Auto-select from registry for local engines
+                "api_key": None,  # For API engines
+                "speaking_rate": 1.0,
+                "pitch": 0.0,
+                "sample_rate": 24000,
+                "model_type": "piper",  # For local engines
+                "api_provider": "openai"  # For API engines
+            },
+            "synthesizer": {
+                "enable_caching": True,
+                "cache_size": 50,
+                "preprocess_text": True,
+                "enable_ssml": True
+            },
+            "prosody": {
+                "add_punctuation": True,
+                "enhance_questions": True,
+                "enhance_emphasis": True,
+                "normalize_numbers": True,
+                "expand_abbreviations": True
+            }
+        },
         # Buffer settings
         "max_buffer_chunks": 50,  # Maximum chunks to buffer
         "presets": {
@@ -94,14 +121,16 @@ class AudioConfig:
                 "preprocessing": {"normalization_target_db": -2, "resampling_quality": "high"},
                 "playback": {"sample_rate": 48000, "bit_depth": 24},
                 "vad": {"threshold": 0.4, "window_size_ms": 64},
-                "stt": {"whisper": {"model_size": "small"}, "transcriber": {"min_confidence": 0.3}}
+                "stt": {"whisper": {"model_size": "small"}, "transcriber": {"min_confidence": 0.3}},
+                "tts": {"engine": {"engine_type": "api", "api_provider": "openai", "model": "tts-1-hd"}}
             },
             "low_resource": {
                 "capture": {"sample_rate": 16000, "chunk_size": 8192},
                 "preprocessing": {"enable_noise_reduction": False, "resampling_quality": "low"},
                 "playback": {"sample_rate": 22050, "buffer_size": 2048},
                 "vad": {"threshold": 0.6, "window_size_ms": 128},
-                "stt": {"whisper": {"model_size": "tiny"}, "transcriber": {"min_confidence": 0.5}}
+                "stt": {"whisper": {"model_size": "tiny"}, "transcriber": {"min_confidence": 0.5}},
+                "tts": {"engine": {"engine_type": "system"}, "synthesizer": {"enable_ssml": False}}
             }
         }
     }
@@ -255,6 +284,15 @@ class AudioConfig:
             Dictionary with STT configuration parameters
         """
         return self.config.get("stt", {}).copy()
+    
+    def get_tts_config(self) -> Dict[str, Any]:
+        """
+        Get TTS-specific configuration.
+        
+        Returns:
+            Dictionary with TTS configuration parameters
+        """
+        return self.config.get("tts", {}).copy()
     
     def get_max_buffer_chunks(self) -> int:
         """
@@ -456,6 +494,41 @@ class AudioConfig:
             
         if not 0.0 <= processor.get("confidence_threshold", 0.4) <= 1.0:
             raise ValueError(f"Invalid confidence threshold: {processor.get('confidence_threshold')}")
+
+        # Validate TTS config
+        tts = self.config.get("tts", {})
+        if not tts:
+            # If TTS section is missing or empty, populate it with defaults
+            self.config["tts"] = self.DEFAULT_CONFIG["tts"].copy()
+            tts = self.config["tts"]
+        
+        # Validate engine config
+        engine = tts.get("engine", {})
+        if not engine:
+            tts["engine"] = self.DEFAULT_CONFIG["tts"]["engine"].copy()
+            engine = tts["engine"]
+        
+        if engine.get("engine_type", "system") not in ["api", "local", "system"]:
+            raise ValueError(f"Invalid TTS engine type: {engine.get('engine_type')}")
+        
+        if not 0.5 <= engine.get("speaking_rate", 1.0) <= 2.0:
+            raise ValueError(f"Invalid speaking rate: {engine.get('speaking_rate')}")
+        
+        if not -10.0 <= engine.get("pitch", 0.0) <= 10.0:
+            raise ValueError(f"Invalid pitch adjustment: {engine.get('pitch')}")
+        
+        if not 8000 <= engine.get("sample_rate", 24000) <= 48000:
+            raise ValueError(f"Invalid sample rate: {engine.get('sample_rate')}")
+        
+        # Validate synthesizer config
+        synthesizer = tts.get("synthesizer", {})
+        if not synthesizer:
+            tts["synthesizer"] = self.DEFAULT_CONFIG["tts"]["synthesizer"].copy()
+        
+        # Validate prosody config
+        prosody = tts.get("prosody", {})
+        if not prosody:
+            tts["prosody"] = self.DEFAULT_CONFIG["tts"]["prosody"].copy()
             
         # Validate buffer settings
         if not 5 <= self.config.get("max_buffer_chunks", 50) <= 500:

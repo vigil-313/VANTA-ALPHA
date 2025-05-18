@@ -103,9 +103,9 @@
   - Documents: DOC-COMP-001
 
 - CON-VANTA-006: **Text-to-Speech**
-  - Definition: Component for converting text to spoken audio output using potentially CSM or other engines
-  - Related: CON-VANTA-001
-  - Documents: DOC-COMP-001
+  - Definition: Component for converting text to spoken audio output using OpenAI, Piper, or system TTS engines
+  - Related: CON-VANTA-001, CON-VOICE-018, CON-VOICE-019, CON-VOICE-020, CON-VOICE-021
+  - Documents: DOC-COMP-001, DOC-IMP-007
 
 - CON-VANTA-007: **Layered Memory**
   - Definition: Approach to memory that includes raw logs, summaries, and semantic indices
@@ -541,6 +541,31 @@
   - Definition: Component for text normalization, hesitation filtering, and confidence-based filtering
   - Related: CON-VOICE-004, CON-VOICE-016
   - Documents: DOC-IMP-006
+  
+- CON-VOICE-018: **TTSAdapter**
+  - Definition: Base class and factory pattern implementation for TTS engines with pluggable implementations
+  - Related: CON-VANTA-006, CON-VOICE-019, CON-VOICE-020, CON-VOICE-021, CON-ARCH-005
+  - Documents: DOC-IMP-007
+  
+- CON-VOICE-019: **ProsodyFormatter**
+  - Definition: Component for enhancing text with natural speech patterns, emotional cues, and SSML generation
+  - Related: CON-VANTA-006, CON-VOICE-018, CON-HVA-005
+  - Documents: DOC-IMP-007
+  
+- CON-VOICE-020: **SpeechSynthesizer**
+  - Definition: High-level facade for TTS with caching capabilities and configuration management
+  - Related: CON-VANTA-006, CON-VOICE-018, CON-VOICE-019
+  - Documents: DOC-IMP-007
+  
+- CON-VOICE-021: **TTS Engine Implementations**
+  - Definition: Collection of TTS adapter implementations including OpenAI, Piper, and System TTS
+  - Related: CON-VANTA-006, CON-VOICE-018
+  - Documents: DOC-IMP-007
+  
+- CON-VOICE-022: **Voice Pipeline Demo**
+  - Definition: Interactive demonstration of the complete Voice Pipeline with STT and TTS capabilities
+  - Related: CON-VOICE-001, CON-DEV-003, CON-TEST-014, CON-VOICE-014
+  - Documents: DOC-IMP-007, DOC-IMP-008
 
 ## Relationships
 
@@ -1106,4 +1131,4 @@ graph TD
 ```
 
 ## Last Updated
-2025-05-18T03:45:00Z | SES-V0-017 | Implemented Speech-to-Text integration with Whisper models
+2025-05-18T16:45:00Z | SES-V0-020 | Implemented Text-to-Speech integration with OpenAI, Piper, and System TTS engines

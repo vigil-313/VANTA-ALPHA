@@ -23,6 +23,9 @@ from voice.vad.detector import VoiceActivityDetector
 from voice.vad.activation import WakeWordDetector, ActivationManager, ActivationState, ActivationMode
 from voice.stt.whisper_adapter import WhisperAdapter
 from voice.stt.transcriber import Transcriber, TranscriptionProcessor, TranscriptionQuality
+from voice.tts.tts_adapter import TTSAdapter, TTSEngineType, create_tts_adapter
+from voice.tts.speech_synthesizer import SpeechSynthesizer
+from voice.tts.prosody_formatter import ProsodyFormatter
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +43,10 @@ class VoicePipeline:
              mock_activation: Optional['ActivationManager'] = None,
              mock_whisper: Optional[WhisperAdapter] = None,
              mock_transcriber: Optional[Transcriber] = None,
-             mock_processor: Optional[TranscriptionProcessor] = None):
+             mock_processor: Optional[TranscriptionProcessor] = None,
+             mock_tts_adapter: Optional[TTSAdapter] = None,
+             mock_speech_synthesizer: Optional[SpeechSynthesizer] = None,
+             mock_prosody_formatter: Optional[ProsodyFormatter] = None):
         """
         Initialize the voice pipeline with all components.
         
@@ -56,7 +62,7 @@ class VoicePipeline:
         # Initialize configuration
         self.config = AudioConfig(config_file)
         
-        # Initialize components
+        # Initialize audio components
         self.capture = AudioCapture(**self.config.get_capture_config())
         self.preprocessor = AudioPreprocessor(**self.config.get_preprocessing_config())
         self.playback = AudioPlayback(**self.config.get_playback_config())
@@ -131,6 +137,33 @@ class VoicePipeline:
         else:
             self.transcription_processor = TranscriptionProcessor(
                 **stt_config.get("processor", {})
+            )
+            
+        # TTS components
+        tts_config = self.config.get_tts_config()
+        
+        # Use mock TTS adapter or create a real one
+        if mock_tts_adapter is not None:
+            self.tts_adapter = mock_tts_adapter
+            logger.info("Using mock TTSAdapter for testing")
+        else:
+            self.tts_adapter = create_tts_adapter(tts_config.get("engine", {}))
+            
+        # Use mock ProsodyFormatter or create a real one
+        if mock_prosody_formatter is not None:
+            self.prosody_formatter = mock_prosody_formatter
+            logger.info("Using mock ProsodyFormatter for testing")
+        else:
+            self.prosody_formatter = ProsodyFormatter(**tts_config.get("prosody", {}))
+            
+        # Use mock SpeechSynthesizer or create a real one
+        if mock_speech_synthesizer is not None:
+            self.speech_synthesizer = mock_speech_synthesizer
+            logger.info("Using mock SpeechSynthesizer for testing")
+        else:
+            self.speech_synthesizer = SpeechSynthesizer(
+                tts_adapter=self.tts_adapter,
+                **tts_config.get("synthesizer", {})
             )
         
         # Buffer for collecting speech audio during active periods
@@ -357,12 +390,9 @@ class VoicePipeline:
         if callback not in self.new_audio_callbacks:
             self.new_audio_callbacks.append(callback)
             
-    def say(self, text: str, priority: int = 0, interrupt: bool = False) -> bool:
+    def say(self, text: str, priority: int = 0, interrupt: bool = False) -> str:
         """
-        Speak the provided text (placeholder for TTS integration).
-        
-        This will be replaced with actual TTS in a future task.
-        For now, it just logs the text that would be spoken.
+        Speak the provided text using the speech synthesizer.
         
         Args:
             text: Text to speak
@@ -370,26 +400,54 @@ class VoicePipeline:
             interrupt: Whether to interrupt current speech
             
         Returns:
-            True if successful, False otherwise
+            Playback ID if successful, empty string otherwise
         """
-        logger.info(f"TTS (priority={priority}, interrupt={interrupt}): {text}")
-        
-        # For testing, generate a simple sine wave to play
         try:
-            import numpy as np
-            duration = 0.5  # seconds
-            sample_rate = self.playback.sample_rate
-            t = np.linspace(0, duration, int(sample_rate * duration), False)
-            frequency = 440  # A4 note
-            audio_data = np.sin(2 * np.pi * frequency * t)
-            audio_data = (audio_data * 32767).astype(np.int16)
+            logger.info(f"TTS (priority={priority}, interrupt={interrupt}): {text}")
             
+            # Skip empty text
+            if not text.strip():
+                logger.warning("Empty text provided to synthesize")
+                return ""
+            
+            # Synthesize speech
+            result = self.speech_synthesizer.synthesize(text)
+            
+            if "error" in result:
+                logger.error(f"TTS synthesis error: {result['error']}")
+                
+                # Fallback to simple tone if synthesis failed
+                duration = 0.5  # seconds
+                sample_rate = self.playback.sample_rate
+                t = np.linspace(0, duration, int(sample_rate * duration), False)
+                frequency = 440  # A4 note
+                audio_data = np.sin(2 * np.pi * frequency * t)
+                audio_data = (audio_data * 32767).astype(np.int16)
+                
+                # Play the audio
+                return self.play_audio(audio_data, priority, interrupt)
+                
+            # Extract audio from result
+            audio_data = result["audio"]
+            
+            # Resample if needed
+            if result["sample_rate"] != self.playback.sample_rate:
+                audio_data = self.preprocessor.resample(
+                    audio_data, 
+                    result["sample_rate"],
+                    self.playback.sample_rate
+                )
+                
+            # Convert to correct format
+            if audio_data.dtype != np.int16:
+                audio_data = (audio_data * 32767).astype(np.int16)
+                
             # Play the audio
-            playback_id = self.play_audio(audio_data, priority, interrupt)
-            return bool(playback_id)
+            return self.play_audio(audio_data, priority, interrupt)
+            
         except Exception as e:
             logger.error(f"Error in say method: {e}")
-            return False
+            return ""
         
     def play_audio(self, audio_data: np.ndarray, priority: int = 0, 
                   interrupt: bool = False) -> str:
@@ -717,6 +775,9 @@ class VoicePipeline:
         stats["transcriber"] = self.transcriber.get_stats()
         stats["whisper"] = self.whisper_adapter.get_stats()
         
+        # Include TTS stats
+        stats["speech_synthesizer"] = self.speech_synthesizer.get_stats()
+        
         # Include state
         stats["state"] = self.state.copy()
         
@@ -877,6 +938,31 @@ class VoicePipeline:
                 self.transcription_processor.configure(**stt_config["processor"])
                 
             logger.info("Updated STT configuration")
+                
+        # TTS component updates
+        elif "tts" in config_updates:
+            tts_config = self.config.get_tts_config()
+            
+            # Check if engine config changed
+            if "engine" in tts_config:
+                # Create a new TTS adapter with updated config
+                self.tts_adapter = create_tts_adapter(tts_config["engine"])
+                
+                # Update speech synthesizer with new adapter
+                self.speech_synthesizer = SpeechSynthesizer(
+                    tts_adapter=self.tts_adapter,
+                    **tts_config.get("synthesizer", {})
+                )
+            else:
+                # Update just the speech synthesizer config
+                if "synthesizer" in tts_config:
+                    self.speech_synthesizer.configure(**tts_config["synthesizer"])
+            
+            # Update prosody formatter if needed
+            if "prosody" in tts_config:
+                self.prosody_formatter = ProsodyFormatter(**tts_config["prosody"])
+                
+            logger.info("Updated TTS configuration")
                 
         return True
         
