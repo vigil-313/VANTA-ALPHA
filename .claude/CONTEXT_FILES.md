@@ -92,8 +92,14 @@ This guide identifies all critical documentation files needed to maintain full c
 ```
 /Development/Prompts/
 ├── Phase0_Setup/              # Environment and setup tasks
+│   ├── ENV_002_Docker_Environment.md
+│   ├── ENV_003_Model_Preparation.md
+│   └── ENV_004_Test_Framework_Setup.md
 ├── Phase1_Core/               # Core component implementation
 │   ├── VoicePipeline/         # Audio processing, STT, TTS
+│   │   ├── VOICE_001_Audio_Processing_Infrastructure.md
+│   │   ├── VOICE_002_Voice_Activity_Detection.md
+│   │   └── VOICE_003_Speech_to_Text_Integration.md
 │   ├── LocalModel/            # Local LLM integration
 │   ├── APIModel/              # API model integration
 │   └── Memory/                # Memory and storage systems
@@ -167,12 +173,12 @@ These visual representations provide a clear understanding of the implementation
 
 ## Pending Development Tasks
 
-For the next session (SES-V0-012), the following high-priority tasks are planned:
+For the next session (SES-V0-013), the following high-priority tasks are planned:
 
-1. **Create Voice Pipeline Implementation Prompt** - Define the implementation approach for the voice pipeline
-2. **Begin Voice Pipeline Implementation** - Start implementing the core voice processing components
-3. **Implement Audio Capture Component** - Create the audio input processing functionality
-4. **Implement Speech-to-Text Integration** - Create the Whisper-based transcription system
+1. **Implement Audio Processing Infrastructure (VOICE_001)** - Create the core audio capture and playback functionality
+2. **Implement Voice Activity Detection (VOICE_002)** - Develop speech detection and wake word recognition
+3. **Implement Speech-to-Text Integration (VOICE_003)** - Integrate Whisper models for transcription
+4. **Create Unit Tests for Voice Pipeline Components** - Test audio processing and VAD functionality
 
 ## Development Workflow
 
@@ -283,6 +289,7 @@ To ensure this context guide remains current:
 
 ## Version History
 
+- v0.8.0 - 2025-05-18 - Updated with Voice Pipeline implementation prompts from SES-V0-012
 - v0.7.0 - 2025-05-17 - Updated with Docker testing workflow and validation from SES-V0-011
 - v0.6.0 - 2025-05-17 - Updated with testing framework implementation details from SES-V0-010
 - v0.5.0 - 2025-05-20 - Updated with implementation files, model management tools, and next tasks from SES-V0-009

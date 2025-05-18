@@ -392,6 +392,26 @@
   - Related: CON-TEST-010, CON-TEST-011
   - Documents: DOC-DEV-TEST-1
 
+- CON-VOICE-001: **Voice Pipeline**
+  - Definition: The component responsible for audio input/output processing, speech recognition, and speech synthesis in the VANTA system
+  - Related: CON-VOICE-002, CON-VOICE-003, CON-VOICE-004, CON-VANTA-001
+  - Documents: DOC-DEV-ARCH-COMP-1
+
+- CON-VOICE-002: **Audio Processing**
+  - Definition: The infrastructure for capturing, preprocessing, and playing back audio in real-time
+  - Related: CON-VOICE-001, CON-VOICE-003
+  - Documents: DOC-DEV-ARCH-COMP-1
+
+- CON-VOICE-003: **Voice Activity Detection**
+  - Definition: The system for detecting speech, recognizing wake words, and managing activation states
+  - Related: CON-VOICE-001, CON-VOICE-002, CON-VOICE-004
+  - Documents: DOC-DEV-ARCH-COMP-1
+
+- CON-VOICE-004: **Speech-to-Text Processing**
+  - Definition: The system for converting speech audio to text using Whisper models
+  - Related: CON-VOICE-001, CON-VOICE-003
+  - Documents: DOC-DEV-ARCH-COMP-1
+
 ## Relationships
 
 ```mermaid
