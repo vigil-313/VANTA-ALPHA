@@ -382,6 +382,16 @@
   - Related: CON-TEST-009, CON-IMP-013
   - Documents: DOC-DEV-TEST-1
 
+- CON-TEST-011: **Docker Testing Environment**
+  - Definition: Containerized environment for consistent and reproducible test execution
+  - Related: CON-TEST-010, CON-VANTA-008
+  - Documents: DOC-DEV-TEST-1
+
+- CON-TEST-012: **Test Execution Scripts**
+  - Definition: Shell scripts for running tests with appropriate parameters and logging
+  - Related: CON-TEST-010, CON-TEST-011
+  - Documents: DOC-DEV-TEST-1
+
 ## Relationships
 
 ```mermaid
@@ -769,6 +779,10 @@ graph TD
     TF3 --> TF3B["Docker<br/>Testing"]
     TF3 --> TF3C["Selective<br/>Testing"]
     
+    TF3B --> TF3B1["Container<br/>Dependencies"]
+    TF3B --> TF3B2["Test<br/>Scripts"]
+    TF3B --> TF3B3["CI/CD<br/>Integration"]
+    
     TF4 --> TF4A["CI/CD<br/>Integration"]
     TF4 --> TF4B["Test<br/>Reporting"]
     TF4 --> TF4C["Coverage<br/>Analysis"]
@@ -778,8 +792,8 @@ graph TD
     
     class TF main
     class TF1,TF2,TF3,TF4 main
-    class TF1A,TF1B,TF1C,TF2A,TF2B,TF2C,TF3A,TF3B,TF3C,TF4A,TF4B,TF4C,TF2C1,TF2C2,TF2C3,TF2C4 sub
+    class TF1A,TF1B,TF1C,TF2A,TF2B,TF2C,TF3A,TF3B,TF3C,TF4A,TF4B,TF4C,TF2C1,TF2C2,TF2C3,TF2C4,TF3B1,TF3B2,TF3B3 sub
 ```
 
 ## Last Updated
-2025-05-17T19:20:00Z | SES-V0-010 | Completed Test Framework Implementation
+2025-05-17T19:35:00Z | SES-V0-011 | Validating Test Environment in Docker

@@ -119,14 +119,60 @@ The KNOWLEDGE_GRAPH.md file now contains comprehensive diagrams for implementati
 
 These visual representations provide a clear understanding of the implementation structure and relationships between different components of the system.
 
+## Implementation Files
+
+| Document | Purpose | When to Access |
+|----------|---------|----------------|
+| `/Development/Implementation/DOCKER.md` | Docker environment setup documentation | For environment setup guidance |
+| `/Development/Implementation/MODEL_PREPARATION.md` | Model preparation system documentation | For model setup and management |
+| `/Development/Implementation/README.md` | Implementation directory documentation | For code organization overview |
+| `/Development/Implementation/TEST_FRAMEWORK.md` | Test framework documentation | For understanding the testing approach |
+| `/Development/Implementation/tests/README.md` | Test directory documentation | For guidance on writing and running tests |
+| `/Development/Implementation/DOCKER_TESTING.md` | Docker testing workflow documentation | For running tests in Docker environment |
+
+**Implementation scripts:**
+```
+/Development/Implementation/
+├── scripts/                  # Helper scripts
+│   ├── dev_setup.sh          # Docker environment setup
+│   ├── dev_start.sh          # Start Docker environment
+│   ├── dev_shell.sh          # Open shell in Docker
+│   ├── dev_stop.sh           # Stop Docker environment
+│   ├── setup_all_models.sh   # Download and setup all models
+│   ├── model_manager.py      # Model management tool
+│   ├── setup_whisper_models.py
+│   ├── setup_llm_models.py
+│   ├── setup_embedding_models.py
+│   ├── setup_tts_models.py
+│   ├── test_all_models.sh    # Test all models
+│   ├── run_tests.sh          # Run tests with various options
+│   └── docker_test.sh        # Run tests in Docker container
+├── models/                   # ML model files location
+│   ├── whisper/              # Speech-to-text models
+│   ├── llm/                  # Local language models
+│   ├── embeddings/           # Embedding models
+│   ├── tts/                  # Text-to-speech models
+│   └── registry/             # Model registry
+└── tests/                    # Test framework
+    ├── unit/                 # Unit tests
+    ├── integration/          # Integration tests
+    ├── performance/          # Performance tests
+    ├── fixtures/             # Test fixtures
+    ├── mocks/                # Mock objects
+    ├── utils/                # Test utilities
+    └── conftest.py           # Global test configuration
+```
+
+**How to dive deeper:** The MODEL_PREPARATION.md document explains the model management system in detail. The model_manager.py script provides command-line tools for listing, verifying, and testing models.
+
 ## Pending Development Tasks
 
-For the next session (SES-V0-007), the following high-priority tasks are planned:
+For the next session (SES-V0-012), the following high-priority tasks are planned:
 
-1. **Complete VISTA implementation task templates** - Finalize any remaining template structures and create example tasks for all major components
-2. **Create task template examples for key implementation tasks** - Develop specific examples for priority Foundation phase tasks
-3. **Begin environment configuration for development setup** - Set up Docker environment and development tooling
-4. **Prepare for implementation of foundation phase tasks** - Ready the development environment for actual implementation
+1. **Create Voice Pipeline Implementation Prompt** - Define the implementation approach for the voice pipeline
+2. **Begin Voice Pipeline Implementation** - Start implementing the core voice processing components
+3. **Implement Audio Capture Component** - Create the audio input processing functionality
+4. **Implement Speech-to-Text Integration** - Create the Whisper-based transcription system
 
 ## Development Workflow
 
@@ -197,11 +243,12 @@ To assist with locating the appropriate places for different implementation arti
    - Component-specific directories: `/Development/Prompts/Phase1_Core/{ComponentName}/`
    - Prompt files: `{COMPONENT_ID}_{TASK_NAME}.md`
 
-5. **Code Implementation**: `/Development/Implementation/v0/`
-   - Voice pipeline: `/Development/Implementation/v0/voice_pipeline/` (to be created)
-   - Memory engine: `/Development/Implementation/v0/memory_engine/` (to be created)
-   - Core components: `/Development/Implementation/v0/core/` (to be created)
-   - Environment setup: `/Development/Implementation/v0/environment/` (to be created)
+5. **Code Implementation**: `/Development/Implementation/`
+   - Docker environment: `/Development/Implementation/docker/`
+   - Models management: `/Development/Implementation/models/` and `/Development/Implementation/scripts/`
+   - Voice pipeline: `/Development/Implementation/src/voice/` (to be created)
+   - Memory engine: `/Development/Implementation/src/memory/` (to be created)
+   - Core components: `/Development/Implementation/src/core/` (to be created)
 
 ## Task Definition Guidelines
 
@@ -236,6 +283,9 @@ To ensure this context guide remains current:
 
 ## Version History
 
+- v0.7.0 - 2025-05-17 - Updated with Docker testing workflow and validation from SES-V0-011
+- v0.6.0 - 2025-05-17 - Updated with testing framework implementation details from SES-V0-010
+- v0.5.0 - 2025-05-20 - Updated with implementation files, model management tools, and next tasks from SES-V0-009
 - v0.4.0 - 2025-05-18 - Updated with reorganized implementation prompt directory structure
 - v0.3.0 - 2025-05-18 - Updated with implementation task templates and visual diagrams from SES-V0-006
 - v0.2.0 - 2025-05-17 - Updated with implementation planning and architecture documents from SES-V0-005

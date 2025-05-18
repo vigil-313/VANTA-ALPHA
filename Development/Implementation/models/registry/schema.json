@@ -3,6 +3,7 @@
   "title": "VANTA Model Registry",
   "type": "object",
   "properties": {
+    "version": { "type": "string" },
     "models": {
       "type": "array",
       "items": {

@@ -3,7 +3,7 @@
 # CONCEPT-REF: CON-VANTA-004 - Deployment Model
 # DOC-REF: DOC-ARCH-001 - V0 Architecture Overview
 
-version: '3.8'
+# Docker Compose file for VANTA development
 
 services:
   vanta:
@@ -22,14 +22,14 @@ services:
       - PYTHONPATH=/app
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    # Enable GPU support if available
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    # GPU support is commented out for environments without NVIDIA GPU
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     # Keep container running
     tty: true
 
