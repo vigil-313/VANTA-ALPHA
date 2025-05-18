@@ -1,6 +1,6 @@
 # VANTA Voice Pipeline User Testing Guide
 
-This document provides instructions for early user testing of the VANTA Voice Pipeline. The current implementation includes Voice Activity Detection (VAD) and Speech-to-Text (STT) components.
+This document provides instructions for early user testing of the VANTA Voice Pipeline. The current implementation includes Voice Activity Detection (VAD), Speech-to-Text (STT), and Text-to-Speech (TTS) components.
 
 ## System Requirements
 
@@ -60,6 +60,9 @@ This document provides instructions for early user testing of the VANTA Voice Pi
 - **[5]**: Manual activation (in Manual mode)
 - **[6]**: Toggle listening on/off
 - **[7]**: Say something (text-to-speech)
+- **[8]**: Choose TTS engine (API, local, or system)
+- **[9]**: Change TTS voice
+- **[0]**: Play TTS test sequence to demonstrate capabilities
 - **[q]**: Quit the demo
 
 ## Test Scenarios
@@ -81,10 +84,19 @@ During testing, please try the following scenarios:
    - Check if the transcription is accurate
    - Try with different speaking speeds and accents
 
-4. **System Controls**:
+4. **Text-to-Speech**:
+   - Use command (7) to enter text and hear it spoken
+   - Try different TTS engines using command (8):
+     - API (OpenAI) - Highest quality but requires an API key
+     - Local (Piper) - Offline capability but lower quality
+     - System (macOS) - Good for development and testing
+   - Try changing voices with command (9)
+   - Run the TTS test sequence (0) to hear various speech capabilities
+   - Note differences in quality, speed, and naturalness between engines
+
+5. **System Controls**:
    - Test manual activation (5) in Manual mode (3)
    - Toggle listening (6) and verify behavior
-   - Try the TTS function (7)
 
 ## Providing Feedback
 
@@ -92,11 +104,15 @@ Please provide feedback on your testing experience:
 
 1. **What worked well?**
 2. **What issues did you encounter?**
-3. **How was the accuracy of:
+3. **How was the accuracy and quality of:
    - Wake word detection?
    - Voice activity detection?
    - Speech recognition?
-4. **Any suggestions for improvements?**
+   - Text-to-speech output?
+4. **Which TTS engine performed best for your needs?**
+5. **How natural did the speech sound across different engines?**
+6. **Were there any specific types of text or phrases that weren't pronounced correctly?**
+7. **Any suggestions for improvements?**
 
 ## Logs
 
@@ -117,6 +133,9 @@ This information is valuable for troubleshooting problems you might encounter.
 - **Module not found errors**: Run `./scripts/dev/dev_setup.sh` to install dependencies
 - **Model download errors**: Run `./scripts/model_management/setup_all_models.sh` with appropriate permissions
 - **Permission denied**: Make sure scripts are executable (`chmod +x script_name.sh`)
+- **OpenAI API errors**: Ensure you have a valid API key set in the environment or entered when prompted
+- **TTS engine switching issues**: If switching between engines causes errors, restart the demo
+- **Piper model not found**: Run `./scripts/model_management/setup_tts_models.sh` to download Piper voice models
 
 ## Next Steps
 

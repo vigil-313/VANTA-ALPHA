@@ -4,13 +4,14 @@
 VANTA Voice Pipeline Demo
 
 This script provides a simple CLI interface for demonstrating and testing
-the VANTA Voice Pipeline with VAD and STT components.
+the VANTA Voice Pipeline with VAD, STT, and TTS components.
 
 Usage:
     python voice_pipeline_demo.py [--config CONFIG_PATH]
 """
-# TASK-REF: VOICE_003 - Speech to Text Integration
+# TASK-REF: VOICE_004 - Text-to-Speech Integration
 # CONCEPT-REF: CON-VANTA-001 - Voice Pipeline
+# CONCEPT-REF: CON-VOICE-022 - Voice Pipeline Demo
 
 import os
 import sys
@@ -126,6 +127,18 @@ def print_status(pipeline):
         print(f"    Cache hits: {stats['transcriber'].get('cache_hits', 0)}")
         print(f"    Streaming: {'Active' if stats['transcriber'].get('streaming_active', False) else 'Inactive'}")
     
+    # Print TTS stats if available
+    if 'speech_synthesizer' in stats:
+        tts_stats = stats['speech_synthesizer']
+        print(f"  Speech Synthesizer:")
+        print(f"    Engine: {tts_stats.get('engine_type', 'unknown')}")
+        print(f"    Cache hits: {tts_stats.get('cache_hits', 0)}")
+        print(f"    Utterances synthesized: {tts_stats.get('total_utterances', 0)}")
+        print(f"    Voice: {tts_stats.get('voice_id', 'default')}")
+        if 'total_time' in tts_stats and 'total_utterances' in tts_stats and tts_stats.get('total_utterances', 0) > 0:
+            avg_time = tts_stats.get('total_time', 0) / tts_stats.get('total_utterances', 1)
+            print(f"    Avg synthesis time: {avg_time:.2f}s")
+    
     # Print commands
     print("\nCommands:")
     print("  [1] Change mode: Wake Word")
@@ -135,6 +148,9 @@ def print_status(pipeline):
     print("  [5] Manual activation (in Manual mode)")
     print("  [6] Toggle listening")
     print("  [7] Say something")
+    print("  [8] Choose TTS engine (api, local, system)")
+    print("  [9] Change TTS voice")
+    print("  [0] Play TTS test sequence")
     print("  [q] Quit")
     
 
@@ -202,6 +218,112 @@ def main():
             elif cmd == "7":
                 text = input("Enter text to speak: ")
                 pipeline.say(text)
+            elif cmd == "8":
+                print("\nChoose TTS engine:")
+                print("  [a] API (OpenAI) - Requires API key")
+                print("  [l] Local (Piper) - Runs offline, lower quality")
+                print("  [s] System (macOS) - Good for development")
+                engine_choice = input("Enter choice [a/l/s]: ").lower()
+                
+                config = pipeline.config.get_tts_config()
+                if engine_choice == "a":
+                    api_key = input("Enter OpenAI API key (leave blank to use env var): ")
+                    config["engine"]["engine_type"] = "api"
+                    config["engine"]["api_provider"] = "openai"
+                    if api_key:
+                        config["engine"]["api_key"] = api_key
+                elif engine_choice == "l":
+                    config["engine"]["engine_type"] = "local"
+                    config["engine"]["model_type"] = "piper"
+                elif engine_choice == "s":
+                    config["engine"]["engine_type"] = "system"
+                else:
+                    logger.warning(f"Unknown engine choice: {engine_choice}")
+                    continue
+                
+                # Update configuration
+                pipeline.configure({"tts": config})
+                logger.info(f"Changed TTS engine to {config['engine']['engine_type']}")
+            elif cmd == "9":
+                engine_type = pipeline.config.get_tts_config().get("engine", {}).get("engine_type", "system")
+                
+                if engine_type == "system":
+                    # For system voices, list available voices
+                    try:
+                        voices = pipeline.tts_adapter.get_available_voices()
+                        print("\nAvailable system voices:")
+                        for i, voice in enumerate(voices):
+                            print(f"  [{i}] {voice}")
+                        
+                        choice = input("Enter voice number: ")
+                        try:
+                            idx = int(choice)
+                            if 0 <= idx < len(voices):
+                                config = pipeline.config.get_tts_config()
+                                config["engine"]["voice_id"] = voices[idx]
+                                pipeline.configure({"tts": config})
+                                logger.info(f"Changed TTS voice to {voices[idx]}")
+                            else:
+                                logger.warning(f"Invalid voice index: {idx}")
+                        except ValueError:
+                            logger.warning(f"Invalid input: {choice}")
+                    except Exception as e:
+                        logger.error(f"Error listing voices: {e}")
+                elif engine_type == "api":
+                    # For API voices, offer common choices
+                    print("\nAvailable OpenAI voices:")
+                    voices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+                    for i, voice in enumerate(voices):
+                        print(f"  [{i}] {voice}")
+                    
+                    choice = input("Enter voice number: ")
+                    try:
+                        idx = int(choice)
+                        if 0 <= idx < len(voices):
+                            config = pipeline.config.get_tts_config()
+                            config["engine"]["voice_id"] = voices[idx]
+                            pipeline.configure({"tts": config})
+                            logger.info(f"Changed TTS voice to {voices[idx]}")
+                        else:
+                            logger.warning(f"Invalid voice index: {idx}")
+                    except ValueError:
+                        logger.warning(f"Invalid input: {choice}")
+                elif engine_type == "local":
+                    # For local models, voice selection is often part of the model
+                    logger.info("Voice selection for local models is determined by the model itself.")
+                    # Could offer to change the model path instead
+                    choice = input("Would you like to select a different Piper model? [y/n]: ").lower()
+                    if choice == "y":
+                        print("Feature not yet implemented - will be added in a future update.")
+                else:
+                    logger.warning(f"Unknown engine type: {engine_type}")
+            elif cmd == "0":
+                # Play a test sequence to demonstrate TTS capabilities
+                logger.info("Playing TTS test sequence...")
+                
+                # Simple greeting
+                pipeline.say("Hello, I am VANTA, your Voice Assistant.")
+                time.sleep(2)
+                
+                # Demonstrate question inflection
+                pipeline.say("Would you like me to tell you about my text to speech capabilities?")
+                time.sleep(2)
+                
+                # Demonstrate numbers and abbreviations
+                pipeline.say("I can convert numbers like 1234 and abbreviations like NASA into proper speech.")
+                time.sleep(2)
+                
+                # Demonstrate emphasis (if supported by the engine)
+                pipeline.say("I can also emphasize *important* words when needed.")
+                time.sleep(2)
+                
+                # Demonstrate a longer sentence
+                pipeline.say("My speech synthesizer supports multiple engines including OpenAI's advanced models, local Piper models for offline use, and the built-in system voices.")
+                time.sleep(2)
+                
+                # Final message
+                pipeline.say("Thank you for testing the VANTA voice pipeline demo.")
+                
             elif cmd.lower() == "q":
                 running = False
             else:
