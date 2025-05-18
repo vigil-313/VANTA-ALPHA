@@ -1,0 +1,1 @@
+testing/run_tests_with_logs.sh

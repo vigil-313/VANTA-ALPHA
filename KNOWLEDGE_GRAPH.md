@@ -127,6 +127,11 @@
   - Related: CON-TECH-004, CON-VANTA-009
   - Documents: DOC-RESEARCH-MCP-2, DOC-ARCH-001
 
+- CON-VANTA-011: **Script Organization**
+  - Definition: Hierarchical organization of scripts by functionality and phase for better maintainability
+  - Related: CON-IMP-022, CON-IMP-010, CON-TEST-012
+  - Documents: DOC-IMP-005
+
 - CON-HVA-001: **Dual-track Processing**
   - Definition: Using local models for immediate responses while cloud APIs handle complex reasoning
   - Related: CON-HVA-010, CON-HVA-011, CON-HVA-012, CON-VANTA-009
@@ -297,6 +302,41 @@
   - Related: CON-IMP-007, CON-IMP-013
   - Documents: DOC-IMP-001, DOC-TASK-001
 
+- CON-IMP-017: **Python Package Structure**
+  - Definition: Proper organization of Python modules for development and distribution
+  - Related: CON-IMP-011, CON-VOICE-001
+  - Documents: DOC-IMP-003
+
+- CON-IMP-018: **Parameter Mapping**
+  - Definition: Technique for translating between configuration names and component parameter names
+  - Related: CON-VOICE-001, CON-VOICE-002, CON-ARCH-005
+  - Documents: DOC-IMP-003
+
+- CON-IMP-019: **Configuration Sections**
+  - Definition: Logical grouping of configuration parameters by component and functionality
+  - Related: CON-IMP-018, CON-VOICE-003, CON-VOICE-008
+  - Documents: DOC-IMP-004
+
+- CON-IMP-020: **Placeholder Implementations**
+  - Definition: Initial framework implementations that defer complex functionality for later enhancement
+  - Related: CON-VOICE-010, CON-VOICE-013
+  - Documents: DOC-IMP-004
+
+- CON-IMP-021: **Mock Testing for ML Models**
+  - Definition: Approach for testing ML model integrations without downloading or running actual models
+  - Related: CON-TEST-006, CON-TEST-013, CON-VOICE-012
+  - Documents: DOC-IMP-005
+
+- CON-IMP-022: **Script Directory Organization**
+  - Definition: Categorizing scripts by functionality for better maintainability and discoverability
+  - Related: CON-VANTA-011, CON-TEST-012, CON-IMP-023
+  - Documents: DOC-IMP-005
+
+- CON-IMP-023: **Symlink Usage**
+  - Definition: Using symbolic links to maintain backward compatibility while improving organization
+  - Related: CON-IMP-022, CON-VANTA-011
+  - Documents: DOC-IMP-005
+
 - CON-ARCH-001: **TypedDict State Model**
   - Definition: Type-safe state management for conversation context using Python's TypedDict
   - Related: CON-TECH-007, CON-VANTA-007
@@ -322,6 +362,11 @@
   - Related: CON-VANTA-009, CON-TECH-001
   - Documents: DOC-ARCH-003
 
+- CON-ARCH-006: **State Machine Pattern**
+  - Definition: Design pattern for managing discrete states and transitions between them
+  - Related: CON-VOICE-011, CON-VANTA-003
+  - Documents: DOC-IMP-004
+
 - CON-DEV-001: **Prompt Organization**
   - Definition: Hierarchical structure for organizing implementation prompts by phase and component
   - Related: CON-IMP-010, CON-DEV-002
@@ -331,6 +376,16 @@
   - Definition: Process for implementing VANTA components using Claude Code with VISTA methodology
   - Related: CON-DEV-001, CON-MET-001
   - Documents: DOC-PROMPT-001
+
+- CON-DEV-003: **Demo Script Development**
+  - Definition: Creating demonstration and testing scripts for evaluating system components
+  - Related: CON-TEST-010, CON-IMP-022, CON-VANTA-011
+  - Documents: DOC-IMP-005
+
+- CON-DEV-004: **User Testing Guide**
+  - Definition: Documentation for early users to test and provide feedback on system components
+  - Related: CON-DEV-003, CON-TEST-014
+  - Documents: DOC-IMP-005
 
 - CON-TEST-001: **Unit Testing**
   - Definition: Testing individual components in isolation with mocked dependencies
@@ -392,6 +447,16 @@
   - Related: CON-TEST-010, CON-TEST-011
   - Documents: DOC-DEV-TEST-1
 
+- CON-TEST-013: **Mock Testing for ML Models**
+  - Definition: Techniques for unit testing ML model integrations without loading actual models
+  - Related: CON-TEST-006, CON-TEST-001, CON-VOICE-012, CON-VOICE-013
+  - Documents: DOC-IMP-004
+
+- CON-TEST-014: **User Testing Framework**
+  - Definition: Approach for gathering and incorporating early user feedback into development
+  - Related: CON-DEV-004, CON-DEV-003
+  - Documents: DOC-IMP-005
+
 - CON-VOICE-001: **Voice Pipeline**
   - Definition: The component responsible for audio input/output processing, speech recognition, and speech synthesis in the VANTA system
   - Related: CON-VOICE-002, CON-VOICE-003, CON-VOICE-004, CON-VANTA-001
@@ -409,8 +474,73 @@
 
 - CON-VOICE-004: **Speech-to-Text Processing**
   - Definition: The system for converting speech audio to text using Whisper models
-  - Related: CON-VOICE-001, CON-VOICE-003
-  - Documents: DOC-DEV-ARCH-COMP-1
+  - Related: CON-VOICE-001, CON-VOICE-003, CON-VOICE-015, CON-VOICE-016, CON-VOICE-017
+  - Documents: DOC-DEV-ARCH-COMP-1, DOC-IMP-006
+
+- CON-VOICE-005: **Audio Capture Component**
+  - Definition: Module responsible for real-time audio input from microphone with configurable parameters
+  - Related: CON-VOICE-002, CON-VOICE-001
+  - Documents: DOC-IMP-003
+
+- CON-VOICE-006: **Audio Preprocessing Component**
+  - Definition: Module for processing audio signals with noise reduction, normalization, and other enhancements
+  - Related: CON-VOICE-002, CON-VOICE-001
+  - Documents: DOC-IMP-003
+
+- CON-VOICE-007: **Audio Playback Component**
+  - Definition: Module for outputting audio through speakers with priority queue and event handling
+  - Related: CON-VOICE-002, CON-VOICE-001
+  - Documents: DOC-IMP-003
+
+- CON-VOICE-008: **Audio Configuration Component**
+  - Definition: Module for managing audio settings across capture, preprocessing, and playback components
+  - Related: CON-VOICE-002, CON-VOICE-005, CON-VOICE-006, CON-VOICE-007
+  - Documents: DOC-IMP-003
+
+- CON-VOICE-009: **Voice Activity Detector**
+  - Definition: Component that analyzes audio to determine whether speech is present
+  - Related: CON-VOICE-003, CON-VOICE-010, CON-VOICE-011
+  - Documents: DOC-IMP-004
+
+- CON-VOICE-010: **Wake Word Detector**
+  - Definition: Component that identifies specific activation phrases in audio
+  - Related: CON-VOICE-003, CON-VOICE-009
+  - Documents: DOC-IMP-004
+
+- CON-VOICE-011: **Activation Manager**
+  - Definition: Component that coordinates activation modes and states for the voice system
+  - Related: CON-VOICE-003, CON-VOICE-009, CON-VOICE-010
+  - Documents: DOC-IMP-004
+
+- CON-VOICE-012: **Silero VAD Model**
+  - Definition: Machine learning model integration for lightweight voice activity detection
+  - Related: CON-VOICE-009, CON-IMP-012
+  - Documents: DOC-IMP-004
+
+- CON-VOICE-013: **Whisper VAD Model**
+  - Definition: Alternative VAD implementation using Whisper for speech detection
+  - Related: CON-VOICE-009, CON-IMP-012, CON-VOICE-004
+  - Documents: DOC-IMP-004
+
+- CON-VOICE-014: **Voice Pipeline Demo**
+  - Definition: Interactive CLI demo for testing and showcasing the Voice Pipeline
+  - Related: CON-VOICE-001, CON-DEV-003, CON-TEST-014
+  - Documents: DOC-IMP-005
+  
+- CON-VOICE-015: **WhisperAdapter**
+  - Definition: Component that provides an interface to the Whisper ASR model with efficient resource management
+  - Related: CON-VOICE-004, CON-VOICE-016, CON-IMP-012
+  - Documents: DOC-IMP-006
+  
+- CON-VOICE-016: **Transcriber**
+  - Definition: High-level transcription component that manages streaming, caching, and result processing
+  - Related: CON-VOICE-004, CON-VOICE-015, CON-VOICE-017
+  - Documents: DOC-IMP-006
+  
+- CON-VOICE-017: **TranscriptionProcessor**
+  - Definition: Component for text normalization, hesitation filtering, and confidence-based filtering
+  - Related: CON-VOICE-004, CON-VOICE-016
+  - Documents: DOC-IMP-006
 
 ## Relationships
 
@@ -458,12 +588,30 @@ graph TD
     CONIMP013 --> |integrates with| CONTEST009["CON-TEST-009<br/>CI/CD Integration"]
     CONTEST009 --> |enables| CONTEST010["CON-TEST-010<br/>Test Automation"]
     
+    %% ML Model Testing relationships
+    CONTEST013["CON-TEST-013<br/>Mock Testing for ML Models"] --> |enhances| CONTEST001
+    CONTEST013 --> |uses| CONTEST006
+    CONTEST013 --> |tests| CONVOICE012["CON-VOICE-012<br/>Silero VAD Model"]
+    CONTEST013 --> |tests| CONVOICE013["CON-VOICE-013<br/>Whisper VAD Model"]
+    
+    %% User Testing relationships
+    CONTEST014["CON-TEST-014<br/>User Testing Framework"] --> |documented by| CONDEV004["CON-DEV-004<br/>User Testing Guide"]
+    CONTEST014 --> |uses| CONDEV003["CON-DEV-003<br/>Demo Script Development"]
+    CONDEV003 --> |creates| CONVOICE014["CON-VOICE-014<br/>Voice Pipeline Demo"]
+    CONDEV003 --> |follows| CONIMP022["CON-IMP-022<br/>Script Directory Organization"]
+    
+    %% Script Organization relationships
+    CONIMP022 --> |implements| CONVANTA011["CON-VANTA-011<br/>Script Organization"]
+    CONIMP022 --> |uses| CONIMP023["CON-IMP-023<br/>Symlink Usage"]
+    CONVANTA011 --> |organizes| CONTEST012["CON-TEST-012<br/>Test Execution Scripts"]
+    
     %% Architecture Pattern relationships
     CONARCH001["CON-ARCH-001<br/>TypedDict State Model"] --> |implements| CONTECH007["CON-TECH-007<br/>State Management"]
     CONARCH002["CON-ARCH-002<br/>LangGraph Node Pattern"] --> |implements| CONTECH006["CON-TECH-006<br/>Graph-Based Workflow"]
     CONARCH003["CON-ARCH-003<br/>Event Bus Pattern"] --> |supports| CONVANTA009["CON-VANTA-009<br/>Hybrid Architecture"]
     CONARCH004["CON-ARCH-004<br/>Repository Pattern"] --> |structures| CONVANTA007["CON-VANTA-007<br/>Layered Memory"]
     CONARCH005["CON-ARCH-005<br/>Adapter Pattern"] --> |connects| CONVANTA009
+    CONARCH006["CON-ARCH-006<br/>State Machine Pattern"] --> |enables| CONVOICE011["CON-VOICE-011<br/>Activation Manager"]
 
     %% VANTA Project relationships
     CONPRJ001 --> |consists of| CONVANTA001["CON-VANTA-001<br/>Voice Pipeline"]
@@ -477,6 +625,7 @@ graph TD
     CONVANTA001 --> |includes| CONVANTA005["CON-VANTA-005<br/>Speech-to-Text"]
     CONVANTA001 --> |includes| CONVANTA006["CON-VANTA-006<br/>Text-to-Speech"]
     CONVANTA001 --> |configured via| CONVANTA003["CON-VANTA-003<br/>Activation Modes"]
+    CONVANTA001 --> |implemented by| CONVOICE001["CON-VOICE-001<br/>Voice Pipeline"]
     
     %% Memory Engine relationships
     CONVANTA002 --> |implements| CONVANTA007["CON-VANTA-007<br/>Layered Memory"]
@@ -505,6 +654,43 @@ graph TD
     CONVANTA010["CON-VANTA-010<br/>MCP Server Ecosystem"] --> |extends| CONTECH004
     CONVANTA010 --> |supports| CONVANTA009
     
+    %% Voice Component Relationships
+    CONVOICE001 --> |includes| CONVOICE002["CON-VOICE-002<br/>Audio Processing"]
+    CONVOICE001 --> |includes| CONVOICE003["CON-VOICE-003<br/>Voice Activity Detection"]
+    CONVOICE001 --> |includes| CONVOICE004["CON-VOICE-004<br/>Speech-to-Text Processing"]
+    
+    CONVOICE002 --> |includes| CONVOICE005["CON-VOICE-005<br/>Audio Capture Component"]
+    CONVOICE002 --> |includes| CONVOICE006["CON-VOICE-006<br/>Audio Preprocessing Component"]
+    CONVOICE002 --> |includes| CONVOICE007["CON-VOICE-007<br/>Audio Playback Component"]
+    CONVOICE002 --> |includes| CONVOICE008["CON-VOICE-008<br/>Audio Configuration Component"]
+    
+    CONVOICE008 --> |configures| CONVOICE005
+    CONVOICE008 --> |configures| CONVOICE006
+    CONVOICE008 --> |configures| CONVOICE007
+    
+    %% VAD Component Relationships
+    CONVOICE003 --> |includes| CONVOICE009["CON-VOICE-009<br/>Voice Activity Detector"]
+    CONVOICE003 --> |includes| CONVOICE010["CON-VOICE-010<br/>Wake Word Detector"]
+    CONVOICE003 --> |includes| CONVOICE011["CON-VOICE-011<br/>Activation Manager"]
+    
+    CONVOICE009 --> |uses| CONVOICE012["CON-VOICE-012<br/>Silero VAD Model"]
+    CONVOICE009 --> |uses| CONVOICE013["CON-VOICE-013<br/>Whisper VAD Model"]
+    
+    CONVOICE008 --> |configures| CONVOICE009
+    CONVOICE008 --> |configures| CONVOICE010
+    CONVOICE008 --> |configures| CONVOICE011
+    
+    CONIMP019["CON-IMP-019<br/>Configuration Sections"] --> |enables| CONVOICE008
+    
+    %% Implementation Details
+    CONIMP017["CON-IMP-017<br/>Python Package Structure"] --> |supports| CONVOICE001
+    CONIMP018["CON-IMP-018<br/>Parameter Mapping"] --> |used by| CONVOICE008
+    CONIMP018 --> |supports| CONARCH005
+    
+    %% Placeholder Implementation Relationship
+    CONIMP020["CON-IMP-020<br/>Placeholder Implementations"] --> |enables| CONVOICE010
+    CONIMP020 --> |enables| CONVOICE013
+    
     %% Styling
     classDef methodology fill:#e0f7fa,stroke:#006064,stroke-width:1px
     classDef implementation fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
@@ -516,17 +702,19 @@ graph TD
     classDef hva fill:#ede7f6,stroke:#4527a0,stroke-width:1px
     classDef dev fill:#ffebee,stroke:#b71c1c,stroke-width:1px
     classDef test fill:#e0f2f1,stroke:#004d40,stroke-width:1px
+    classDef voice fill:#fce4ec,stroke:#880e4f,stroke-width:1px
     
     class CONMET001,CONMET002,CONMET003,CONMET004,CONMET005 methodology
-    class CONIMP001,CONIMP002,CONIMP003,CONIMP004,CONIMP005,CONIMP006,CONIMP007,CONIMP008,CONIMP009,CONIMP010,CONIMP011,CONIMP012,CONIMP013,CONIMP014 implementation
-    class CONARCH001,CONARCH002,CONARCH003,CONARCH004,CONARCH005 architecture
+    class CONIMP001,CONIMP002,CONIMP003,CONIMP004,CONIMP005,CONIMP006,CONIMP007,CONIMP008,CONIMP009,CONIMP010,CONIMP011,CONIMP012,CONIMP013,CONIMP014,CONIMP015,CONIMP016,CONIMP017,CONIMP018,CONIMP019,CONIMP020,CONIMP021,CONIMP022,CONIMP023 implementation
+    class CONARCH001,CONARCH002,CONARCH003,CONARCH004,CONARCH005,CONARCH006 architecture
     class CONPRJ001 project
-    class CONVANTA001,CONVANTA002,CONVANTA003,CONVANTA004,CONVANTA005,CONVANTA006,CONVANTA007,CONVANTA008,CONVANTA009,CONVANTA010 vanta
+    class CONVANTA001,CONVANTA002,CONVANTA003,CONVANTA004,CONVANTA005,CONVANTA006,CONVANTA007,CONVANTA008,CONVANTA009,CONVANTA010,CONVANTA011 vanta
     class CONTECH001,CONTECH002,CONTECH003,CONTECH004 mcp
     class CONTECH005,CONTECH006,CONTECH007,CONTECH008 langgraph
     class CONHVA001 hva
-    class CONDEV001,CONDEV002 dev
-    class CONTEST001,CONTEST002,CONTEST003,CONTEST004,CONTEST005,CONTEST006,CONTEST007,CONTEST008,CONTEST009,CONTEST010 test
+    class CONDEV001,CONDEV002,CONDEV003,CONDEV004 dev
+    class CONTEST001,CONTEST002,CONTEST003,CONTEST004,CONTEST005,CONTEST006,CONTEST007,CONTEST008,CONTEST009,CONTEST010,CONTEST011,CONTEST012,CONTEST013,CONTEST014 test
+    class CONVOICE001,CONVOICE002,CONVOICE003,CONVOICE004,CONVOICE005,CONVOICE006,CONVOICE007,CONVOICE008,CONVOICE009,CONVOICE010,CONVOICE011,CONVOICE012,CONVOICE013,CONVOICE014 voice
 ```
 
 ## Research Findings
@@ -815,5 +1003,107 @@ graph TD
     class TF1A,TF1B,TF1C,TF2A,TF2B,TF2C,TF3A,TF3B,TF3C,TF4A,TF4B,TF4C,TF2C1,TF2C2,TF2C3,TF2C4,TF3B1,TF3B2,TF3B3 sub
 ```
 
+### Voice Pipeline Components
+
+```mermaid
+graph TD
+    VP["Voice<br/>Pipeline"] --> VP1["Audio<br/>Capture"]
+    VP --> VP2["Audio<br/>Preprocessing"]
+    VP --> VP3["Audio<br/>Playback"]
+    VP --> VP4["Voice<br/>Activity Detection"]
+    VP --> VP5["Speech-to-Text<br/>Processing"]
+    VP --> VP6["Configuration<br/>Management"]
+    
+    VP1 --> VP1A["Real-time<br/>Microphone Input"]
+    VP1 --> VP1B["Circular<br/>Buffer"]
+    VP1 --> VP1C["Threading<br/>Management"]
+    
+    VP2 --> VP2A["Noise<br/>Reduction"]
+    VP2 --> VP2B["Audio<br/>Normalization"]
+    VP2 --> VP2C["DC Offset<br/>Removal"]
+    
+    VP3 --> VP3A["Priority<br/>Queue"]
+    VP3 --> VP3B["Event<br/>System"]
+    VP3 --> VP3C["Volume<br/>Control"]
+    
+    VP4 --> VP4A["Speech<br/>Detection"]
+    VP4 --> VP4B["Wake Word<br/>Recognition"]
+    VP4 --> VP4C["Activation<br/>Management"]
+    
+    VP4A --> VP4A1["Silero<br/>VAD Model"]
+    VP4A --> VP4A2["Whisper<br/>VAD Model"]
+    
+    VP4C --> VP4C1["Activation<br/>Modes"]
+    VP4C --> VP4C2["State<br/>Transitions"]
+    VP4C --> VP4C3["Timeout<br/>Management"]
+    
+    VP5 --> VP5A["Whisper<br/>Adapter"]
+    VP5 --> VP5B["Transcriber"]
+    VP5 --> VP5C["Transcription<br/>Processor"]
+    
+    VP5A --> VP5A1["Model<br/>Loading"]
+    VP5A --> VP5A2["Resource<br/>Management"]
+    VP5A --> VP5A3["Hardware<br/>Acceleration"]
+    
+    VP5B --> VP5B1["Streaming<br/>Support"]
+    VP5B --> VP5B2["Result<br/>Caching"]
+    VP5B --> VP5B3["Confidence<br/>Scoring"]
+    
+    VP5C --> VP5C1["Text<br/>Normalization"]
+    VP5C --> VP5C2["Hesitation<br/>Filtering"]
+    VP5C --> VP5C3["Metadata<br/>Extraction"]
+    
+    VP6 --> VP6A["Parameter<br/>Mapping"]
+    VP6 --> VP6B["Configuration<br/>Presets"]
+    VP6 --> VP6C["Validation<br/>Logic"]
+    
+    classDef main fill:#fce4ec,stroke:#880e4f,stroke-width:1px
+    classDef sub fill:#f5f5f5,stroke:#616161,stroke-width:1px
+    classDef stt fill:#e1bee7,stroke:#4a148c,stroke-width:1px
+    
+    class VP main
+    class VP1,VP2,VP3,VP4,VP6 main
+    class VP5,VP5A,VP5B,VP5C stt
+    class VP1A,VP1B,VP1C,VP2A,VP2B,VP2C,VP3A,VP3B,VP3C,VP4A,VP4B,VP4C,VP6A,VP6B,VP6C,VP4A1,VP4A2,VP4C1,VP4C2,VP4C3,VP5A1,VP5A2,VP5A3,VP5B1,VP5B2,VP5B3,VP5C1,VP5C2,VP5C3 sub
+```
+
+### Script Organization
+
+```mermaid
+graph TD
+    SO["Script<br/>Organization"] --> SO1["Development<br/>Scripts"]
+    SO --> SO2["Testing<br/>Scripts"]
+    SO --> SO3["Model Management<br/>Scripts"]
+    SO --> SO4["Demo<br/>Scripts"]
+    SO --> SO5["Setup<br/>Scripts"]
+    
+    SO1 --> SO1A["Environment<br/>Setup"]
+    SO1 --> SO1B["Development<br/>Shell"]
+    SO1 --> SO1C["Service<br/>Control"]
+    
+    SO2 --> SO2A["Test<br/>Runners"]
+    SO2 --> SO2B["Docker<br/>Tests"]
+    SO2 --> SO2C["Test<br/>Utilities"]
+    
+    SO3 --> SO3A["Model<br/>Download"]
+    SO3 --> SO3B["Model<br/>Verification"]
+    SO3 --> SO3C["Model<br/>Registry"]
+    
+    SO4 --> SO4A["Voice Pipeline<br/>Demo"]
+    SO4 --> SO4B["User<br/>Testing"]
+    SO4 --> SO4C["Component<br/>Showcase"]
+    
+    SO5 --> SO5A["First-Time<br/>Setup"]
+    SO5 --> SO5B["Dependency<br/>Installation"]
+    SO5 --> SO5C["Platform<br/>Configuration"]
+    
+    classDef main fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    classDef sub fill:#f5f5f5,stroke:#616161,stroke-width:1px
+    
+    class SO main
+    class SO1,SO2,SO3,SO4,SO5 main
+    class SO1A,SO1B,SO1C,SO2A,SO2B,SO2C,SO3A,SO3B,SO3C,SO4A,SO4B,SO4C,SO5A,SO5B,SO5C sub
+```
+
 ## Last Updated
-2025-05-17T19:55:00Z | SES-V0-011 | Completed Test Environment Validation in Docker
+2025-05-18T03:45:00Z | SES-V0-017 | Implemented Speech-to-Text integration with Whisper models

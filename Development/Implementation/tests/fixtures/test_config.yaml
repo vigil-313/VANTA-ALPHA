@@ -1,0 +1,41 @@
+capture:
+  sample_rate: 16000
+  bit_depth: 16
+  chunk_size: 4096
+  channels: 1
+  buffer_seconds: 2
+  device_index: null
+
+preprocessing:
+  normalization_target_db: -3
+  enable_noise_reduction: false
+  enable_dc_removal: true
+  resampling_quality: "medium"
+  sample_rate: 16000
+  channels: 1
+
+playback:
+  sample_rate: 24000
+  bit_depth: 16
+  buffer_size: 1024
+  channels: 1
+  default_volume: 0.8
+  device_index: null
+
+vad:
+  model_type: "silero"
+  threshold: 0.5
+  window_size_ms: 96
+  min_speech_duration_ms: 250
+  max_speech_duration_s: 30
+  min_silence_duration_ms: 100
+
+wake_word:
+  enabled: true
+  phrase: "hey vanta"
+  threshold: 0.7
+  sensitivity: 0.5
+
+activation:
+  mode: "wake_word"
+  timeout_s: 30

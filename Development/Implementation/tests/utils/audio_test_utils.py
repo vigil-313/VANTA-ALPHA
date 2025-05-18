@@ -4,7 +4,8 @@
 
 import numpy as np
 import soundfile as sf
-from typing import Tuple, List, Dict, Optional
+from typing import Tuple, List, Dict, Optional, Any
+import hashlib
 
 def load_audio_file(file_path: str) -> Tuple[np.ndarray, int]:
     """
@@ -148,3 +149,119 @@ def compare_audio_features(features1: Dict[str, np.ndarray],
             return False
     
     return True
+
+def generate_spoken_text_audio(text: str, duration: float = 1.0, sample_rate: int = 16000) -> np.ndarray:
+    """
+    Generate a synthetic audio that simulates spoken text.
+    
+    Args:
+        text: Text to simulate
+        duration: Duration of the audio in seconds
+        sample_rate: Sample rate in Hz
+        
+    Returns:
+        Audio data as numpy array
+    """
+    # Generate a unique frequency based on the text (deterministic result for same text)
+    text_hash = int(hashlib.md5(text.encode()).hexdigest(), 16)
+    base_freq = 300 + (text_hash % 200)  # Range 300-500 Hz
+    
+    # Generate time array
+    t = np.linspace(0, duration, int(sample_rate * duration), False)
+    
+    # Generate base sine wave
+    audio_data = np.sin(2 * np.pi * base_freq * t)
+    
+    # Add some amplitude modulation to simulate syllables
+    # Number of syllables roughly proportional to text length
+    syllables = max(1, len(text) // 3)
+    syllable_rate = syllables / duration
+    
+    # Modulate amplitude
+    modulation = 0.5 + 0.5 * np.sin(2 * np.pi * syllable_rate * t)
+    audio_data = audio_data * modulation
+    
+    # Add some noise
+    noise = np.random.normal(0, 0.05, audio_data.shape)
+    audio_data = audio_data + noise
+    
+    # Normalize to [-1, 1]
+    audio_data = audio_data / np.max(np.abs(audio_data))
+    
+    return audio_data
+
+def create_test_transcription_data(
+    text: str, 
+    num_segments: int = 1,
+    confidence: float = 0.8,
+    duration: float = 1.0,
+    language: str = "en"
+) -> Dict[str, Any]:
+    """
+    Create mock transcription data for testing.
+    
+    Args:
+        text: Transcription text
+        num_segments: Number of segments to create
+        confidence: Confidence score (0-1)
+        duration: Total audio duration in seconds
+        language: Language code
+        
+    Returns:
+        Mock transcription data dictionary
+    """
+    # Create segments
+    segments = []
+    segment_duration = duration / num_segments
+    
+    for i in range(num_segments):
+        # For multi-segment transcriptions, divide the text approximately equally
+        if num_segments > 1:
+            words = text.split()
+            words_per_segment = max(1, len(words) // num_segments)
+            segment_words = words[i * words_per_segment : min(len(words), (i + 1) * words_per_segment)]
+            segment_text = " ".join(segment_words)
+        else:
+            segment_text = text
+            
+        segment = {
+            "id": i,
+            "text": segment_text,
+            "start": i * segment_duration,
+            "end": (i + 1) * segment_duration,
+            "confidence": confidence
+        }
+        segments.append(segment)
+    
+    # Create full result
+    result = {
+        "text": text,
+        "segments": segments,
+        "language": language,
+        "confidence": confidence
+    }
+    
+    return result
+
+def add_hesitations_to_text(text: str, hesitation_probability: float = 0.3) -> str:
+    """
+    Add hesitation words to text for testing hesitation filtering.
+    
+    Args:
+        text: Original text
+        hesitation_probability: Probability of adding hesitation before each word
+        
+    Returns:
+        Text with hesitations
+    """
+    hesitations = ["um", "uh", "eh", "er", "ah", "mm", "hmm"]
+    words = text.split()
+    result = []
+    
+    for word in words:
+        if np.random.random() < hesitation_probability:
+            hesitation = np.random.choice(hesitations)
+            result.append(hesitation)
+        result.append(word)
+        
+    return " ".join(result)

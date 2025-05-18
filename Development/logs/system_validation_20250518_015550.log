@@ -1,0 +1,53 @@
+
+[0;32m===== VANTA System Requirements Validation =====[0m
+Start time: Sun May 18 01:55:50 PDT 2025
+Log file: /Users/vigil-313/workplace/VANTA-ALPHA/Development/logs/system_validation_20250518_015550.log
+
+[0;32m===== System Information =====[0m
+OS: Darwin
+Kernel: 24.4.0
+Architecture: arm64
+Hostname: VIGIL313s-MacBook-Pro.local
+
+[0;32m===== Python Requirements =====[0m
+Checking Python 3.9+...
+[0;32m✓ Python 3.9+: Python 3.9 or higher required - PASSED[0m
+Checking pip...
+[0;32m✓ pip: pip3 required for package installation - PASSED[0m
+
+[0;32m===== System Dependencies =====[0m
+Checking PortAudio...
+[0;31m✗ PortAudio: Required for audio capture and playback - FAILED[0m
+Checking libsndfile...
+[0;31m✗ libsndfile: Required for audio file operations - FAILED[0m
+Checking ffmpeg...
+[0;32m✓ ffmpeg: Required for audio format conversion - PASSED[0m
+
+[0;32m===== Docker Requirements (Optional) =====[0m
+Checking Docker...
+[0;32m✓ Docker: Required for containerized environment - PASSED[0m
+Checking Docker Compose...
+[0;32m✓ Docker Compose: Required for multi-container environment - PASSED[0m
+
+[0;32m===== Hardware Requirements =====[0m
+Checking CPU Cores...
+[0;32m✓ CPU Cores: 4 or more CPU cores recommended - PASSED[0m
+Checking RAM...
+[0;31m✗ RAM: 8GB RAM or more recommended - FAILED[0m
+
+[0;32m===== Python Packages =====[0m
+Checking torch...
+[0;31m✗ torch: Required for ML models - FAILED[0m
+Checking torchaudio...
+[0;31m✗ torchaudio: Required for audio processing - FAILED[0m
+Checking numpy...
+[0;31m✗ numpy: Required for numerical operations - FAILED[0m
+Checking PyAudio...
+[0;31m✗ PyAudio: Required for audio capture and playback - FAILED[0m
+Checking ONNX Runtime...
+[0;31m✗ ONNX Runtime: Required for VAD models - FAILED[0m
+
+[0;32m===== Validation Summary =====[0m
+System validation completed at Sun May 18 01:55:50 PDT 2025
+See the log file for detailed results: /Users/vigil-313/workplace/VANTA-ALPHA/Development/logs/system_validation_20250518_015550.log
+[0;33m⚠ MPS Acceleration is not available[0m

@@ -10,7 +10,10 @@ from typing import Tuple, Optional
 
 def create_test_audio(duration: float = 1.0, 
                     sample_rate: int = 16000, 
-                    frequency: float = 440.0) -> Tuple[np.ndarray, int]:
+                    frequency: float = 440.0,
+                    samples: Optional[int] = None,
+                    freq: Optional[float] = None,
+                    duration_ms: Optional[int] = None) -> Tuple[np.ndarray, int]:
     """
     Create a test audio signal with a sine wave.
     
@@ -18,10 +21,21 @@ def create_test_audio(duration: float = 1.0,
         duration: Duration of the audio in seconds
         sample_rate: Sample rate in Hz
         frequency: Frequency of the sine wave in Hz
+        samples: Alternative way to specify sample_rate (for backwards compatibility)
+        freq: Alternative way to specify frequency (for backwards compatibility)
+        duration_ms: Alternative way to specify duration in milliseconds (for backwards compatibility)
         
     Returns:
         Tuple of (audio_data, sample_rate)
     """
+    # Handle alternative parameter names for backward compatibility
+    if samples is not None:
+        sample_rate = samples
+    if freq is not None:
+        frequency = freq
+    if duration_ms is not None:
+        duration = duration_ms / 1000.0
+        
     # Generate time array
     t = np.linspace(0, duration, int(sample_rate * duration), False)
     
@@ -33,27 +47,37 @@ def create_test_audio(duration: float = 1.0,
     
     return audio_data, sample_rate
 
-def save_test_audio(audio_data: np.ndarray, 
-                   sample_rate: int, 
+def save_test_audio(audio_data, 
+                   sample_rate: Optional[int] = None, 
                    path: Optional[str] = None) -> str:
     """
     Save test audio to a temporary file or specified path.
     
     Args:
-        audio_data: Audio data as numpy array
-        sample_rate: Sample rate in Hz
+        audio_data: Audio data as numpy array or tuple of (audio_data, sample_rate)
+        sample_rate: Sample rate in Hz (only used if audio_data is not a tuple)
         path: Optional path to save the file
         
     Returns:
         Path to the saved audio file
     """
+    # Handle case where audio_data is a tuple (audio_data, sample_rate)
+    if isinstance(audio_data, tuple) and len(audio_data) == 2:
+        audio_array, sr = audio_data
+    else:
+        audio_array = audio_data
+        sr = sample_rate
+        
+    if sr is None:
+        raise ValueError("Sample rate must be provided")
+    
     if path is None:
         # Create a temporary file with .wav extension
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as f:
             path = f.name
     
     # Save the audio file
-    sf.write(path, audio_data, sample_rate)
+    sf.write(path, audio_array, sr)
     
     return path
 

@@ -100,3 +100,11 @@ When developing this project:
           # Implementation...
 
   This rule ensures all code is traceable back to its VISTA documentation, maintains knowledge continuity, and helps future developers understand the context and purpose of each implementation element.
+
+## Development Tools and Commands
+
+### Docker Test Command
+
+  To run tests or any Python code in the Docker environment, use this format:
+  cd /Users/vigil-313/workplace/VANTA-ALPHA/Development/Implementation && \
+    ./scripts/docker_test.sh "python -m pytest [test_path]"
