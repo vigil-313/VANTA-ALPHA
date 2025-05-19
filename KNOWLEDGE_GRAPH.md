@@ -566,6 +566,21 @@
   - Definition: Interactive demonstration of the complete Voice Pipeline with STT and TTS capabilities
   - Related: CON-VOICE-001, CON-DEV-003, CON-TEST-014, CON-VOICE-014
   - Documents: DOC-IMP-007, DOC-IMP-008
+  
+- CON-VOICE-023: **TTS Engine Comparison**
+  - Definition: Feature for comparing different TTS engines in terms of quality, prosody, and performance
+  - Related: CON-VOICE-018, CON-VOICE-021, CON-VOICE-022
+  - Documents: DOC-IMP-008
+  
+- CON-VOICE-024: **TTS Performance Benchmarking**
+  - Definition: System for objectively measuring and comparing TTS engine performance metrics
+  - Related: CON-VOICE-021, CON-VOICE-023, CON-TEST-014
+  - Documents: DOC-IMP-008
+  
+- CON-VOICE-025: **User Testing Guide**
+  - Definition: Comprehensive documentation for testing Voice Pipeline capabilities with specific focus on TTS
+  - Related: CON-VOICE-022, CON-TEST-014, CON-DEV-004
+  - Documents: DOC-IMP-008
 
 ## Relationships
 

@@ -1,8 +1,8 @@
 {
   "project": "V0_VANTA",
-  "version": "0.9.0",
-  "last_updated": "2025-05-20T14:00:00Z",
-  "last_session_id": "SES-V0-009",
+  "version": "0.10.0",
+  "last_updated": "2025-05-18T20:45:00Z",
+  "last_session_id": "SES-V0-021",
   "document_versions": {
     "Development/Implementation/MODEL_PREPARATION.md": {
       "version": "0.1.0",
@@ -40,14 +40,29 @@
       "change_type": "Addition"
     },
     "SESSION_STATE.md": {
-      "version": "0.8.0",
-      "last_updated": "2025-05-19T18:30:00Z",
+      "version": "0.10.0",
+      "last_updated": "2025-05-18T20:45:00Z",
       "change_type": "Modification"
     },
     "KNOWLEDGE_GRAPH.md": {
-      "version": "0.7.0",
-      "last_updated": "2025-05-19T11:30:00Z",
+      "version": "0.9.0",
+      "last_updated": "2025-05-18T20:45:00Z",
       "change_type": "Modification"
+    },
+    "Development/Implementation/scripts/demo/voice_pipeline_demo.py": {
+      "version": "0.2.0",
+      "last_updated": "2025-05-18T20:30:00Z",
+      "change_type": "Modification"
+    },
+    "Development/Implementation/scripts/demo/USER_TESTING_GUIDE.md": {
+      "version": "0.2.0",
+      "last_updated": "2025-05-18T20:30:00Z",
+      "change_type": "Modification"
+    },
+    "Development/Implementation/scripts/demo/tts_engine_switch.sh": {
+      "version": "0.1.0",
+      "last_updated": "2025-05-18T20:30:00Z",
+      "change_type": "Addition"
     },
     "CLAUDE.md": {
       "version": "0.1.0",

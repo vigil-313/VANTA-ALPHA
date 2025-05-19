@@ -151,6 +151,7 @@ def print_status(pipeline):
     print("  [8] Choose TTS engine (api, local, system)")
     print("  [9] Change TTS voice")
     print("  [0] Play TTS test sequence")
+    print("  [p] Performance comparison of TTS engines")
     print("  [q] Quit")
     
 
@@ -301,6 +302,13 @@ def main():
                 # Play a test sequence to demonstrate TTS capabilities
                 logger.info("Playing TTS test sequence...")
                 
+                # Get current engine type for display
+                engine_type = pipeline.config.get_tts_config().get("engine", {}).get("engine_type", "system")
+                voice_id = pipeline.config.get_tts_config().get("engine", {}).get("voice_id", "default")
+                
+                print(f"\nRunning TTS test sequence using {engine_type.upper()} engine with voice '{voice_id}'...")
+                print("=" * 70)
+                
                 # Simple greeting
                 pipeline.say("Hello, I am VANTA, your Voice Assistant.")
                 time.sleep(2)
@@ -317,12 +325,177 @@ def main():
                 pipeline.say("I can also emphasize *important* words when needed.")
                 time.sleep(2)
                 
-                # Demonstrate a longer sentence
-                pipeline.say("My speech synthesizer supports multiple engines including OpenAI's advanced models, local Piper models for offline use, and the built-in system voices.")
+                # Demonstrate prosody variation
+                pipeline.say("I can speak with varied intonation to sound more natural and engaging!")
                 time.sleep(2)
                 
+                # Demonstrate punctuation handling
+                pipeline.say("Commas, periods, and question marks? They all affect how I speak.")
+                time.sleep(2)
+                
+                # Demonstrate technical terms
+                pipeline.say("I can pronounce technical terms like API, JSON, and HTTP correctly.")
+                time.sleep(2)
+                
+                # Demonstrate longer content
+                pipeline.say("My speech synthesizer supports multiple engines including OpenAI's advanced models, local Piper models for offline use, and the built-in system voices. Each has different advantages in terms of quality, latency, and resource usage.")
+                time.sleep(3)
+                
+                # Demonstrate emotional expression (if supported)
+                pipeline.say("I'm excited to help you with your voice assistant needs! My goal is to provide a natural, responsive experience.")
+                time.sleep(2)
+                
+                # Demonstrate different sentence types
+                pipeline.say("Statements are spoken normally. Questions have rising intonation? Commands have a more definitive tone!")
+                time.sleep(3)
+                
                 # Final message
-                pipeline.say("Thank you for testing the VANTA voice pipeline demo.")
+                pipeline.say("Thank you for testing the VANTA voice pipeline demo. Would you like to try a different TTS engine to compare?")
+                
+                print("=" * 70)
+                print(f"TTS test sequence completed using {engine_type.upper()} engine.")
+                
+                # Ask if user wants to try another engine
+                choice = input("\nWould you like to try the same sequence with a different TTS engine? [y/n]: ").lower()
+                if choice == 'y':
+                    print("\nChoose TTS engine:")
+                    print("  [a] API (OpenAI) - Requires API key")
+                    print("  [l] Local (Piper) - Runs offline, lower quality")
+                    print("  [s] System (macOS) - Good for development")
+                    engine_choice = input("Enter choice [a/l/s]: ").lower()
+                    
+                    config = pipeline.config.get_tts_config()
+                    if engine_choice == "a":
+                        api_key = input("Enter OpenAI API key (leave blank to use env var): ")
+                        config["engine"]["engine_type"] = "api"
+                        config["engine"]["api_provider"] = "openai"
+                        if api_key:
+                            config["engine"]["api_key"] = api_key
+                    elif engine_choice == "l":
+                        config["engine"]["engine_type"] = "local"
+                        config["engine"]["model_type"] = "piper"
+                    elif engine_choice == "s":
+                        config["engine"]["engine_type"] = "system"
+                    else:
+                        logger.warning(f"Unknown engine choice: {engine_choice}")
+                        return
+                    
+                    # Update configuration
+                    pipeline.configure({"tts": config})
+                    logger.info(f"Changed TTS engine to {config['engine']['engine_type']}")
+                    
+                    # Run the test sequence again (recursively)
+                    cmd = "0"  # This will trigger the test sequence again
+                
+            elif cmd.lower() == "p":
+                # Performance comparison of TTS engines
+                logger.info("Starting TTS engine performance comparison...")
+                print("\n" + "=" * 70)
+                print("TTS ENGINE PERFORMANCE COMPARISON")
+                print("=" * 70)
+                
+                # Test phrases for comparison
+                test_phrases = [
+                    "This is a short test phrase.",
+                    "How does this question sound with different engines?",
+                    "Technical terms like API, JSON, and HTTP might be pronounced differently.",
+                    "This is a much longer sentence that demonstrates how different TTS engines handle paragraph-length content with various punctuation, pauses, and speech patterns.",
+                    "I'm *very* excited about the possibilities of voice technology and natural language processing!"
+                ]
+                
+                # Save current engine settings
+                original_config = pipeline.config.get_tts_config().copy()
+                results = {}
+                
+                # Define engines to test
+                engines = [
+                    {"name": "System TTS", "config": {"engine": {"engine_type": "system"}}},
+                    {"name": "Local Piper", "config": {"engine": {"engine_type": "local", "model_type": "piper"}}},
+                ]
+                
+                # Add OpenAI if API key is available
+                api_key = os.environ.get("OPENAI_API_KEY", "")
+                if api_key or original_config.get("engine", {}).get("api_key", ""):
+                    engines.append({
+                        "name": "OpenAI API", 
+                        "config": {
+                            "engine": {
+                                "engine_type": "api", 
+                                "api_provider": "openai",
+                                "api_key": api_key or original_config.get("engine", {}).get("api_key", "")
+                            }
+                        }
+                    })
+                
+                # Test each engine
+                for engine in engines:
+                    print(f"\nTesting {engine['name']}...")
+                    
+                    # Configure pipeline with this engine
+                    pipeline.configure({"tts": engine["config"]})
+                    time.sleep(1)  # Give time for configuration to apply
+                    
+                    # Run the test
+                    engine_results = {"latencies": [], "total_time": 0}
+                    
+                    # Test with middle-length phrase to warm up
+                    pipeline.say("Warming up the TTS engine.")
+                    time.sleep(1)
+                    
+                    # Reset stats
+                    pipeline.speech_synthesizer.reset_stats()
+                    
+                    # Run tests with each phrase
+                    for i, phrase in enumerate(test_phrases):
+                        print(f"  Phrase {i+1}/{len(test_phrases)}: {phrase[:30]}..." if len(phrase) > 30 else phrase)
+                        
+                        # Measure synthesis time
+                        start_time = time.time()
+                        pipeline.say(phrase)
+                        end_time = time.time()
+                        
+                        # Get latency from stats
+                        stats = pipeline.speech_synthesizer.get_stats()
+                        latency = stats.get("last_latency", end_time - start_time)
+                        
+                        # Record results
+                        engine_results["latencies"].append(latency)
+                        engine_results["total_time"] += latency
+                        
+                        print(f"    Latency: {latency:.3f}s")
+                        
+                        # Wait for playback to complete
+                        while pipeline.is_speaking():
+                            time.sleep(0.1)
+                        
+                        time.sleep(0.5)  # Brief pause between phrases
+                    
+                    # Calculate average latency
+                    engine_results["avg_latency"] = engine_results["total_time"] / len(test_phrases)
+                    results[engine["name"]] = engine_results
+                
+                # Restore original configuration
+                pipeline.configure({"tts": original_config})
+                
+                # Display comparison results
+                print("\n" + "=" * 70)
+                print("PERFORMANCE COMPARISON RESULTS")
+                print("=" * 70)
+                print(f"{'Engine':<15} {'Avg Latency':<15} {'Min Latency':<15} {'Max Latency':<15}")
+                print("-" * 70)
+                
+                for engine_name, result in results.items():
+                    avg_latency = result["avg_latency"]
+                    min_latency = min(result["latencies"]) if result["latencies"] else 0
+                    max_latency = max(result["latencies"]) if result["latencies"] else 0
+                    print(f"{engine_name:<15} {avg_latency:.3f}s{' '*9} {min_latency:.3f}s{' '*9} {max_latency:.3f}s")
+                
+                print("\nNote: Latency measures the time to synthesize speech, not including playback time.")
+                print("Lower latency is better for real-time applications.")
+                print("-" * 70)
+                print("Quality assessment is subjective and should be evaluated separately.")
+                print("See USER_TESTING_GUIDE.md for quality evaluation criteria.")
+                print("=" * 70)
                 
             elif cmd.lower() == "q":
                 running = False
