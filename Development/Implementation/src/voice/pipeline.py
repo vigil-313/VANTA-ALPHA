@@ -7,6 +7,9 @@ Main voice pipeline coordinator for the VANTA system.
 # CONCEPT-REF: CON-VANTA-001 - Voice Pipeline
 # DOC-REF: DOC-DEV-ARCH-COMP-1 - Voice Pipeline Component Specification
 # DECISION-REF: DEC-002-002 - Design for swappable TTS/STT components
+# TASK-REF: PLAT_001 - Platform Abstraction Layer
+# CONCEPT-REF: CON-PLAT-001 - Platform Abstraction Layer
+# DECISION-REF: DEC-022-001 - Adopt platform abstraction approach for audio components
 
 import os
 import logging
@@ -46,7 +49,8 @@ class VoicePipeline:
              mock_processor: Optional[TranscriptionProcessor] = None,
              mock_tts_adapter: Optional[TTSAdapter] = None,
              mock_speech_synthesizer: Optional[SpeechSynthesizer] = None,
-             mock_prosody_formatter: Optional[ProsodyFormatter] = None):
+             mock_prosody_formatter: Optional[ProsodyFormatter] = None,
+             platform_preset: Optional[str] = None):
         """
         Initialize the voice pipeline with all components.
         
@@ -58,9 +62,18 @@ class VoicePipeline:
             mock_whisper: Optional mock WhisperAdapter for testing
             mock_transcriber: Optional mock Transcriber for testing
             mock_processor: Optional mock TranscriptionProcessor for testing
+            mock_tts_adapter: Optional mock TTSAdapter for testing
+            mock_speech_synthesizer: Optional mock SpeechSynthesizer for testing
+            mock_prosody_formatter: Optional mock ProsodyFormatter for testing
+            platform_preset: Optional platform preset to apply (native_audio, fallback_audio)
         """
         # Initialize configuration
         self.config = AudioConfig(config_file)
+        
+        # Apply platform preset if specified
+        if platform_preset:
+            if not self.config.apply_preset(platform_preset):
+                logger.warning(f"Platform preset '{platform_preset}' not found, using defaults")
         
         # Initialize audio components
         self.capture = AudioCapture(**self.config.get_capture_config())
@@ -808,8 +821,13 @@ class VoicePipeline:
         # Update main config
         self.config.update(config_updates)
         
+        # Check for platform-specific updates
+        platform_updates = False
+        if "platform" in config_updates:
+            platform_updates = True
+        
         # Component-specific updates
-        if "capture" in config_updates:
+        if "capture" in config_updates or platform_updates:
             # Capture requires restart to apply new config
             was_running = self.capture.is_running
             if was_running:
@@ -826,7 +844,7 @@ class VoicePipeline:
             # Preprocessor can be updated without restart
             self.preprocessor = AudioPreprocessor(**self.config.get_preprocessing_config())
             
-        if "playback" in config_updates:
+        if "playback" in config_updates or platform_updates:
             # Playback requires restart to apply new config
             was_running = self.playback.is_running
             

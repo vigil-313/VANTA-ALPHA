@@ -7,6 +7,9 @@ Audio configuration module for the VANTA Voice Pipeline.
 # CONCEPT-REF: CON-VANTA-001 - Voice Pipeline
 # DOC-REF: DOC-DEV-ARCH-COMP-1 - Voice Pipeline Component Specification
 # DECISION-REF: DEC-002-002 - Design for swappable TTS/STT components
+# TASK-REF: PLAT_001 - Platform Abstraction Layer
+# CONCEPT-REF: CON-PLAT-001 - Platform Abstraction Layer
+# DECISION-REF: DEC-022-001 - Adopt platform abstraction approach for audio components
 
 import os
 import yaml
@@ -30,7 +33,8 @@ class AudioConfig:
             "channels": 1,
             "chunk_size": 4096,
             "buffer_seconds": 5,
-            "device_index": None  # None means default device
+            "device_id": None,  # None means default device
+            "platform_impl": None  # None means auto-select based on platform detection
         },
         "preprocessing": {
             "normalization_target_db": -3,
@@ -44,7 +48,8 @@ class AudioConfig:
             "channels": 1,
             "buffer_size": 1024,
             "default_volume": 0.8,  # 0.0 to 1.0
-            "device_index": None  # None means default device
+            "device_id": None,  # None means default device
+            "platform_impl": None  # None means auto-select based on platform detection
         },
         "vad": {
             "model_type": "silero",  # silero or whisper_vad
@@ -113,6 +118,17 @@ class AudioConfig:
                 "expand_abbreviations": True
             }
         },
+        # Platform configuration
+        "platform": {
+            "audio_capture": {
+                "preferred_implementation": None,  # macos, linux, fallback, or None for auto-select
+                "fallback_implementations": ["fallback"]  # List of fallback implementations
+            },
+            "audio_playback": {
+                "preferred_implementation": None,  # macos, linux, fallback, or None for auto-select
+                "fallback_implementations": ["fallback"]  # List of fallback implementations
+            }
+        },
         # Buffer settings
         "max_buffer_chunks": 50,  # Maximum chunks to buffer
         "presets": {
@@ -131,6 +147,18 @@ class AudioConfig:
                 "vad": {"threshold": 0.6, "window_size_ms": 128},
                 "stt": {"whisper": {"model_size": "tiny"}, "transcriber": {"min_confidence": 0.5}},
                 "tts": {"engine": {"engine_type": "system"}, "synthesizer": {"enable_ssml": False}}
+            },
+            "native_audio": {
+                "platform": {
+                    "audio_capture": {"preferred_implementation": "macos"},
+                    "audio_playback": {"preferred_implementation": "macos"}
+                }
+            },
+            "fallback_audio": {
+                "platform": {
+                    "audio_capture": {"preferred_implementation": "fallback"},
+                    "audio_playback": {"preferred_implementation": "fallback"}
+                }
             }
         }
     }
@@ -210,6 +238,11 @@ class AudioConfig:
         if "bit_depth" in config:
             del config["bit_depth"]
             
+        # Get platform configuration for audio capture
+        platform_config = self.config.get("platform", {}).get("audio_capture", {})
+        if platform_config.get("preferred_implementation"):
+            config["platform_impl"] = platform_config.get("preferred_implementation")
+            
         return config
     
     def get_preprocessing_config(self) -> Dict[str, Any]:
@@ -246,6 +279,11 @@ class AudioConfig:
         for param in ["bit_depth", "default_volume"]:
             if param in config:
                 del config[param]
+        
+        # Get platform configuration for audio playback
+        platform_config = self.config.get("platform", {}).get("audio_playback", {})
+        if platform_config.get("preferred_implementation"):
+            config["platform_impl"] = platform_config.get("preferred_implementation")
             
         return config
         
@@ -293,6 +331,15 @@ class AudioConfig:
             Dictionary with TTS configuration parameters
         """
         return self.config.get("tts", {}).copy()
+    
+    def get_platform_config(self) -> Dict[str, Any]:
+        """
+        Get platform-specific configuration.
+        
+        Returns:
+            Dictionary with platform configuration parameters
+        """
+        return self.config.get("platform", {}).copy()
     
     def get_max_buffer_chunks(self) -> int:
         """
@@ -401,6 +448,12 @@ class AudioConfig:
         if not 0 <= playback.get("default_volume", 0.8) <= 1:
             raise ValueError(f"Invalid default volume: {playback.get('default_volume')}")
         
+        # Validate platform config
+        platform_config = self.config.get("platform", {})
+        if not platform_config:
+            # If platform section is missing or empty, populate it with defaults
+            self.config["platform"] = self.DEFAULT_CONFIG["platform"].copy()
+            
         # Validate VAD config
         vad = self.config.get("vad", {})
         if not vad:

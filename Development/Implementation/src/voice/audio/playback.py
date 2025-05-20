@@ -7,8 +7,10 @@ Audio playback module for the VANTA Voice Pipeline.
 # CONCEPT-REF: CON-VANTA-001 - Voice Pipeline
 # DOC-REF: DOC-DEV-ARCH-COMP-1 - Voice Pipeline Component Specification
 # DECISION-REF: DEC-002-002 - Design for swappable TTS/STT components
+# TASK-REF: PLAT_001 - Platform Abstraction Layer
+# CONCEPT-REF: CON-PLAT-001 - Platform Abstraction Layer
+# DECISION-REF: DEC-022-001 - Adopt platform abstraction approach for audio components
 
-import pyaudio
 import numpy as np
 import threading
 import queue
@@ -17,6 +19,9 @@ import uuid
 import logging
 from typing import Dict, List, Optional, Any, Callable, Tuple
 
+# Import the platform abstraction layer components
+from core.platform.factory import audio_playback_factory
+
 logger = logging.getLogger(__name__)
 
 class AudioPlayback:
@@ -24,7 +29,7 @@ class AudioPlayback:
     Handles audio playback with priority queue management.
     
     Features:
-    - Audio output to default speaker using PyAudio
+    - Audio output to default speaker using platform abstraction layer
     - Audio queue with priority levels
     - Support for interrupting current playback
     - Volume control
@@ -43,27 +48,23 @@ class AudioPlayback:
                  sample_rate: int = 24000, 
                  channels: int = 1, 
                  buffer_size: int = 1024,
-                 device_index: Optional[int] = None):
+                 device_id: Optional[str] = None,
+                 platform_impl: Optional[str] = None):
         """Initialize audio playback system.
         
         Args:
             sample_rate: Playback sample rate in Hz
             channels: Number of audio channels (1 for mono)
             buffer_size: Audio buffer size
-            device_index: PyAudio device index, None for default
+            device_id: Platform-specific device identifier, None for default
+            platform_impl: Optional specific platform implementation name
         """
         self.sample_rate = sample_rate
         self.channels = channels
         self.buffer_size = buffer_size
-        self.format = pyaudio.paInt16  # 16-bit audio format
-        self.device_index = device_index
         
         # Volume control (0.0 to 1.0)
         self._volume = 0.8
-        
-        # PyAudio objects (initialized in start())
-        self.pa = None
-        self.stream = None
         
         # Playback queue with (priority, playback_id, audio_data) items
         self.queue = queue.PriorityQueue()
@@ -93,6 +94,34 @@ class AudioPlayback:
             "total_playback_duration": 0.0,  # In seconds
             "start_time": None
         }
+        
+        # Platform abstraction
+        try:
+            self.platform_playback = audio_playback_factory.create(
+                name=platform_impl
+            )
+            
+            if self.platform_playback is None:
+                logger.error("Failed to create platform audio playback implementation")
+                raise RuntimeError("No suitable audio playback implementation available")
+            
+            # Initialize platform implementation
+            if not self.platform_playback.initialize(
+                sample_rate=sample_rate,
+                channels=channels,
+                buffer_size=buffer_size
+            ):
+                logger.error("Failed to initialize platform audio playback")
+                raise RuntimeError("Audio playback initialization failed")
+            
+            # Select device if specified
+            if device_id is not None:
+                if not self.platform_playback.select_device(device_id):
+                    logger.warning(f"Failed to select device {device_id}, using default")
+        
+        except Exception as e:
+            logger.error(f"Error initializing audio playback: {e}")
+            raise RuntimeError(f"Failed to initialize audio playback: {e}")
     
     def start(self) -> bool:
         """
@@ -107,19 +136,10 @@ class AudioPlayback:
                 return False
             
             try:
-                # Initialize PyAudio
-                self.pa = pyaudio.PyAudio()
-                
-                # Open audio stream (starting in stopped state)
-                self.stream = self.pa.open(
-                    format=self.format,
-                    channels=self.channels,
-                    rate=self.sample_rate,
-                    output=True,
-                    frames_per_buffer=self.buffer_size,
-                    output_device_index=self.device_index,
-                    start=False
-                )
+                # Start platform playback
+                if not self.platform_playback.start_playback():
+                    logger.error("Failed to start platform audio playback")
+                    return False
                 
                 # Reset control flags
                 self.should_stop = False
@@ -167,22 +187,10 @@ class AudioPlayback:
     
     def _cleanup(self) -> None:
         """Clean up resources."""
-        if self.stream:
-            try:
-                self.stream.stop_stream()
-                self.stream.close()
-            except Exception as e:
-                logger.warning(f"Error stopping audio stream: {e}")
-            finally:
-                self.stream = None
-        
-        if self.pa:
-            try:
-                self.pa.terminate()
-            except Exception as e:
-                logger.warning(f"Error terminating PyAudio: {e}")
-            finally:
-                self.pa = None
+        try:
+            self.platform_playback.stop_playback()
+        except Exception as e:
+            logger.warning(f"Error stopping platform audio playback: {e}")
         
         self.is_playing = False
         self.current_playback_id = None
@@ -213,42 +221,38 @@ class AudioPlayback:
                 if self._volume < 1.0:
                     audio_data = self._apply_volume(audio_data, self._volume)
                 
-                # Start the stream if not started
-                if not self.stream.is_active():
-                    self.stream.start_stream()
+                # Play the audio using platform implementation
+                platform_playback_id = self.platform_playback.play_audio(audio_data)
                 
-                # Play audio in chunks
-                chunk_size = self.buffer_size * self.channels
-                for i in range(0, len(audio_data), chunk_size):
+                # Wait until playback completes or is interrupted
+                interrupted = False
+                while self.is_playing and self.current_playback_id == playback_id:
+                    # Check if we should stop
                     if self.should_stop:
+                        interrupted = True
                         break
                     
-                    chunk = audio_data[i:i+chunk_size]
-                    # Pad the last chunk if necessary
-                    if len(chunk) < chunk_size:
-                        padding = np.zeros(chunk_size - len(chunk), dtype=np.int16)
-                        chunk = np.concatenate([chunk, padding])
-                    
-                    # Check if we should interrupt
-                    if not self.current_playback_id == playback_id:
-                        # Emit interrupted event
-                        self._emit_event(self.EVENT_PLAYBACK_INTERRUPTED, {
-                            "playback_id": playback_id,
-                            "interrupted_by": self.current_playback_id,
-                            "position": i / len(audio_data) if len(audio_data) > 0 else 0
-                        })
-                        self.stats["playbacks_interrupted"] += 1
+                    # Check if playback was interrupted by another higher priority item
+                    if self.current_playback_id != playback_id:
+                        interrupted = True
                         break
-                    
-                    # Write audio chunk to the stream
-                    self.stream.write(chunk.tobytes())
                     
                     # Small sleep to reduce CPU usage
-                    time.sleep(0.001)
+                    time.sleep(0.01)
                 
-                # If we completed the full audio segment
-                if self.current_playback_id == playback_id:
-                    # Update stats
+                # Handle interruption
+                if interrupted:
+                    # Stop the platform playback
+                    self.platform_playback.stop_audio(platform_playback_id)
+                    
+                    # Emit interrupted event
+                    self._emit_event(self.EVENT_PLAYBACK_INTERRUPTED, {
+                        "playback_id": playback_id,
+                        "interrupted_by": self.current_playback_id
+                    })
+                    self.stats["playbacks_interrupted"] += 1
+                else:
+                    # Update stats for completed playback
                     self.stats["playbacks_completed"] += 1
                     self.stats["total_playback_duration"] += len(audio_data) / self.sample_rate
                     
@@ -266,10 +270,6 @@ class AudioPlayback:
                     with self.lock:
                         self.is_playing = False
                         self.current_playback_id = None
-                        
-                        # Stop the stream to save resources
-                        if self.stream and self.stream.is_active():
-                            self.stream.stop_stream()
                     
                     # Emit queue empty event
                     self._emit_event(self.EVENT_QUEUE_EMPTY, {})
@@ -502,23 +502,27 @@ class AudioPlayback:
         Returns:
             List of dictionaries with device information
         """
-        temp_pa = pyaudio.PyAudio()
-        devices = []
-        
         try:
-            for i in range(temp_pa.get_device_count()):
-                device_info = temp_pa.get_device_info_by_index(i)
-                # Handle device info format - mock objects in tests might have different keys
-                devices.append({
-                    "index": i,
-                    "name": device_info.get("name", f"Device {i}"),
-                    "channels": device_info.get("maxOutputChannels", 2),
-                    "default_sample_rate": device_info.get("defaultSampleRate", 44100)
-                })
-        finally:
-            temp_pa.terminate()
+            return self.platform_playback.get_available_devices()
+        except Exception as e:
+            logger.error(f"Error listing audio devices: {e}")
+            return []
+    
+    def select_device(self, device_id: Optional[str] = None) -> bool:
+        """
+        Select output device by platform-specific identifier.
+        
+        Args:
+            device_id: Platform-specific device identifier
             
-        return devices
+        Returns:
+            True if device selection successful, False otherwise
+        """
+        try:
+            return self.platform_playback.select_device(device_id)
+        except Exception as e:
+            logger.error(f"Error selecting audio device: {e}")
+            return False
     
     def is_queue_empty(self) -> bool:
         """
