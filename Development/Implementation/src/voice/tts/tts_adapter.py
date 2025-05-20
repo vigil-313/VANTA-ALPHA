@@ -21,6 +21,7 @@ class TTSEngineType(Enum):
     API = "api"  # Cloud-based API engines
     LOCAL = "local"  # Local model-based engines
     SYSTEM = "system"  # Operating system TTS
+    BRIDGE = "bridge"  # File-based bridge for Docker on macOS
 
 class TTSAdapter:
     """
@@ -282,6 +283,7 @@ def create_tts_adapter(config: Dict[str, Any]) -> TTSAdapter:
     from voice.tts.tts_engine_api import OpenAITTSAdapter
     from voice.tts.tts_engine_local import PiperTTSAdapter
     from voice.tts.tts_engine_system import SystemTTSAdapter
+    from voice.tts.bridge_adapter import TTSBridgeAdapter
     
     engine_type = config.get("engine_type", "local")
     
@@ -319,6 +321,10 @@ def create_tts_adapter(config: Dict[str, Any]) -> TTSAdapter:
             
     elif engine_type == TTSEngineType.SYSTEM:
         return SystemTTSAdapter(**config)
+        
+    elif engine_type == TTSEngineType.BRIDGE:
+        # Create the bridge adapter for Docker on macOS
+        return TTSBridgeAdapter(config)
         
     else:
         logger.warning(f"Unknown engine type: {engine_type}, using SystemTTS")

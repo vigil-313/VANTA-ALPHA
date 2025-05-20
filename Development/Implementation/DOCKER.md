@@ -135,6 +135,47 @@ After setting up the Docker environment, run these commands to validate:
    docker-compose exec vanta python -c "import langgraph; print('LangGraph version:', langgraph.__version__)"
    ```
 
+## Audio Support on macOS Docker
+
+Docker containers on macOS cannot directly access the host's audio hardware, which poses a challenge for the VANTA voice pipeline that requires audio capabilities. We've implemented a file-based TTS bridge solution for this issue.
+
+### Using the TTS Bridge
+
+1. Run the voice demo with the TTS bridge:
+   ```
+   ./scripts/demo/run_voice_demo_with_tts_bridge.sh
+   ```
+
+2. This script:
+   - Starts the TTS bridge on the host machine
+   - Creates a temporary configuration for the demo
+   - Launches the Docker container with the shared bridge directory
+   - Configures the Voice Pipeline to use the bridge for TTS
+
+3. How it works:
+   - Docker container writes text to a shared directory
+   - Host script monitors the directory and uses macOS `say` command
+   - Text filenames can include voice and rate parameters
+
+### TTS Bridge Components
+
+- `simple_say_bridge.sh`: Host-side bridge that monitors for TTS requests
+- `docker_tts_client.py`: Client library for Docker containers to use the bridge
+- `bridge_adapter.py`: TTS adapter that integrates with the Voice Pipeline
+
+### Custom TTS Configuration
+
+You can customize the bridge behavior by modifying the configuration:
+
+```yaml
+tts:
+  engine:
+    engine_type: "bridge"
+    bridge_dir: "/host/vanta-tts-bridge"
+    voice_id: "Samantha"  # macOS voice to use
+    rate: 175             # Words per minute
+```
+
 ## Notes
 
 - The Docker environment includes all dependencies required for VANTA development but does not include actual model weights. Those will be downloaded separately during the model preparation task (TASK-ENV-003).
