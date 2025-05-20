@@ -659,8 +659,18 @@
   
 - CON-PLAT-008: **Docker Compatibility Layer**
   - Definition: Special implementation that bridges Docker container environment with host audio systems
-  - Related: CON-PLAT-003, CON-VANTA-008, CON-PLAT-007
+  - Related: CON-PLAT-003, CON-VANTA-008, CON-PLAT-007, CON-PLAT-010, CON-PLAT-011
   - Documents: DOC-ARCH-004, DOC-IMP-009
+  
+- CON-PLAT-010: **File-Based TTS Bridge**
+  - Definition: Bridge architecture for enabling Docker containers to use host TTS capabilities via the filesystem
+  - Related: CON-PLAT-008, CON-VANTA-008, CON-VOICE-018, CON-VOICE-021
+  - Documents: DOC-IMP-009, DOC-IMP-011
+  
+- CON-PLAT-011: **File-Based Microphone Bridge**
+  - Definition: Bridge architecture for enabling Docker containers to access host microphone via the filesystem
+  - Related: CON-PLAT-008, CON-VANTA-008, CON-VOICE-005, CON-VOICE-002
+  - Documents: DOC-IMP-011
 
 ## Relationships
 

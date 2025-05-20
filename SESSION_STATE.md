@@ -1,71 +1,62 @@
 # Current Session State
 
 ## Session Information
-- Session ID: SES-V0-027
-- Previous Session: SES-V0-026
-- Timestamp: 2025-05-20T18:30:00Z
+- Session ID: SES-V0-028
+- Previous Session: SES-V0-027
+- Timestamp: 2025-05-20T19:30:00Z
 - Template Version: v1.0.0
 
 ## Knowledge State
-This session continues from SES-V0-026, where we implemented the file-based TTS bridge for Docker on macOS. In this session, we've focused on completing all platform-related tasks, including native development setup scripts, Linux platform testing tools, performance measurement framework, and comprehensive platform documentation.
+This session continues from SES-V0-027, where we implemented platform-related tasks and the file-based TTS bridge for Docker on macOS. In this session, we've focused on implementing a file-based microphone input bridge for Docker containers on macOS and enhanced testing for the TTS bridge in production-like scenarios.
 
 We've successfully completed the following components:
-1. **Native Development Scripts**: Created setup scripts for macOS and Linux native environments
-2. **TTS Bridge Testing**: Implemented test scripts for basic and Docker-based TTS bridge testing
-3. **Linux Platform Support**: Created specialized scripts for running and testing on Linux platforms
-4. **Performance Measurement**: Developed a comprehensive benchmarking framework for platform implementations
-5. **Platform Documentation**: Created detailed documentation of platform capabilities, limitations, and recommendations
+1. **Microphone Input Bridge**: Created a file-based bridge for Docker containers to access the host's microphone
+2. **Microphone Client Library**: Developed a Python client for easy integration with container applications
+3. **Voice Pipeline Integration**: Implemented a microphone bridge adapter for the Voice Pipeline
+4. **Comprehensive Testing**: Created test scripts for both native and Docker environments
+5. **Production TTS Testing**: Implemented production-like testing for the TTS bridge
 
-These implementations address all our platform-related action items (ACT-024-002, ACT-025-001, ACT-025-002, and ACT-026-001). The solution provides a comprehensive platform abstraction layer that works across multiple environments, with specialized optimizations for each platform and detailed documentation for users.
+These implementations address our next steps from the previous session (specifically items 1 and 2). The solution provides a robust approach for Docker containers to access host audio devices on macOS, completing our platform abstraction layer implementation.
 
 ## Session Outcomes
 During this session, we have:
 
-1. Implemented file-based TTS bridge for Docker on macOS:
-   - Created `simple_say_bridge.sh` for monitoring TTS requests
-   - Developed `docker_tts_client.py` client library
-   - Implemented the `TTSBridgeAdapter` class
-   - Added bridge adapter support to the TTS factory
+1. Implemented file-based microphone input bridge for Docker on macOS:
+   - Created `mic_bridge.sh` for capturing audio from the host microphone
+   - Developed `docker_mic_client.py` client library
+   - Implemented the `MicBridgeAdapter` class
+   - Added bridge adapter for the Voice Pipeline
+   - Created comprehensive directory structure for control and audio files
 
-2. Created test scripts for the TTS bridge:
-   - Added `test_tts_bridge.sh` for basic bridge testing
-   - Created `test_docker_tts_bridge.sh` for Docker integration testing
-   - Implemented `run_voice_demo_with_tts_bridge.sh` launcher script
-   - Handled volume mounting and process management
+2. Developed test scripts for the microphone bridge:
+   - Added `test_mic_bridge.sh` for basic bridge testing
+   - Created `test_docker_mic_bridge.sh` for Docker integration testing
+   - Implemented `run_voice_demo_with_mic_bridge.sh` launcher script
+   - Handled volume mounting and file exchange
 
-3. Developed native environment setup scripts:
-   - Created `mac_native_setup.sh` for macOS native environment
-   - Created `linux_native_setup.sh` for Linux native environment
-   - Added `test_native_env.sh` for environment validation
-   - Implemented platform-specific optimizations
+3. Enhanced TTS bridge testing:
+   - Implemented production-like test scenarios in `test_tts_bridge_production.py`
+   - Created test script for comparing native and Docker performance
+   - Added performance measurement and error condition testing
+   - Implemented concurrent request testing
+   - Added comprehensive results logging and analysis
 
-4. Created Linux platform testing tools:
-   - Added `run_voice_demo_linux.sh` for Linux-specific testing
-   - Created platform configuration for Linux environments
-   - Added PulseAudio and ALSA detection and configuration
-
-5. Implemented performance measurement framework:
-   - Created `measure_platform_performance.sh` script
-   - Implemented benchmarking for audio capture and playback
-   - Added metrics for latency, CPU usage, and memory usage
-   - Created comparative analysis between implementations
-
-6. Created comprehensive platform documentation:
-   - Documented platform-specific limitations in `PLATFORM_LIMITATIONS.md`
-   - Added compatibility matrix for different environments
-   - Included performance considerations and recommendations
-   - Added troubleshooting information for Docker audio issues
+4. Created detailed documentation:
+   - Added `MIC_BRIDGE_README.md` with architecture and usage instructions
+   - Documented integration with the Voice Pipeline
+   - Added troubleshooting information
+   - Documented performance considerations and limitations
 
 ## Decision Record
-- DEC-026-001: Use file-based communication for Docker TTS bridge
-  - Rationale: Provides reliable communication without requiring network ports or IPC
+- DEC-028-001: Use ffmpeg for microphone capture in the bridge
+  - Rationale: Provides robust audio capture with configurable formats and parameters
   - Status: 🟢 Approved
-  - Notes: Simple approach that works consistently across different environments
+  - Notes: Supports various audio formats and configuration options
 
-- DEC-026-002: Leverage macOS native TTS for Docker containers
-  - Rationale: Provides high-quality voices without requiring additional TTS models
+- DEC-028-002: Use chunked audio files for real-time processing
+  - Rationale: Enables lower latency by processing small chunks of audio
   - Status: 🟢 Approved
-  - Notes: Better quality than in-container alternatives, with wider voice selection
+  - Notes: Balance between latency and file operations overhead
 
 ## Open Questions
 1. What's the best approach for packaging platform-specific dependencies? (carried over)
@@ -73,47 +64,36 @@ During this session, we have:
 3. What level of AMD hardware acceleration should we implement for the Ryzen AI PC? (carried over)
 4. How to optimize memory usage across different platforms with varying resources? (carried over)
 5. What metrics should we establish for cross-platform performance comparison? (carried over)
-6. How to enable audio input (microphone) in Docker containers on macOS?
-7. What would be the most reliable approach for two-way audio communication in Docker?
+6. What would be the most reliable approach for two-way audio communication in Docker? (carried over)
+7. How to reduce latency in the file-based bridge approach for real-time applications?
+8. Should we explore alternative transport mechanisms (e.g., websockets) for lower latency?
 
 ## Action Items
-*[Previous action items ACT-022-004 through ACT-022-007 are tracked separately]*
+*[Previous action items are tracked separately]*
 
-- ACT-024-001: Update Voice Pipeline demo for platform abstraction
+- ACT-028-001: Test the microphone bridge in production scenarios
   - Owner: Project Team
-  - Status: 🟢 Completed
+  - Status: 🟡 In Progress
   - Deadline: 2025-05-26
-  - Notes: Successfully adapted demo to support platform-specific configurations and native execution
+  - Notes: Need additional testing with extended conversations and different audio sources
 
-- ACT-024-002: Create native development setup scripts
+- ACT-028-002: Integrate microphone bridge with full Voice Pipeline
   - Owner: Project Team
-  - Status: 🟢 Completed
-  - Deadline: 2025-05-24
-  - Notes: Created scripts for macOS and Linux, with environment verification
-
-- ACT-024-003: Implement file-based TTS bridge for Docker
-  - Owner: Project Team
-  - Status: 🟢 Completed
+  - Status: 🟡 In Progress
   - Deadline: 2025-05-27
-  - Notes: Implementation complete, including bridge monitor script, client library, and TTS adapter integration
+  - Notes: Preliminary integration complete, needs stress testing
 
-- ACT-025-001: Test updated demo on Linux platform
+- ACT-028-003: Begin implementation of MEM_001 (Memory System)
   - Owner: Project Team
-  - Status: 🟢 Completed
-  - Deadline: 2025-05-28
-  - Notes: Created Linux-specific launcher script with platform optimization
-
-- ACT-025-002: Measure performance differences between platform implementations
-  - Owner: Project Team
-  - Status: 🟢 Completed
-  - Deadline: 2025-05-30
-  - Notes: Implemented benchmark script with detailed performance analysis
-
-- ACT-026-001: Document platform-specific limitations and recommendations
-  - Owner: Project Team
-  - Status: 🟢 Completed
+  - Status: 🔴 Not Started
   - Deadline: 2025-05-31
-  - Notes: Created comprehensive documentation of platform capabilities and limitations
+  - Notes: Scheduled to start after platform abstraction is complete
+
+- ACT-028-004: Explore LM_001 (Local Model) integration with platform abstraction
+  - Owner: Project Team
+  - Status: 🔴 Not Started
+  - Deadline: 2025-06-01
+  - Notes: Will focus on hardware acceleration for different platforms
 
 ## Progress Snapshot
 ```
@@ -136,7 +116,7 @@ During this session, we have:
 
 ┌─ Phase 0 Implementation Status ────────────────┐
 │                                                │
-│  ENV_002: Docker Environment           🟡 80%  │
+│  ENV_002: Docker Environment           🟡 90%  │
 │  ENV_003: Model Preparation            🟢 100% │
 │  ENV_004: Test Framework               🟢 100% │
 │  Test Environment Validation           🟢 100% │
@@ -159,37 +139,37 @@ During this session, we have:
 ```
 
 ## Next Session Focus Areas
-1. Explore solutions for microphone input in Docker on macOS
-2. Test the file-based TTS bridge in production scenarios
-3. Extend platform abstraction to support AMD hardware acceleration
-4. Begin implementation of MEM_001 (Memory System)
-5. Explore integration of LM_001 (Local Model) with platform abstraction
+1. Complete production testing of the microphone and TTS bridges
+2. Begin implementation of MEM_001 (Memory System)
+3. Start integrating LM_001 (Local Model) with platform abstraction
+4. Add AMD hardware acceleration support for Ryzen AI PC targets
+5. Address performance optimization for Docker audio bridges
 
 ## Handoff
-Session SES-V0-027 has successfully completed all platform-related implementation tasks, including the file-based TTS bridge for Docker on macOS, native development setup scripts, Linux platform testing tools, and a comprehensive performance measurement framework. These implementations provide a robust platform abstraction layer that works across multiple environments, with specialized optimizations for each platform and detailed documentation for users.
+Session SES-V0-028 has successfully implemented a file-based microphone input bridge for Docker on macOS, extending our platform abstraction layer to provide comprehensive audio I/O capabilities. We've also created production-like testing for the TTS bridge to ensure reliability in real-world scenarios.
 
 ### Key Implementation Components
-1. **TTS Bridge Monitor**: Simple bridge script for monitoring TTS requests from Docker containers
-2. **Docker TTS Client**: Python client library for easy integration with container applications
-3. **TTS Bridge Adapter**: Integration with the Voice Pipeline TTS system
-4. **Bridge Demo Launcher**: Script for testing the TTS bridge with the Voice Pipeline demo
-5. **Extended Documentation**: Comprehensive documentation in DOCKER.md
+1. **Microphone Bridge Script**: Captures audio from the host and shares it via files
+2. **Docker Microphone Client**: Python client library for accessing host microphone
+3. **Microphone Bridge Adapter**: Integration with the Voice Pipeline
+4. **Test Framework**: Scripts for native and Docker testing
+5. **Production Test Utilities**: Comprehensive test scenarios for TTS
 
 ### Updated Implementation Plan
-- **Audio Input in Docker**: Design microphone input bridge for Docker containers
-- **Cross-Platform Testing**: Further testing on various Linux distributions
-- **Memory System**: Begin implementation of the memory component (MEM_001)
-- **Local Model Integration**: Start work on local model integration (LM_001)
-- **Hardware Acceleration**: Add optimizations for AMD Ryzen AI PC
+- **Production Testing**: Complete in-depth testing of both bridges in real-world scenarios
+- **Memory System**: Begin implementation of MEM_001 component
+- **Local Model**: Start integration of LM_001 with platform abstraction
+- **Performance Optimization**: Explore lower-latency alternatives to file-based bridges
+- **Hardware Acceleration**: Add support for AMD Ryzen AI PC
 
 ### Next Steps
-1. Design and implement a file-based microphone input bridge for Docker on macOS
-2. Test the TTS bridge in more complex, production-like scenarios
-3. Begin implementing the Memory System component (MEM_001)
-4. Start integrating Local Model support (LM_001) with platform abstraction
-5. Add AMD hardware acceleration support for Ryzen AI PC targets
+1. Complete production testing of audio bridges in various scenarios
+2. Begin implementing the Memory System component (MEM_001)
+3. Start integrating Local Model support (LM_001) with platform abstraction
+4. Add AMD hardware acceleration support for Ryzen AI PC targets
+5. Explore alternative transport mechanisms for lower latency in bridges
 
-The next session (SES-V0-028) should focus on implementing a microphone input bridge for Docker containers on macOS, beginning work on the Memory System component, and exploring Local Model integration with the platform abstraction layer.
+The next session (SES-V0-029) should focus on completing the production testing of the audio bridges, beginning work on the Memory System component, and exploring Local Model integration with the platform abstraction layer.
 
 ## Last Updated
-2025-05-20T18:30:00Z | SES-V0-027 | Completed platform implementation and testing tools
+2025-05-20T19:30:00Z | SES-V0-028 | Implemented microphone input bridge and enhanced TTS testing
