@@ -7,11 +7,14 @@ This script provides a simple CLI interface for demonstrating and testing
 the VANTA Voice Pipeline with VAD, STT, and TTS components.
 
 Usage:
-    python voice_pipeline_demo.py [--config CONFIG_PATH]
+    python voice_pipeline_demo.py [--config CONFIG_PATH] [--platform PLATFORM_PRESET]
 """
 # TASK-REF: VOICE_004 - Text-to-Speech Integration
 # CONCEPT-REF: CON-VANTA-001 - Voice Pipeline
 # CONCEPT-REF: CON-VOICE-022 - Voice Pipeline Demo
+# TASK-REF: PLAT_001 - Platform Abstraction Layer
+# CONCEPT-REF: CON-PLAT-001 - Platform Abstraction Layer
+# DECISION-REF: DEC-022-001 - Adopt platform abstraction approach for audio components
 
 import os
 import sys
@@ -29,6 +32,8 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.
 
 from voice.pipeline import VoicePipeline
 from voice.vad.activation import ActivationState, ActivationMode
+from core.platform.factory import audio_capture_factory, audio_playback_factory
+from core.platform.capabilities import capability_registry
 
 # Configure logging
 logging.basicConfig(
@@ -104,6 +109,17 @@ def print_status(pipeline):
     print(f"Listening: {'YES' if pipeline.is_listening() else 'NO'}")
     print(f"Speaking: {'YES' if pipeline.is_speaking() else 'NO'}")
     
+    # Get platform information
+    platform_type = capability_registry.get_platform_type()
+    print(f"Platform: {platform_type.upper()}")
+    
+    # Get implementation information
+    capture_impls = audio_capture_factory.get_available_implementations()
+    playback_impls = audio_playback_factory.get_available_implementations()
+    
+    print(f"Audio Capture: {', '.join(capture_impls)}")
+    print(f"Audio Playback: {', '.join(playback_impls)}")
+    
     # Print audio level meter
     level = min(int(pipeline.get_audio_level() * 20), 20)
     print("\nAudio Level: [" + "█" * level + " " * (20 - level) + "]")
@@ -152,6 +168,8 @@ def print_status(pipeline):
     print("  [9] Change TTS voice")
     print("  [0] Play TTS test sequence")
     print("  [p] Performance comparison of TTS engines")
+    print("  [a] Change platform implementation")
+    print("  [d] List audio devices")
     print("  [q] Quit")
     
 
@@ -165,12 +183,17 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="VANTA Voice Pipeline Demo")
     parser.add_argument("--config", default=None, help="Path to config file")
+    parser.add_argument("--platform", default=None, 
+                      help="Platform preset to use (native_audio, fallback_audio)")
     args = parser.parse_args()
     
     # Initialize the voice pipeline
     try:
         logger.info("Initializing VANTA Voice Pipeline...")
-        pipeline = VoicePipeline(config_file=args.config)
+        pipeline = VoicePipeline(
+            config_file=args.config, 
+            platform_preset=args.platform
+        )
         
         # Register callbacks
         pipeline.add_speech_detected_callback(speech_detected_callback)
@@ -243,7 +266,7 @@ def main():
                     continue
                 
                 # Update configuration
-                pipeline.configure({"tts": config})
+                pipeline.update_config({"tts": config})
                 logger.info(f"Changed TTS engine to {config['engine']['engine_type']}")
             elif cmd == "9":
                 engine_type = pipeline.config.get_tts_config().get("engine", {}).get("engine_type", "system")
@@ -262,7 +285,7 @@ def main():
                             if 0 <= idx < len(voices):
                                 config = pipeline.config.get_tts_config()
                                 config["engine"]["voice_id"] = voices[idx]
-                                pipeline.configure({"tts": config})
+                                pipeline.update_config({"tts": config})
                                 logger.info(f"Changed TTS voice to {voices[idx]}")
                             else:
                                 logger.warning(f"Invalid voice index: {idx}")
@@ -283,7 +306,7 @@ def main():
                         if 0 <= idx < len(voices):
                             config = pipeline.config.get_tts_config()
                             config["engine"]["voice_id"] = voices[idx]
-                            pipeline.configure({"tts": config})
+                            pipeline.update_config({"tts": config})
                             logger.info(f"Changed TTS voice to {voices[idx]}")
                         else:
                             logger.warning(f"Invalid voice index: {idx}")
@@ -381,7 +404,7 @@ def main():
                         return
                     
                     # Update configuration
-                    pipeline.configure({"tts": config})
+                    pipeline.update_config({"tts": config})
                     logger.info(f"Changed TTS engine to {config['engine']['engine_type']}")
                     
                     # Run the test sequence again (recursively)
@@ -432,7 +455,7 @@ def main():
                     print(f"\nTesting {engine['name']}...")
                     
                     # Configure pipeline with this engine
-                    pipeline.configure({"tts": engine["config"]})
+                    pipeline.update_config({"tts": engine["config"]})
                     time.sleep(1)  # Give time for configuration to apply
                     
                     # Run the test
@@ -475,7 +498,7 @@ def main():
                     results[engine["name"]] = engine_results
                 
                 # Restore original configuration
-                pipeline.configure({"tts": original_config})
+                pipeline.update_config({"tts": original_config})
                 
                 # Display comparison results
                 print("\n" + "=" * 70)
@@ -496,6 +519,178 @@ def main():
                 print("Quality assessment is subjective and should be evaluated separately.")
                 print("See USER_TESTING_GUIDE.md for quality evaluation criteria.")
                 print("=" * 70)
+                
+            elif cmd.lower() == "a":
+                # Change platform implementation
+                print("\nPlatform Configuration")
+                print("=" * 70)
+                
+                # Get current platform information
+                platform_type = capability_registry.get_platform_type()
+                platform_config = pipeline.config.get_platform_config()
+                
+                # Get available implementations
+                capture_impls = audio_capture_factory.get_available_implementations()
+                playback_impls = audio_playback_factory.get_available_implementations()
+                
+                print(f"Current platform: {platform_type.upper()}")
+                print(f"Available audio capture implementations: {', '.join(capture_impls)}")
+                print(f"Available audio playback implementations: {', '.join(playback_impls)}")
+                
+                print("\nPlatform presets:")
+                print("  [1] Native Audio (use platform-specific optimizations)")
+                print("  [2] Fallback Audio (use generic implementations)")
+                print("  [3] Custom configuration")
+                
+                choice = input("\nEnter choice [1-3]: ")
+                
+                if choice == "1":
+                    pipeline.config.apply_preset("native_audio")
+                    logger.info("Applied native_audio preset")
+                    
+                    # Restart the pipeline to apply changes
+                    was_running = pipeline.is_running
+                    if was_running:
+                        pipeline.stop()
+                        time.sleep(1)
+                        pipeline.start()
+                    
+                elif choice == "2":
+                    pipeline.config.apply_preset("fallback_audio")
+                    logger.info("Applied fallback_audio preset")
+                    
+                    # Restart the pipeline to apply changes
+                    was_running = pipeline.is_running
+                    if was_running:
+                        pipeline.stop()
+                        time.sleep(1)
+                        pipeline.start()
+                    
+                elif choice == "3":
+                    # Custom platform configuration
+                    print("\nCustom Platform Configuration")
+                    
+                    # Audio capture implementation
+                    print("\nAudio Capture Implementation:")
+                    for i, impl in enumerate(capture_impls):
+                        print(f"  [{i+1}] {impl}")
+                    
+                    capture_choice = input("Enter choice [1-{}] or 0 for auto: ".format(len(capture_impls)))
+                    
+                    try:
+                        capture_idx = int(capture_choice)
+                        if capture_idx == 0:
+                            preferred_capture = None
+                        elif 1 <= capture_idx <= len(capture_impls):
+                            preferred_capture = capture_impls[capture_idx-1]
+                        else:
+                            logger.warning(f"Invalid audio capture implementation choice: {capture_idx}")
+                            continue
+                    except ValueError:
+                        logger.warning(f"Invalid input: {capture_choice}")
+                        continue
+                    
+                    # Audio playback implementation
+                    print("\nAudio Playback Implementation:")
+                    for i, impl in enumerate(playback_impls):
+                        print(f"  [{i+1}] {impl}")
+                    
+                    playback_choice = input("Enter choice [1-{}] or 0 for auto: ".format(len(playback_impls)))
+                    
+                    try:
+                        playback_idx = int(playback_choice)
+                        if playback_idx == 0:
+                            preferred_playback = None
+                        elif 1 <= playback_idx <= len(playback_impls):
+                            preferred_playback = playback_impls[playback_idx-1]
+                        else:
+                            logger.warning(f"Invalid audio playback implementation choice: {playback_idx}")
+                            continue
+                    except ValueError:
+                        logger.warning(f"Invalid input: {playback_choice}")
+                        continue
+                    
+                    # Update configuration
+                    platform_config["audio_capture"]["preferred_implementation"] = preferred_capture
+                    platform_config["audio_playback"]["preferred_implementation"] = preferred_playback
+                    
+                    # Apply configuration
+                    pipeline.update_config({"platform": platform_config})
+                    logger.info("Applied custom platform configuration")
+                    
+                    # Restart the pipeline to apply changes
+                    was_running = pipeline.is_running
+                    if was_running:
+                        pipeline.stop()
+                        time.sleep(1)
+                        pipeline.start()
+                else:
+                    logger.warning(f"Invalid choice: {choice}")
+                    
+            elif cmd.lower() == "d":
+                # List audio devices
+                print("\nAudio Devices")
+                print("=" * 70)
+                
+                devices = pipeline.get_devices()
+                
+                # Print input devices
+                print("\nInput Devices:")
+                for i, device in enumerate(devices["input"]):
+                    name = device.get("name", "Unknown")
+                    id = device.get("id", "")
+                    channels = device.get("channels", 0)
+                    default = " (default)" if device.get("is_default", False) else ""
+                    print(f"  [{i+1}] {name}{default} - ID: {id}, Channels: {channels}")
+                
+                # Print output devices
+                print("\nOutput Devices:")
+                for i, device in enumerate(devices["output"]):
+                    name = device.get("name", "Unknown")
+                    id = device.get("id", "")
+                    channels = device.get("channels", 0)
+                    default = " (default)" if device.get("is_default", False) else ""
+                    print(f"  [{i+1}] {name}{default} - ID: {id}, Channels: {channels}")
+                
+                # Allow device selection
+                print("\nSelect device:")
+                print("  [1] Select input device")
+                print("  [2] Select output device")
+                print("  [0] Cancel")
+                
+                device_choice = input("\nEnter choice [0-2]: ")
+                
+                if device_choice == "1":
+                    # Select input device
+                    dev_idx = input("Enter input device number: ")
+                    try:
+                        idx = int(dev_idx) - 1
+                        if 0 <= idx < len(devices["input"]):
+                            device_id = devices["input"][idx].get("id")
+                            if pipeline.capture.select_device(device_id):
+                                logger.info(f"Selected input device: {devices['input'][idx].get('name')}")
+                            else:
+                                logger.error("Failed to select input device")
+                        else:
+                            logger.warning(f"Invalid device index: {idx+1}")
+                    except ValueError:
+                        logger.warning(f"Invalid input: {dev_idx}")
+                
+                elif device_choice == "2":
+                    # Select output device
+                    dev_idx = input("Enter output device number: ")
+                    try:
+                        idx = int(dev_idx) - 1
+                        if 0 <= idx < len(devices["output"]):
+                            device_id = devices["output"][idx].get("id")
+                            if pipeline.playback.select_device(device_id):
+                                logger.info(f"Selected output device: {devices['output'][idx].get('name')}")
+                            else:
+                                logger.error("Failed to select output device")
+                        else:
+                            logger.warning(f"Invalid device index: {idx+1}")
+                    except ValueError:
+                        logger.warning(f"Invalid input: {dev_idx}")
                 
             elif cmd.lower() == "q":
                 running = False

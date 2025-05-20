@@ -619,8 +619,13 @@
   
 - CON-PLAT-001: **Platform Abstraction Layer**
   - Definition: Architecture layer that isolates platform-specific implementations from core business logic
-  - Related: CON-PLAT-002, CON-PLAT-003, CON-PLAT-004, CON-PLAT-005
+  - Related: CON-PLAT-002, CON-PLAT-003, CON-PLAT-004, CON-PLAT-005, CON-PLAT-009
   - Documents: DOC-ARCH-004
+  
+- CON-PLAT-009: **Platform Abstraction Demo**
+  - Definition: Interactive CLI demo for testing and showcasing the Platform Abstraction Layer's cross-platform capabilities
+  - Related: CON-PLAT-001, CON-VOICE-022, CON-DEV-003, CON-TEST-014
+  - Documents: DOC-IMP-010
   
 - CON-PLAT-002: **Platform Interface**
   - Definition: Standardized interface for accessing platform capabilities regardless of underlying implementation
@@ -1061,6 +1066,7 @@ graph TD
     PAL --> PAL2["Implementation<br/>Factory"]
     PAL --> PAL3["Feature<br/>Detection"]
     PAL --> PAL4["Capability<br/>Registry"]
+    PAL --> PAL5["Platform<br/>Abstraction Demo"]
     
     PAL1 --> PAL1A["Audio<br/>Interface"]
     PAL1 --> PAL1B["UI<br/>Interface"]
@@ -1086,12 +1092,18 @@ graph TD
     PAL4 --> PAL4A["Capability<br/>Status"]
     PAL4 --> PAL4B["Implementation<br/>Mapping"]
     
+    PAL5 --> PAL5A["Platform<br/>Selection UI"]
+    PAL5 --> PAL5B["Runtime<br/>Switching"]
+    PAL5 --> PAL5C["Device<br/>Management"]
+    
     classDef main fill:#e3f2fd,stroke:#1565c0,stroke-width:1px
     classDef sub fill:#bbdefb,stroke:#1976d2,stroke-width:1px
     classDef impl fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
+    classDef demo fill:#b3e5fc,stroke:#0277bd,stroke-width:1px
     
     class PAL main
     class PAL1,PAL2,PAL3,PAL4 main
+    class PAL5,PAL5A,PAL5B,PAL5C demo
     class PAL1A,PAL1B,PAL1C,PAL1D,PAL3A,PAL3B,PAL4A,PAL4B sub
     class PAL2A,PAL2B,PAL2C,PAL2A1,PAL2A2,PAL2B1,PAL2B2,PAL2C1,PAL2C2 impl
 ```
@@ -1284,4 +1296,4 @@ graph TD
 ```
 
 ## Last Updated
-2025-05-19T17:30:00Z | SES-V0-021 | Added Platform Abstraction Layer concepts for cross-platform compatibility
+2025-05-20T10:30:00Z | SES-V0-025 | Added Platform Abstraction Demo concept and updated diagram
