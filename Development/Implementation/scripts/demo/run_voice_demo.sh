@@ -180,9 +180,9 @@ echo -e "${YELLOW}Press Ctrl+C to exit${NC}"
 if [ "$CAPTURE_LOGS" = true ]; then
     LOG_FILE="$ROOT_DIR/logs/vanta_demo_$(date '+%Y%m%d_%H%M%S').log"
     echo -e "Capturing logs to: ${BLUE}$LOG_FILE${NC}"
-    eval "python3 \"$SCRIPT_DIR/voice_pipeline_demo.py\" $CMD_ARGS" 2>&1 | tee "$LOG_FILE"
+    eval "python3 \"$SCRIPT_DIR/demo/voice_pipeline_demo.py\" $CMD_ARGS" 2>&1 | tee "$LOG_FILE"
     echo -e "${GREEN}Demo complete. Log saved to: $LOG_FILE${NC}"
 else
-    eval "python3 \"$SCRIPT_DIR/voice_pipeline_demo.py\" $CMD_ARGS"
+    eval "python3 \"$SCRIPT_DIR/demo/voice_pipeline_demo.py\" $CMD_ARGS"
     echo -e "${GREEN}Demo complete.${NC}"
 fi
