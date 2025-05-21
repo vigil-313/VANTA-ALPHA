@@ -22,6 +22,14 @@ from .exceptions import (
     ModelNotInitializedError,
     TokenizationError
 )
+from .optimization import (
+    OptimizationConfig,
+    PerformanceMonitor,
+    QuantizationManager,
+    MetalAccelerationManager,
+    MemoryManager,
+    ThreadOptimizer
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +49,8 @@ class LlamaModelAdapter(LocalModelInterface):
         self.config = config or {}
         self.model = None
         self.is_initialized = False
+        self.performance_monitor = None
+        self.optimization_config = None
         
         # Initialize if model_path is provided
         if model_path:
@@ -75,52 +85,97 @@ class LlamaModelAdapter(LocalModelInterface):
             # Import here to avoid dependency issues if llama_cpp is not installed
             from llama_cpp import Llama
             
-            # Get configuration parameters with defaults
-            n_ctx = self.config.get("context_size", 4096)
-            n_batch = self.config.get("batch_size", 512)
-            n_threads = self.config.get("thread_count", os.cpu_count() or 4)
-            metal_enabled = self.config.get("metal_enabled", False)
-            metal_device = self.config.get("metal_device", None)  # None means default device
+            # Initialize optimization components if needed
+            thread_optimizer = ThreadOptimizer()
+            metal_manager = MetalAccelerationManager()
+            quant_manager = QuantizationManager()
             
-            # Check if running on macOS and Metal is enabled
-            system = platform.system()
-            if system == "Darwin" and metal_enabled:
-                logger.info("Initializing llama.cpp with Metal acceleration")
+            # Extract model size from path for better optimization
+            model_name = os.path.basename(model_path)
+            model_size_billions = quant_manager.get_model_size_from_name(model_name) / 1_000_000_000
+            
+            # Create or use optimization config
+            if "optimization" in self.config and isinstance(self.config["optimization"], dict):
+                # Use provided optimization configuration
+                opt_config = OptimizationConfig.from_dict(self.config["optimization"])
+            elif self.config.get("use_optimization", True):
+                # Create and automatically optimize config
+                opt_config = OptimizationConfig(
+                    quantization=self.config.get("quantization", "q4_0"),
+                    use_metal=self.config.get("metal_enabled"),
+                    thread_count=self.config.get("thread_count"),
+                    batch_size=self.config.get("batch_size"),
+                    context_size=self.config.get("context_size", 4096)
+                )
                 
-                # Metal acceleration parameters
-                use_metal = True
-                n_gpu_layers = self.config.get("n_gpu_layers", 1)  # Higher for more GPU offloading
+                # Apply automatic optimizations
+                opt_config = thread_optimizer.optimize_thread_config(
+                    config=opt_config,
+                    model_size_billions=model_size_billions
+                )
+                opt_config = metal_manager.update_optimization_config(
+                    config=opt_config,
+                    model_size_billions=model_size_billions
+                )
             else:
-                use_metal = False
-                n_gpu_layers = 0
+                # Use basic configuration from provided config
+                opt_config = OptimizationConfig(
+                    quantization=self.config.get("quantization", "q4_0"),
+                    use_metal=self.config.get("metal_enabled", False),
+                    thread_count=self.config.get("thread_count", os.cpu_count() or 4),
+                    batch_size=self.config.get("batch_size", 512),
+                    context_size=self.config.get("context_size", 4096),
+                )
+            
+            # Validate configuration
+            opt_config.validate()
+            
+            # Get llama parameters
+            llama_params = opt_config.get_llama_params()
+            
+            # Add parameters that aren't covered by OptimizationConfig
+            llama_params.update({
+                "vocab_only": False,
+                "last_n_tokens_size": self.config.get("last_n_tokens_size", 64),
+                "seed": self.config.get("seed", -1),
+            })
+            
+            # Set metal_device if using Metal
+            if opt_config.use_metal:
+                metal_device = self.config.get("metal_device")
+                if metal_device is not None:
+                    llama_params["metal_device"] = metal_device
             
             # Log initialization parameters
             logger.info(f"Initializing llama.cpp model: {model_path}")
-            logger.info(f"  Context size: {n_ctx}")
-            logger.info(f"  Batch size: {n_batch}")
-            logger.info(f"  Threads: {n_threads}")
-            logger.info(f"  Metal enabled: {use_metal}")
-            logger.info(f"  GPU layers: {n_gpu_layers}")
+            logger.info(f"  Size: ~{model_size_billions:.1f}B parameters")
+            logger.info(f"  Quantization: {opt_config.quantization}")
+            logger.info(f"  Context size: {opt_config.context_size}")
+            logger.info(f"  Batch size: {opt_config.batch_size}")
+            logger.info(f"  Threads: {opt_config.thread_count}")
+            logger.info(f"  Metal enabled: {opt_config.use_metal}")
+            logger.info(f"  GPU layers: {opt_config.n_gpu_layers if opt_config.use_metal else 0}")
+            
+            # Initialize performance monitor
+            self.performance_monitor = PerformanceMonitor()
+            self.performance_monitor.start_monitoring()
             
             # Initialize the model
             start_time = time.time()
             self.model = Llama(
                 model_path=model_path,
-                n_ctx=n_ctx,
-                n_batch=n_batch,
-                n_threads=n_threads,
-                n_gpu_layers=n_gpu_layers,
-                use_mlock=self.config.get("use_mlock", True),
-                use_mmap=self.config.get("use_mmap", True),
-                vocab_only=False,
-                offload_kqv=self.config.get("offload_kqv", True),
-                metal_device=metal_device if use_metal else None,
-                last_n_tokens_size=self.config.get("last_n_tokens_size", 64),
-                seed=self.config.get("seed", -1),
-                verbose=self.config.get("verbose", False)
+                **llama_params
             )
             load_time = time.time() - start_time
-            logger.info(f"Model loaded in {load_time:.2f} seconds")
+            
+            # Stop performance monitor
+            self.performance_monitor.stop_monitoring()
+            memory_usage = self.performance_monitor.get_metrics()["peak_memory_gb"]
+            
+            logger.info(f"Model loaded in {load_time:.2f} seconds, memory usage: {memory_usage:.2f} GB")
+            
+            # Store optimization config for reference
+            self.optimization_config = opt_config
             
             self.is_initialized = True
             return True
@@ -153,6 +208,17 @@ class LlamaModelAdapter(LocalModelInterface):
         generation_params = self._prepare_generation_params(params)
         
         try:
+            # Set up performance monitoring
+            monitor = self.performance_monitor or PerformanceMonitor()
+            monitor.start_monitoring()
+            
+            # Count prompt tokens
+            if hasattr(self, 'tokenize'):
+                prompt_tokens = len(self.tokenize(prompt))
+            else:
+                prompt_tokens = len(prompt.split()) # Rough approximation
+            
+            # Generate response
             start_time = time.time()
             result = self.model.create_completion(
                 prompt=prompt,
@@ -160,20 +226,35 @@ class LlamaModelAdapter(LocalModelInterface):
             )
             generation_time = time.time() - start_time
             
+            # Record performance metrics
+            completion_tokens = result.get("usage", {}).get("completion_tokens", 0)
+            monitor.record_inference(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                latency=generation_time
+            )
+            
+            # Stop monitoring and get metrics
+            monitor.stop_monitoring()
+            perf_metrics = monitor.get_metrics()
+            
             # Extract and return the result
             output = {
                 "text": result["choices"][0]["text"],
                 "finish_reason": result["choices"][0].get("finish_reason", "length"),
                 "usage": {
-                    "prompt_tokens": result.get("usage", {}).get("prompt_tokens", 0),
-                    "completion_tokens": result.get("usage", {}).get("completion_tokens", 0),
-                    "total_tokens": result.get("usage", {}).get("total_tokens", 0),
+                    "prompt_tokens": result.get("usage", {}).get("prompt_tokens", prompt_tokens),
+                    "completion_tokens": completion_tokens,
+                    "total_tokens": result.get("usage", {}).get("total_tokens", prompt_tokens + completion_tokens),
                 },
                 "generation_time": generation_time,
                 "model_path": self.model_path,
+                "tokens_per_second": perf_metrics.get("avg_tokens_per_second", 0),
+                "peak_memory_gb": perf_metrics.get("peak_memory_gb", 0),
             }
             
-            logger.debug(f"Generated {output['usage']['completion_tokens']} tokens in {generation_time:.2f}s")
+            tokens_per_second = completion_tokens / generation_time if generation_time > 0 else 0
+            logger.debug(f"Generated {completion_tokens} tokens in {generation_time:.2f}s ({tokens_per_second:.2f} tokens/sec)")
             return output
             
         except Exception as e:
@@ -288,11 +369,37 @@ class LlamaModelAdapter(LocalModelInterface):
             return True
         
         try:
+            # Get memory usage before shutdown
+            memory_before = 0
+            if self.performance_monitor:
+                metrics = self.performance_monitor.get_metrics()
+                memory_before = metrics.get("current_memory_gb", 0)
+            
             # Delete the model to free resources
             # The Python garbage collector should handle actual resource cleanup
             self.model = None
             self.is_initialized = False
-            logger.info("Model resources freed successfully")
+            
+            # Force garbage collection to clean up memory
+            import gc
+            gc.collect()
+            
+            # Get memory after shutdown if possible
+            memory_after = 0
+            try:
+                import psutil
+                process = psutil.Process()
+                memory_info = process.memory_info()
+                memory_after = memory_info.rss / (1024 * 1024 * 1024)  # GB
+            except ImportError:
+                pass
+            
+            # Log memory freed
+            if memory_before > 0 and memory_after > 0:
+                logger.info(f"Model resources freed successfully. Memory released: {memory_before - memory_after:.2f} GB")
+            else:
+                logger.info("Model resources freed successfully.")
+                
             return True
         except Exception as e:
             logger.error(f"Error during shutdown: {e}")

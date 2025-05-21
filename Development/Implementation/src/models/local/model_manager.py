@@ -22,6 +22,15 @@ from .exceptions import (
     ModelNotInitializedError,
     UnsupportedModelTypeError
 )
+from .optimization import (
+    OptimizationConfig,
+    PerformanceMonitor,
+    QuantizationManager,
+    MetalAccelerationManager,
+    MemoryManager,
+    ThreadOptimizer
+)
+from .benchmarks import BenchmarkRunner
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +49,19 @@ class LocalModelManager:
         self.model_registry = self._load_registry()
         self.active_models = {}  # Map of model_id to model adapter
         self.prompt_formatter = PromptFormatter()
+        
+        # Initialize optimization components
+        self.performance_monitor = PerformanceMonitor()
+        self.quantization_manager = QuantizationManager()
+        self.metal_manager = MetalAccelerationManager()
+        self.thread_optimizer = ThreadOptimizer()
+        self.memory_manager = MemoryManager(
+            memory_limit_gb=self.config.get("memory_limit_gb", 8.0),
+            enable_monitoring=self.config.get("monitor_memory", True)
+        )
+        
+        # Set up benchmark runner
+        self.benchmark_runner = None  # Initialize lazily when needed
         
         logger.info(f"LocalModelManager initialized with {len(self.model_registry.get('models', []))} models in registry")
     
@@ -149,6 +171,37 @@ class LocalModelManager:
         # Apply model-specific parameters from registry if available
         if "parameters" in model_info:
             model_config.update(model_info["parameters"])
+            
+        # Check if optimization should be applied
+        if model_config.get("use_optimization", True) and "optimization" not in model_config:
+            # Get model size from name
+            model_name = model_info.get("name", model_id)
+            model_size_billions = self.quantization_manager.get_model_size_from_name(model_name) / 1_000_000_000
+            
+            # Create optimized configuration
+            opt_config = OptimizationConfig()
+            opt_config = self.thread_optimizer.optimize_thread_config(
+                config=opt_config,
+                model_size_billions=model_size_billions
+            )
+            opt_config = self.metal_manager.update_optimization_config(
+                config=opt_config,
+                model_size_billions=model_size_billions
+            )
+            
+            # Add optimization config to model configuration
+            model_config["optimization"] = opt_config.to_dict()
+            
+            # Check if memory is sufficient
+            memory_check = self.memory_manager.check_memory_sufficient(
+                required_gb=opt_config.memory_limit_gb
+            )
+            
+            if not memory_check["sufficient"]:
+                logger.warning(
+                    f"Low memory available ({memory_check['available_gb']:.2f} GB) for model requiring "
+                    f"{memory_check['required_gb']:.2f} GB. Model may experience performance issues."
+                )
         
         try:
             # Load the model based on its type
@@ -170,7 +223,9 @@ class LocalModelManager:
                     "adapter": adapter,
                     "info": model_info,
                     "loaded_at": time.time(),
-                    "model_type": self._get_model_architecture(model_info)
+                    "model_type": self._get_model_architecture(model_info),
+                    "performance": adapter.performance_monitor.get_metrics() if hasattr(adapter, "performance_monitor") else None,
+                    "optimization": adapter.optimization_config.to_dict() if hasattr(adapter, "optimization_config") else None
                 }
                 
                 logger.info(f"Successfully loaded model {model_id}")
@@ -226,6 +281,7 @@ class LocalModelManager:
             raise ModelNotInitializedError(f"Model {model_id} not loaded")
         
         model_data = self.active_models[model_id]
+        adapter = model_data["adapter"]
         
         # Collect basic stats
         stats = {
@@ -233,8 +289,29 @@ class LocalModelManager:
             "loaded_at": model_data["loaded_at"],
             "uptime_seconds": time.time() - model_data["loaded_at"],
             "model_type": model_data["model_type"],
-            "model_path": model_data["adapter"].model_path,
+            "model_path": adapter.model_path,
         }
+        
+        # Add optimization configuration if available
+        if hasattr(adapter, "optimization_config") and adapter.optimization_config:
+            stats["optimization"] = adapter.optimization_config.to_dict()
+        elif "optimization" in model_data:
+            stats["optimization"] = model_data["optimization"]
+            
+        # Add performance metrics if available
+        if hasattr(adapter, "performance_monitor") and adapter.performance_monitor:
+            stats["performance"] = adapter.performance_monitor.get_metrics()
+        elif "performance" in model_data:
+            stats["performance"] = model_data["performance"]
+            
+        # Add memory usage if available
+        try:
+            import psutil
+            process = psutil.Process()
+            memory_info = process.memory_info()
+            stats["current_memory_gb"] = memory_info.rss / (1024 * 1024 * 1024)  # Convert to GB
+        except ImportError:
+            pass
         
         return stats
     
@@ -272,6 +349,9 @@ class LocalModelManager:
         adapter = model_data["adapter"]
         model_type = model_data["model_type"]
         
+        # Record start of processing in performance monitor
+        self.performance_monitor.start_monitoring()
+        
         # Format prompt if requested
         input_prompt = prompt
         if format_prompt:
@@ -294,6 +374,13 @@ class LocalModelManager:
         
         # Add model information
         result["model_id"] = model_id
+        
+        # Update performance monitoring
+        self.performance_monitor.stop_monitoring()
+        
+        # Update model_data with latest performance metrics if adapter has them
+        if hasattr(adapter, "performance_monitor") and adapter.performance_monitor:
+            model_data["performance"] = adapter.performance_monitor.get_metrics()
         
         return result
     
@@ -376,8 +463,160 @@ class LocalModelManager:
             if not self.unload_model(model_id):
                 success = False
         
+        # Stop memory monitoring if active
+        if hasattr(self.memory_manager, 'stop_monitoring'):
+            self.memory_manager.stop_monitoring()
+        
         logger.info("LocalModelManager shutdown complete")
         return success
+        
+    def benchmark_model(self, 
+                       model_id: str, 
+                       benchmark_type: str = "latency",
+                       save_results: bool = False,
+                       results_path: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Run benchmarks on a specific model.
+        
+        Args:
+            model_id: ID of the model to benchmark
+            benchmark_type: Type of benchmark to run ("latency", "memory", "throughput", "comprehensive")
+            save_results: Whether to save benchmark results to a file
+            results_path: Path to save results to (if save_results is True)
+            
+        Returns:
+            Dictionary with benchmark results
+            
+        Raises:
+            ModelNotFoundError: If the model is not found in the registry
+        """
+        # Check if model exists in registry
+        if not self.get_model_info(model_id):
+            raise ModelNotFoundError(f"Model {model_id} not found in registry")
+            
+        # Initialize benchmark runner if needed
+        if self.benchmark_runner is None:
+            self.benchmark_runner = BenchmarkRunner(self)
+            
+        # Run appropriate benchmark
+        logger.info(f"Running {benchmark_type} benchmark for model {model_id}")
+        
+        if benchmark_type == "latency":
+            results = self.benchmark_runner.run_latency_benchmark(model_id)
+        elif benchmark_type == "memory":
+            results = self.benchmark_runner.run_memory_benchmark(model_id)
+        elif benchmark_type == "throughput":
+            results = self.benchmark_runner.run_throughput_benchmark(model_id)
+        elif benchmark_type == "comprehensive":
+            results = self.benchmark_runner.run_comprehensive_benchmark(model_id)
+        else:
+            raise ValueError(f"Unknown benchmark type: {benchmark_type}")
+            
+        # Save results if requested
+        if save_results and results_path:
+            self.benchmark_runner.save_benchmark_results(results, results_path)
+            logger.info(f"Benchmark results saved to {results_path}")
+            
+        return results
+        
+    def optimize_model(self, 
+                      model_id: str, 
+                      optimize_for: str = "balanced", 
+                      custom_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Create optimized configuration for a model.
+        
+        Args:
+            model_id: ID of the model to optimize
+            optimize_for: Optimization target ("speed", "quality", "memory", "balanced")
+            custom_config: Optional custom configuration parameters
+            
+        Returns:
+            Dictionary with optimized configuration
+            
+        Raises:
+            ModelNotFoundError: If the model is not found in the registry
+        """
+        # Check if model exists in registry
+        model_info = self.get_model_info(model_id)
+        if not model_info:
+            raise ModelNotFoundError(f"Model {model_id} not found in registry")
+            
+        # Get model size from name
+        model_name = model_info.get("name", model_id)
+        model_size_billions = self.quantization_manager.get_model_size_from_name(model_name) / 1_000_000_000
+        
+        # Create base configuration
+        opt_config = OptimizationConfig()
+        
+        # Apply custom config if provided
+        if custom_config:
+            for key, value in custom_config.items():
+                if hasattr(opt_config, key):
+                    setattr(opt_config, key, value)
+        
+        # Optimize based on target
+        if optimize_for == "speed":
+            # Prioritize speed
+            opt_config.quantization = "q4_0"  # Fastest but less accurate
+            opt_config = self.thread_optimizer.optimize_thread_config(
+                config=opt_config,
+                model_size_billions=model_size_billions,
+                workload_type="batch"  # Use batch mode for speed
+            )
+        elif optimize_for == "quality":
+            # Prioritize quality
+            opt_config.quantization = "q5_k" if model_size_billions < 13 else "q4_1"  # Better quality quantization
+            opt_config = self.thread_optimizer.optimize_thread_config(
+                config=opt_config,
+                model_size_billions=model_size_billions,
+                workload_type="interactive"  # Interactive mode for better quality
+            )
+        elif optimize_for == "memory":
+            # Prioritize memory efficiency
+            opt_config.quantization = "q4_0"  # Most memory efficient
+            opt_config.low_vram = True
+            opt_config = self.thread_optimizer.optimize_thread_config(
+                config=opt_config,
+                model_size_billions=model_size_billions,
+                workload_type="default"
+            )
+        else:  # balanced
+            # Balanced approach
+            recommended = self.quantization_manager.recommend_quantization(
+                model_params=model_size_billions * 1_000_000_000,
+                max_memory_gb=self.memory_manager.memory_limit_gb
+            )
+            opt_config.quantization = recommended["recommended"]
+            opt_config = self.thread_optimizer.optimize_thread_config(
+                config=opt_config,
+                model_size_billions=model_size_billions,
+                workload_type="default"
+            )
+            
+        # Apply Metal acceleration if available
+        opt_config = self.metal_manager.update_optimization_config(
+            config=opt_config,
+            model_size_billions=model_size_billions
+        )
+        
+        # Return the configuration
+        return {
+            "model_id": model_id,
+            "model_size_billions": model_size_billions,
+            "optimization_target": optimize_for,
+            "config": opt_config.to_dict(),
+            "estimated_performance": self.thread_optimizer.estimate_performance(
+                thread_count=opt_config.thread_count,
+                batch_size=opt_config.batch_size,
+                model_size_billions=model_size_billions
+            ),
+            "memory_estimate": self.quantization_manager.estimate_memory_usage(
+                model_params=int(model_size_billions * 1_000_000_000),
+                quant_type=opt_config.quantization,
+                context_length=opt_config.context_size
+            )
+        }
     
     def _ensure_model_loaded(self, model_id: Optional[str] = None) -> str:
         """
