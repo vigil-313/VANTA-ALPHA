@@ -16,6 +16,8 @@ from typing import Any, Dict, Iterator, List, Optional, Type, Union
 from .interface import APIModelInterface, PromptType, ParamsType
 from .config import load_config
 from .exceptions import APIModelError, APIInitializationError, APIConfigurationError
+from .streaming.stream_handler import StreamHandler
+from .streaming.stream_manager import StreamManager
 
 logger = logging.getLogger(__name__)
 
@@ -308,6 +310,74 @@ class APIModelManager:
         
         # Count tokens
         return client.count_tokens(text)
+    
+    def generate_stream_with_handlers(
+        self, prompt: PromptType, model_id: Optional[str] = None, 
+        params: ParamsType = None, handlers: Optional[List[StreamHandler]] = None,
+        stream_config: Optional[Dict[str, Any]] = None
+    ) -> StreamManager:
+        """Generate a streaming response with handlers.
+        
+        Args:
+            prompt: Prompt data (string or message list)
+            model_id: Optional model ID with provider prefix
+            params: Optional generation parameters
+            handlers: Optional list of stream handlers
+            stream_config: Optional streaming configuration
+            
+        Returns:
+            StreamManager instance managing the stream
+            
+        Raises:
+            APIModelError: If generation fails
+        """
+        # Create stream manager with configuration
+        stream_manager = StreamManager(stream_config)
+        
+        # Register handlers
+        if handlers:
+            for handler in handlers:
+                stream_manager.register_handler(handler)
+        
+        # Parse provider and model
+        provider_name = self.config["default_provider"]
+        model_name = None
+        
+        if model_id:
+            if ":" in model_id:
+                provider_name, model_name = model_id.split(":", 1)
+            else:
+                model_name = model_id
+        
+        # Get or create client
+        client = self._get_or_create_client(provider_name, model_name)
+        
+        try:
+            # Ensure stream parameter is set
+            if params is None:
+                params = {}
+            
+            if "stream" not in params:
+                params["stream"] = True
+            
+            # Get stream
+            stream = client.generate_stream(prompt, params)
+            
+            # Start stream processing
+            metadata = {
+                "provider": provider_name,
+                "model": model_name or client.model_id,
+                "prompt": prompt,
+                "request_id": model_id or f"{provider_name}:{model_name or client.model_id}"
+            }
+            stream_manager.start_stream(stream, metadata)
+            
+            return stream_manager
+        except Exception as e:
+            if isinstance(e, APIModelError):
+                raise
+            else:
+                raise APIModelError(f"API streaming generation failed: {str(e)}")
     
     def shutdown(self) -> None:
         """Shutdown all active clients and release resources."""

@@ -6,9 +6,11 @@ API Model Client package for VANTA.
 This package provides integration with cloud-based language models like Claude and GPT-4.
 """
 # TASK-REF: AM_001 - API Model Client
+# TASK-REF: AM_002 - Streaming Response Handling
 # CONCEPT-REF: CON-AM-001 - API Model Client
 # CONCEPT-REF: CON-VANTA-012 - Dual-Track Processing
 # DOC-REF: DOC-PROMPT-AM-001 - API Model Client Implementation
+# DOC-REF: DOC-PROMPT-AM-002 - Streaming Response Handling Implementation
 
 from .interface import APIModelInterface
 from .api_manager import APIModelManager
@@ -41,6 +43,21 @@ from .token_counter import (
     count_tokens_anthropic,
     count_tokens_openai,
     count_prompt_tokens
+)
+
+# Import streaming functionality
+from .streaming import (
+    StreamHandler,
+    BufferedStreamHandler,
+    ConsoleStreamHandler,
+    CallbackStreamHandler,
+    StreamManager,
+    StreamProcessor,
+    StreamConfig,
+    StreamingError,
+    StreamHandlerError,
+    StreamProcessingError,
+    StreamTimeoutError
 )
 
 __all__ = [
@@ -81,5 +98,18 @@ __all__ = [
     # Token counting
     'count_tokens_anthropic',
     'count_tokens_openai',
-    'count_prompt_tokens'
+    'count_prompt_tokens',
+    
+    # Streaming functionality
+    'StreamHandler',
+    'BufferedStreamHandler',
+    'ConsoleStreamHandler',
+    'CallbackStreamHandler',
+    'StreamManager',
+    'StreamProcessor',
+    'StreamConfig',
+    'StreamingError',
+    'StreamHandlerError',
+    'StreamProcessingError',
+    'StreamTimeoutError'
 ]
