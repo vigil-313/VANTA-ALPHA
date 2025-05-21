@@ -132,6 +132,11 @@
   - Related: CON-IMP-022, CON-IMP-010, CON-TEST-012
   - Documents: DOC-IMP-005
 
+- CON-VANTA-012: **Dual-Track Processing**
+  - Definition: Architecture that uses both local and API models in parallel for optimal performance and quality
+  - Related: CON-HVA-001, CON-LM-001, CON-AM-001, CON-HVA-012
+  - Documents: DOC-ARCH-001, DOC-PROMPT-LM-001, DOC-PROMPT-AM-001
+
 - CON-MEM-001: **Memory System Architecture**
   - Definition: Core architecture of the memory system with working memory, long-term memory, and vector storage components
   - Related: CON-VANTA-002, CON-VANTA-007, CON-MEM-002, CON-MEM-003, CON-MEM-004
@@ -182,9 +187,49 @@
   - Related: CON-MEM-004, CON-MEM-006
   - Documents: DOC-IMP-008
 
+- CON-MEM-011: **Memory Summarization**
+  - Definition: Techniques for condensing conversation history into concise summaries to optimize token usage
+  - Related: CON-MEM-007, CON-MEM-009, CON-LM-003
+  - Documents: DOC-IMP-008
+
+- CON-LM-001: **Local Model Integration**
+  - Definition: Integration of local language models (llama.cpp) for fast, on-device inference
+  - Related: CON-VANTA-012, CON-HVA-010, CON-LM-002, CON-LM-003
+  - Documents: DOC-PROMPT-LM-001
+
+- CON-LM-002: **Metal Acceleration**
+  - Definition: Hardware acceleration for neural networks on macOS using Apple's Metal framework
+  - Related: CON-LM-001, CON-HVA-003, CON-HVA-015
+  - Documents: DOC-PROMPT-LM-002
+
+- CON-LM-003: **Prompt Templates**
+  - Definition: Structured templates for formatting prompts optimized for different model architectures
+  - Related: CON-LM-001, CON-AM-001, CON-MEM-007
+  - Documents: DOC-PROMPT-LM-003
+
+- CON-LM-004: **Model Quantization**
+  - Definition: Technique to reduce model precision for improved performance and reduced memory usage
+  - Related: CON-LM-001, CON-LM-002, CON-HVA-015
+  - Documents: DOC-PROMPT-LM-002
+
+- CON-AM-001: **API Model Client**
+  - Definition: Client for connecting to cloud-based language models like Claude and GPT-4
+  - Related: CON-VANTA-012, CON-HVA-011, CON-AM-002, CON-AM-003
+  - Documents: DOC-PROMPT-AM-001
+
+- CON-AM-002: **Streaming Response Handling**
+  - Definition: Techniques for processing and utilizing incremental responses from API models
+  - Related: CON-AM-001, CON-HVA-004, CON-HVA-016
+  - Documents: DOC-PROMPT-AM-002
+
+- CON-AM-003: **API Fallback Mechanisms**
+  - Definition: Strategies for handling API errors, rate limits, and service disruptions
+  - Related: CON-AM-001, CON-HVA-011, CON-VANTA-012
+  - Documents: DOC-PROMPT-AM-003
+
 - CON-HVA-001: **Dual-track Processing**
   - Definition: Using local models for immediate responses while cloud APIs handle complex reasoning
-  - Related: CON-HVA-010, CON-HVA-011, CON-HVA-012, CON-VANTA-009
+  - Related: CON-HVA-010, CON-HVA-011, CON-HVA-012, CON-VANTA-009, CON-VANTA-012
   - Documents: DOC-RESEARCH-HVA-1, DOC-RESEARCH-HVA-2, DOC-RESEARCH-HVA-3, DOC-COMP-002
 
 - CON-HVA-002: **Cognitive Simulation**
@@ -194,7 +239,7 @@
 
 - CON-HVA-003: **Hardware Optimization**
   - Definition: Making efficient use of available computing resources (M4 MacBook Pro)
-  - Related: CON-HVA-015, CON-HVA-017, CON-HVA-018
+  - Related: CON-HVA-015, CON-HVA-017, CON-HVA-018, CON-LM-002
   - Documents: DOC-RESEARCH-HVA-1, DOC-RESEARCH-HVA-3, DOC-RESEARCH-HVA-5
 
 - CON-HVA-004: **Latency Management**
@@ -229,17 +274,17 @@
 
 - CON-HVA-010: **Local Model Processing**
   - Definition: Fast, lightweight language model running on device for immediate responses
-  - Related: CON-HVA-001, CON-HVA-009, CON-HVA-015
+  - Related: CON-HVA-001, CON-HVA-009, CON-HVA-015, CON-LM-001
   - Documents: DOC-RESEARCH-HVA-3, DOC-COMP-002
 
 - CON-HVA-011: **API Model Processing**
   - Definition: Cloud-based language model for complex reasoning and novel insights
-  - Related: CON-HVA-001, CON-HVA-009, CON-HVA-016
+  - Related: CON-HVA-001, CON-HVA-009, CON-HVA-016, CON-AM-001
   - Documents: DOC-RESEARCH-HVA-3, DOC-COMP-002
 
 - CON-HVA-012: **Response Integration**
   - Definition: Component that combines outputs from both processing streams into coherent conversation
-  - Related: CON-HVA-001, CON-HVA-010, CON-HVA-011
+  - Related: CON-HVA-001, CON-HVA-010, CON-HVA-011, CON-VANTA-012
   - Documents: DOC-RESEARCH-HVA-3, DOC-COMP-002
 
 - CON-HVA-013: **Conversational Structure**
@@ -254,12 +299,12 @@
 
 - CON-HVA-015: **Local LLM Performance**
   - Definition: Strategies to optimize local language model performance within hardware constraints
-  - Related: CON-HVA-003, CON-HVA-010
+  - Related: CON-HVA-003, CON-HVA-010, CON-LM-001, CON-LM-002, CON-LM-004
   - Documents: DOC-RESEARCH-HVA-5
 
 - CON-HVA-016: **API Integration and Latency**
   - Definition: Techniques for managing API latency while maintaining conversational flow
-  - Related: CON-HVA-004, CON-HVA-011
+  - Related: CON-HVA-004, CON-HVA-011, CON-AM-001, CON-AM-002
   - Documents: DOC-RESEARCH-HVA-5
 
 - CON-HVA-017: **Voice Pipeline Optimization**
@@ -446,6 +491,11 @@
   - Definition: Using symbolic links to maintain backward compatibility while improving organization
   - Related: CON-IMP-022, CON-VANTA-011
   - Documents: DOC-IMP-005
+
+- CON-IMP-024: **Implementation Sequence**
+  - Definition: Proper order of task implementation to ensure dependencies are satisfied
+  - Related: CON-IMP-008, CON-IMP-007, CON-IMP-001
+  - Documents: DOC-IMP-001
 
 - CON-ARCH-001: **TypedDict State Model**
   - Definition: Type-safe state management for conversation context using Python's TypedDict

@@ -1,72 +1,48 @@
 # Current Session State
 
 ## Session Information
-- Session ID: SES-V0-031
-- Previous Session: SES-V0-030
-- Timestamp: 2025-05-20T23:45:00Z
+- Session ID: SES-V0-032
+- Previous Session: SES-V0-031
+- Timestamp: 2025-05-25T10:30:00Z
 - Template Version: v1.0.0
 
 ## Knowledge State
-This session continues from SES-V0-030, where we diagnosed issues with the Microphone Bridge for Docker on macOS. In this session, we've successfully implemented a working microphone bridge solution that enables Docker containers to access the host's microphone.
+This session follows SES-V0-031, where we implemented a working microphone bridge for Docker on macOS. In this session, we focused on realigning with the implementation plan by creating prompts for the Local Model Integration (LM_001, LM_002, LM_003) and API Model Client Integration (AM_001), which were identified as prerequisites for the Memory System integration with LangGraph.
 
-We've addressed the following aspects of the microphone bridge:
-1. **Implementation Fix**: Created a reliable microphone bridge implementation that correctly captures and segments audio
-2. **File Naming Patterns**: Ensured consistent file naming that works with the container-side client
-3. **Process Management**: Improved handling of ffmpeg processes for better reliability
-4. **Bridge Testing**: Verified the bridge works with both test scripts and the actual Docker client
-5. **Voice Demo Integration**: Updated the voice demo to use the improved microphone bridge
+We have created comprehensive task prompts that follow the established structure and VISTA protocol. These prompts provide detailed guidance for implementing the Local Model and API Model components, including requirements, architecture, component design, implementation approaches, and testing requirements.
 
-Our testing confirmed that the improved microphone bridge (`mic_bridge_final.sh`) correctly captures audio chunks and makes them available to the Docker container. The solution uses a more reliable approach to audio segmentation that creates properly named chunk files.
+The Local Model integration will leverage llama.cpp to provide fast, on-device language model capabilities, while the API Model client will provide connectivity to cloud-based models like Claude and GPT-4. These components are critical parts of VANTA's dual-track processing architecture, where the local model handles immediate responses while the API model processes more complex reasoning tasks.
 
 ## Session Outcomes
 During this session, we have:
 
-1. Fixed the microphone bridge implementation:
-   - Created `mic_bridge_final.sh` with a more reliable approach to audio segmentation
-   - Replaced the ffmpeg segmentation approach with explicit chunk creation
-   - Fixed file naming patterns to match what the Docker client expects
-   - Implemented proper process management and error handling
+1. Analyzed the implementation plan and identified that we had skipped the Local Model and API Model tasks before proceeding to Memory System integration with LangGraph.
 
-2. Improved the TTS bridge:
-   - Fixed voice selection issues in `simple_say_bridge.sh`
-   - Enhanced parameter parsing for better reliability
-   - Added validation to ensure requested voices exist on the system
+2. Created comprehensive task prompts for Local Model integration:
+   - LM_001_Local_Model_Integration.md: Core integration of llama.cpp
+   - LM_002_Local_Model_Optimization.md: Performance optimization for target hardware
+   - LM_003_Prompt_Engineering.md: Prompt templates and strategies for local models
 
-3. Created an automated demo:
-   - Implemented `voice_demo_auto.py` that runs without requiring user input
-   - Added demonstration of different voices and speech rates
-   - Made the demo compatible with both the microphone and TTS bridges
+3. Created a comprehensive task prompt for API Model integration:
+   - AM_001_API_Model_Client.md: Client implementation for Claude and GPT-4
 
-4. Integrated the bridges with testing tools:
-   - Updated `run_voice_demo_with_mic_bridge_improved.sh` to use the new bridge
-   - Ensured the script handles dependency installation properly
-   - Made the script compatible with Python's virtual environment
-
-5. Verified end-to-end functionality:
-   - Tested the microphone bridge directly with test scripts
-   - Verified that the Docker client can access audio from the bridge
-   - Confirmed the voice demo works with both bridges
+4. Realigned the development process with the original implementation plan sequence.
 
 ## Decision Record
-- DEC-030-001: Continue with file-based bridge approach for microphone access
-  - Rationale: The approach is sound in principle as demonstrated by the working TTS bridge
+- DEC-032-001: Prioritize implementation of Local Model and API Model components before Memory System integration with LangGraph
+  - Rationale: Following the original implementation plan sequence ensures proper dependencies are addressed
   - Status: 🟢 Approved
-  - Notes: Implementation needs refinement but the architecture is viable
+  - Notes: The Memory System is already implemented but its integration with LangGraph should follow Local Model and API Model implementation
 
-- DEC-030-002: Focus on fixing the ffmpeg segmentation in the microphone bridge
-  - Rationale: The core issues are in the specific ffmpeg configuration, not the overall approach
+- DEC-032-002: Implement both Claude and GPT-4 clients for API Model integration
+  - Rationale: Supporting multiple providers offers flexibility and fallback options
   - Status: 🟢 Approved
-  - Notes: Alternative approaches (like WebSockets) may be considered for future optimization
+  - Notes: Initial focus will be on Claude, with GPT-4 as a secondary option
 
-- DEC-031-001: Use sequential ffmpeg processes for audio chunks instead of segment muxer
-  - Rationale: More reliable and predictable behavior, especially on macOS
+- DEC-032-003: Use Metal acceleration for Local Model on macOS
+  - Rationale: Metal provides significant performance improvements for neural networks on Apple hardware
   - Status: 🟢 Approved
-  - Notes: This approach offers better control over chunk creation and naming
-
-- DEC-031-002: Focus next on Memory System integration with LangGraph
-  - Rationale: Now that the platform infrastructure is complete, we should continue with the core AI components
-  - Status: 🟢 Approved
-  - Notes: The memory system needs to integrate with LangGraph's state management
+  - Notes: Will require optimization for specific hardware profiles
 
 ## Open Questions
 1. What's the best approach for packaging platform-specific dependencies? (carried over)
@@ -79,46 +55,60 @@ During this session, we have:
 8. Should we explore alternative transport mechanisms (e.g., websockets) for lower latency? (carried over)
 9. How to optimize embedding generation for resource-constrained environments? (carried over)
 10. What summarization approach should we use for long conversation histories? (carried over)
-11. How to improve the low audio volume captured by the microphone bridge?
+11. How to improve the low audio volume captured by the microphone bridge? (carried over)
+12. What is the optimal balance between local model size and performance for real-time responses?
+13. How should we manage the tradeoff between response quality and latency in the dual-track architecture?
 
 ## Action Items
 *[Previous action items are tracked separately]*
 
-- ACT-030-001: Fix the microphone bridge implementation
-  - Owner: Project Team
-  - Status: 🟢 Completed
-  - Deadline: 2025-05-25
-  - Notes: Successfully implemented and tested mic_bridge_final.sh
-
 - ACT-031-001: Test the Memory System with large conversation histories
   - Owner: Project Team
-  - Status: 🔴 Not Started
+  - Status: 🟡 In Progress
   - Deadline: 2025-05-27
   - Notes: Carried over from previous sessions
 
-- ACT-031-002: Integrate Memory System with LangGraph state
-  - Owner: Project Team
-  - Status: 🔴 Not Started
-  - Deadline: 2025-05-28
-  - Notes: High priority for next session
-
 - ACT-031-003: Implement memory summarization functionality
   - Owner: Project Team
-  - Status: 🔴 Not Started
+  - Status: 🟡 In Progress
   - Deadline: 2025-06-01
   - Notes: Critical for handling long conversations
 
-- ACT-031-004: Start implementation of LM_001 (Local Model)
+- ACT-031-005: Create comprehensive documentation for microphone bridge
+  - Owner: Project Team
+  - Status: 🟢 Completed
+  - Deadline: 2025-05-26
+  - Notes: Documented implementation details, troubleshooting, and integration patterns
+
+- ACT-032-001: Implement Local Model Integration (LM_001)
+  - Owner: Project Team
+  - Status: 🔴 Not Started
+  - Deadline: 2025-05-29
+  - Notes: High priority, need to complete before LangGraph integration
+
+- ACT-032-002: Implement API Model Client (AM_001)
+  - Owner: Project Team
+  - Status: 🔴 Not Started
+  - Deadline: 2025-05-31
+  - Notes: High priority, need to complete before LangGraph integration
+
+- ACT-032-003: Optimize Local Model for performance (LM_002)
+  - Owner: Project Team
+  - Status: 🔴 Not Started
+  - Deadline: 2025-06-02
+  - Notes: Medium priority, can begin after initial LM_001 implementation
+
+- ACT-032-004: Develop prompt templates for Local Models (LM_003)
   - Owner: Project Team
   - Status: 🔴 Not Started
   - Deadline: 2025-06-03
-  - Notes: Begin after Memory System integration is complete
+  - Notes: Medium priority, can begin after initial LM_001 implementation
 
-- ACT-031-005: Create comprehensive documentation for microphone bridge
+- ACT-032-005: Integrate Memory System with LangGraph state (ACT-031-002 updated)
   - Owner: Project Team
-  - Status: 🟡 In Progress
-  - Deadline: 2025-05-26
-  - Notes: Document implementation details, troubleshooting, and integration patterns
+  - Status: 🔴 Not Started
+  - Deadline: 2025-06-05
+  - Notes: Should begin after LM_001 and AM_001 are completed
 
 ## Progress Snapshot
 ```
@@ -156,52 +146,53 @@ During this session, we have:
 │  VOICE_004: Text-to-Speech Integration  🟢 100% │
 │  DEMO_001: Voice Pipeline Demo          🟢 100% │
 │  PAL_001: Platform Abstraction Layer    🟢 100% │
-│  LM_001: Local Model Integration        🟡 10%  │
-│  AM_001: API Model Integration          🔴  0%  │
+│  LM_001: Local Model Integration        🟡 15%  │
+│  LM_002: Local Model Optimization       🟡 5%   │
+│  LM_003: Prompt Engineering             🟡 5%   │
+│  AM_001: API Model Integration          🟡 5%   │
 │  MEM_001: Memory System                 🟢 100% │
 │                                                │
 └────────────────────────────────────────────────┘
 ```
 
 ## Next Session Focus Areas
-1. Test Memory System with large-scale conversation data
-2. Begin integration of Memory System with LangGraph state management
-3. Implement memory summarization functionality for long conversations
-4. Complete documentation for the microphone and TTS bridges
-5. Start implementation of LM_001 (Local Model) integration
+1. Implement Local Model Integration (LM_001)
+2. Begin API Model Client implementation (AM_001)
+3. Continue work on Memory System testing with large conversation histories
+4. Continue work on memory summarization functionality
+5. Plan integration of these components with LangGraph state management
 
 ## Handoff
-Session SES-V0-031 has successfully completed the microphone bridge implementation for Docker on macOS, which was the primary focus of the previous session. We've implemented a working solution that enables Docker containers to access the host's microphone through a file-based bridge approach.
+Session SES-V0-032 focused on realigning the VANTA development process with the implementation plan by creating prompts for the Local Model and API Model components. We've identified that these components should be implemented before proceeding with the Memory System integration with LangGraph.
 
 ### Key Accomplishments
-1. **Working Microphone Bridge**: Created `mic_bridge_final.sh` with a reliable approach to audio capture and segmentation
-2. **Approach Change**: Shifted from using ffmpeg's segmentation to explicit chunk creation for more reliability
-3. **Improved TTS Bridge**: Enhanced the text-to-speech bridge with better voice selection and parameter handling
-4. **Automated Demo**: Created a non-interactive voice demo that showcases both bridges working together
-5. **End-to-End Testing**: Verified that Docker containers can successfully access audio from the host microphone
+1. **Local Model Integration Prompts**: Created comprehensive prompts for LM_001, LM_002, and LM_003
+2. **API Model Client Prompt**: Created a comprehensive prompt for AM_001
+3. **Implementation Plan Realignment**: Ensured development follows the planned sequence
+4. **Progress Assessment**: Updated progress indicators for each task
+5. **Action Item Update**: Created specific action items with deadlines for upcoming tasks
 
 ### Current Status
-- **Microphone Bridge**: Fully working with proper file naming and process management
-- **TTS Bridge**: Working correctly with proper voice selection and parameter parsing
-- **Voice Pipeline Demo**: Complete with working examples of both input and output
-- **Platform Abstraction**: The file-based bridge approach is now proven for both audio input and output
+- **Local Model Integration**: Task prompt created, implementation not yet started (15% progress including prompt)
+- **API Model Client**: Task prompt created, implementation not yet started (5% progress including prompt)
+- **Memory System**: Fully implemented, but LangGraph integration pending completion of Local and API Model components
+- **Voice Pipeline**: Fully implemented and working correctly
 
 ### Technical Details
-The key improvements in the microphone bridge implementation were:
-1. Using sequential ffmpeg processes for each chunk instead of the segment muxer
-2. Implementing explicit file naming patterns that match client expectations
-3. Adding better error handling and process management
-4. Improving parameter parsing and validation
-5. Fixing permissions on created files for better container access
+The prompts created in this session provide detailed technical requirements and architecture for implementing:
+1. Local Model integration using llama.cpp with Metal acceleration
+2. API Model client for connecting to Claude and GPT-4
+3. Local Model optimization for performance on target hardware
+4. Prompt templates and strategies for local models
 
 ### Next Steps
-1. Test the Memory System with large-scale conversation data
-2. Integrate the Memory System with LangGraph's state management
-3. Implement memory summarization functionality for handling long conversations
-4. Complete comprehensive documentation for the microphone and TTS bridges
-5. Begin work on Local Model integration (LM_001)
+1. Begin implementation of Local Model Integration (LM_001)
+2. Start API Model Client implementation (AM_001)
+3. Continue testing the Memory System with large conversation datasets
+4. Implement memory summarization functionality
+5. Prepare for integration of all components with LangGraph state management
 
-The next session (SES-V0-032) should focus on the Memory System integration with LangGraph, which is the next critical component for VANTA's cognitive architecture.
+The next session (SES-V0-033) should focus on implementing the Local Model Integration component, which is a critical prerequisite for the rest of the system.
 
 ## Last Updated
-2025-05-20T23:45:00Z | SES-V0-031 | Implemented Working Microphone Bridge for Docker on macOS
+2025-05-25T10:30:00Z | SES-V0-032 | Created Local Model and API Model task prompts
