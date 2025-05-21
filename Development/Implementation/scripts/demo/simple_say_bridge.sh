@@ -28,17 +28,33 @@ process_file() {
   local filename=$(basename "$filepath")
   local text=$(cat "$filepath")
   
-  # Extract voice name if specified in filename (format: message::VoiceName.txt)
+  # Parse filename to extract parameters
   local voice="$DEFAULT_VOICE"
-  if [[ "$filename" == *"::"* ]]; then
-    voice=$(echo "$filename" | sed 's/.*::\([^.]*\).*/\1/')
+  local rate="$DEFAULT_RATE"
+  
+  # For debugging
+  log_message "Processing filename: $filename"
+  
+  # Extract parameters with proper parsing (format: message::VoiceName::Rate.txt)
+  if [[ "$filename" == *"::"*"::"* ]]; then
+    # Has both voice and rate
+    local parts
+    IFS='::' read -ra parts <<< "${filename%.*}"
+    voice="${parts[1]}"
+    rate="${parts[2]}"
+    log_message "Parsed voice='$voice', rate='$rate' from filename with both parameters"
+  elif [[ "$filename" == *"::"* ]]; then
+    # Has only voice
+    local parts
+    IFS='::' read -ra parts <<< "${filename%.*}"
+    voice="${parts[1]}"
+    log_message "Parsed voice='$voice' from filename with voice only"
   fi
   
-  # Extract rate if specified (format: message::VoiceName::Rate.txt)
-  local rate="$DEFAULT_RATE"
-  if [[ "$filename" == *"::"*"::"* ]]; then
-    rate=$(echo "$filename" | sed 's/.*::\([^:]*\)::\([^.]*\).*/\2/')
-    voice=$(echo "$filename" | sed 's/.*::\([^:]*\)::.*/\1/')
+  # Ensure voice exists, or fall back to default
+  if ! say -v '?' | grep -q "^$voice "; then
+    log_message "WARNING: Voice '$voice' not found, falling back to $DEFAULT_VOICE"
+    voice="$DEFAULT_VOICE"
   fi
   
   log_message "Speaking text with voice '$voice' at rate $rate: '$text'"

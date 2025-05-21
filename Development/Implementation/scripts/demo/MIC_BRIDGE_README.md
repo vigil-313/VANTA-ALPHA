@@ -34,7 +34,7 @@ Docker containers on macOS cannot directly access the host's microphone due to s
 
 ## Components
 
-### 1. Host-side Bridge (`mic_bridge.sh`)
+### 1. Host-side Bridge (`mic_bridge_final.sh`)
 
 This script runs on the macOS host and:
 - Creates and monitors a shared directory (`/tmp/vanta-mic-bridge`)
@@ -42,6 +42,8 @@ This script runs on the macOS host and:
 - Captures audio from the system microphone using `ffmpeg`
 - Writes audio chunks to the shared directory as WAV files
 - Provides status information through a JSON file
+
+**Implementation Note**: After extensive testing, we found that the most reliable approach for capturing audio chunks in macOS is to use sequential ffmpeg processes for each chunk rather than a single segmented recording. The `mic_bridge_final.sh` script implements this approach.
 
 ### 2. Container-side Client (`docker_mic_client.py`)
 
@@ -81,8 +83,13 @@ This adapter class integrates with the VANTA Voice Pipeline and:
 Run the microphone bridge script on the host:
 
 ```bash
-./mic_bridge.sh
+./mic_bridge_final.sh
 ```
+
+**Note**: Multiple bridge implementations are available:
+- `mic_bridge.sh`: Original implementation with ffmpeg segment muxer
+- `mic_bridge_minimal.sh`: Simplified implementation for debugging
+- `mic_bridge_final.sh`: Recommended implementation with improved reliability
 
 ### Docker Container Setup
 
@@ -154,10 +161,26 @@ adapter.stop_capture()
 Test basic microphone bridge functionality:
 
 ```bash
-./test_mic_bridge.sh
+./test_mic_bridge_minimal.sh
 ```
 
-### Docker Test
+### Direct Microphone Access Test
+
+Test direct microphone access without the bridge:
+
+```bash
+./direct_mic_test.sh
+```
+
+### Docker Client Test
+
+Test the microphone bridge with the Docker client:
+
+```bash
+./test_docker_mic_client.sh
+```
+
+### Docker Container Test
 
 Test the microphone bridge from within a Docker container:
 
@@ -191,7 +214,20 @@ Run the full voice pipeline demo with both microphone and TTS bridges:
 ## Troubleshooting
 
 1. **"No audio input devices found"**: Ensure your macOS has granted microphone permissions to the Terminal app
+   - Go to System Settings → Privacy & Security → Microphone and make sure Terminal is enabled
+   - You can run `./direct_mic_test.sh` to test microphone access directly
 2. **"ffmpeg not found"**: Install ffmpeg on the host: `brew install ffmpeg`
 3. **Audio files not appearing**: Check directory permissions and bridge log file
+   - Run `ls -la /tmp/vanta-mic-bridge/audio/` to check if files are being created
+   - Check the bridge log at `/tmp/vanta-mic-bridge/logs/mic_bridge.log`
 4. **Empty or corrupted audio**: Check audio chunk size and format settings
+   - Run `ffmpeg -i /tmp/vanta-mic-bridge/audio/chunk_*.wav -af "volumedetect" -f null /dev/null` to check audio levels
+   - If audio levels are very low (below -50dB), check your microphone volume settings
 5. **"Bridge directory access error"**: Ensure the directory is properly mounted in the Docker container
+   - Run `docker exec <container> ls -la /host/vanta-mic-bridge` to verify
+6. **"Recording process died unexpectedly"**: The ffmpeg process might be terminated by the system
+   - This can happen if there are permission issues or resource constraints
+   - Check the bridge log for more information
+7. **Client can't find audio files**: Make sure the chunk naming format matches what the client expects
+   - The client looks for files matching `chunk_*_{uuid}.wav`
+   - Check permissions to ensure the container can read the files
