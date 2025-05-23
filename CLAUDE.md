@@ -46,7 +46,7 @@ When developing this project:
 - **Resource Management**: Monitor and constrain resource usage for stable operation
 
 ## Important Notes
-- When making commits, please DO NOT include references to Claude, Claude Code, or Anthropic in the commit messages.
+- When making commits, do not mention claude in git commit messages, e.g. do not use "🤖 Generated with [Claude Code](https://claude.ai/code)"
 - THROUGHOUT ALL STEPS, SESSION_STATE.md AND KNOWLEDGE_GRAPH.md MUST BE UPDATED USING VISTA PROTOCOL!
 
 ## VANTA Code Organization Rule: VISTA Documentation References

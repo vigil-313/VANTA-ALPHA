@@ -662,5 +662,55 @@
   - Related: CON-LG-007, CON-LG-008, CON-IMP-007, CON-ARCH-001
   - Documents: TASK-LG-003
 
+- CON-DP-001: **Query Analysis and Feature Extraction**
+  - Definition: Sophisticated analysis of user queries to extract features for intelligent routing decisions
+  - Related: CON-DP-002, CON-DP-003, CON-HVA-001, CON-VANTA-012
+  - Documents: TASK-DP-001
+
+- CON-DP-002: **Intelligent Routing Logic**
+  - Definition: Decision-making system that routes queries to appropriate processing paths based on analysis
+  - Related: CON-DP-001, CON-DP-003, CON-DP-004, CON-LG-007
+  - Documents: TASK-DP-001
+
+- CON-DP-003: **Local Model Controller**
+  - Definition: High-level controller for managing local language model operations with threading and timeouts
+  - Related: CON-DP-002, CON-LM-001, CON-LM-010, CON-DP-005
+  - Documents: TASK-DP-001
+
+- CON-DP-004: **API Model Controller**
+  - Definition: Controller for managing API-based language model interactions with multiple providers
+  - Related: CON-DP-002, CON-AM-001, CON-AM-002, CON-DP-005
+  - Documents: TASK-DP-001
+
+- CON-DP-005: **Response Integration Strategies**
+  - Definition: Multiple approaches for combining responses from local and API models into coherent output
+  - Related: CON-DP-003, CON-DP-004, CON-HVA-012, CON-DP-006
+  - Documents: TASK-DP-001
+
+- CON-DP-006: **Semantic Similarity Analysis**
+  - Definition: Techniques for calculating similarity between responses to inform integration decisions
+  - Related: CON-DP-005, CON-DP-007, CON-MEM-007
+  - Documents: TASK-DP-001
+
+- CON-DP-007: **Natural Language Transitions**
+  - Definition: System for generating smooth transitions between different response sources
+  - Related: CON-DP-005, CON-DP-006, CON-HVA-005, CON-HVA-009
+  - Documents: TASK-DP-001
+
+- CON-DP-008: **Dual-Track Configuration Management**
+  - Definition: Comprehensive configuration system for all dual-track processing components
+  - Related: CON-DP-001, CON-DP-002, CON-DP-005, CON-ARCH-004
+  - Documents: TASK-DP-001
+
+- CON-DP-009: **Processing Performance Monitoring**
+  - Definition: Statistics tracking and performance monitoring for dual-track operations
+  - Related: CON-DP-001, CON-DP-003, CON-DP-004, CON-TEST-006
+  - Documents: TASK-DP-001
+
+- CON-DP-010: **Threaded Model Execution**
+  - Definition: Implementation of threaded execution with timeout handling for local model operations
+  - Related: CON-DP-003, CON-LM-001, CON-ARCH-006, CON-IMP-007
+  - Documents: TASK-DP-001
+
 ## Last Updated
-2025-05-22T11:30:00Z | SES-V0-042 | LangGraph Graph Definition and Conditional Routing Implementation
+2025-05-22T14:15:00Z | SES-V0-043 | Dual-Track Processing Router Implementation
