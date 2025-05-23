@@ -1,5 +1,7 @@
 # TASK-REF: DP-001 - Processing Router Implementation
+# TASK-REF: DP-003 - Dual-Track Optimization
 # CONCEPT-REF: CON-VANTA-010 - Dual-Track Processing Architecture
+# CONCEPT-REF: CON-VANTA-012 - Dual-Track Optimization
 # DOC-REF: DOC-DEV-ARCH-COMP-2 - Dual-Track Processing Component Specification
 # DECISION-REF: DEC-042-001 - Implement comprehensive conditional routing
 
@@ -15,6 +17,11 @@ from .router import ProcessingRouter, RoutingDecision, QueryFeatures
 from .local_model import LocalModel, LocalModelController, LocalModelResponse
 from .api_client import APIClient, APIModelController, APIModelResponse
 from .integrator import ResponseIntegrator, IntegrationResult
+from .optimizer import (
+    DualTrackOptimizer, MetricsCollector, ResourceMonitor, AdaptiveOptimizer,
+    PerformanceMetrics, ResourceConstraints, OptimizationConfig, OptimizationStrategy,
+    create_default_optimizer, create_optimized_config
+)
 
 # Configuration
 from .config import (
@@ -26,7 +33,8 @@ from .config import (
 from .exceptions import (
     DualTrackError, RouterError, LocalModelError, ModelLoadError, GenerationError,
     APIModelError, APIConnectionError, APIRateLimitError, APITimeoutError,
-    IntegrationError, ConfigurationError, TimeoutError, ResourceError
+    IntegrationError, ConfigurationError, TimeoutError, ResourceError,
+    DualTrackOptimizationError, MetricsCollectionError, ResourceMonitoringError, AdaptationError
 )
 
 # Convenience functions
@@ -41,6 +49,10 @@ __all__ = [
     "APIClient",
     "APIModelController", 
     "ResponseIntegrator",
+    "DualTrackOptimizer",
+    "MetricsCollector",
+    "ResourceMonitor",
+    "AdaptiveOptimizer",
     
     # Data classes
     "RoutingDecision",
@@ -48,6 +60,9 @@ __all__ = [
     "LocalModelResponse",
     "APIModelResponse", 
     "IntegrationResult",
+    "PerformanceMetrics",
+    "ResourceConstraints",
+    "OptimizationConfig",
     
     # Configuration
     "DualTrackConfig",
@@ -61,6 +76,7 @@ __all__ = [
     "ProcessingPath",
     "IntegrationStrategy",
     "InterruptStyle",
+    "OptimizationStrategy",
     
     # Exceptions
     "DualTrackError",
@@ -76,11 +92,17 @@ __all__ = [
     "ConfigurationError",
     "TimeoutError",
     "ResourceError",
+    "DualTrackOptimizationError",
+    "MetricsCollectionError",
+    "ResourceMonitoringError",
+    "AdaptationError",
     
     # Convenience functions
     "determine_path",
     "calculate_query_features",
-    "integrate_responses"
+    "integrate_responses",
+    "create_default_optimizer",
+    "create_optimized_config"
 ]
 
 __version__ = "0.1.0"

@@ -70,3 +70,23 @@ class TimeoutError(DualTrackError):
 class ResourceError(DualTrackError):
     """Exception raised when system resources are insufficient."""
     pass
+
+
+class DualTrackOptimizationError(DualTrackError):
+    """Exception raised by the dual-track optimization system."""
+    pass
+
+
+class MetricsCollectionError(DualTrackOptimizationError):
+    """Exception raised during metrics collection."""
+    pass
+
+
+class ResourceMonitoringError(DualTrackOptimizationError):
+    """Exception raised during resource monitoring."""
+    pass
+
+
+class AdaptationError(DualTrackOptimizationError):
+    """Exception raised during strategy adaptation."""
+    pass

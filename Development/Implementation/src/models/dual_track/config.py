@@ -1,5 +1,7 @@
 # TASK-REF: DP-001 - Processing Router Implementation
+# TASK-REF: DP-003 - Dual-Track Optimization
 # CONCEPT-REF: CON-VANTA-010 - Dual-Track Processing Architecture
+# CONCEPT-REF: CON-VANTA-012 - Dual-Track Optimization
 # DOC-REF: DOC-DEV-ARCH-COMP-2 - Dual-Track Processing Component Specification
 
 """
@@ -130,6 +132,21 @@ class DualTrackConfig:
     max_concurrent_requests: int = 5
     memory_warning_threshold: float = 0.8  # Warn at 80% memory usage
     cpu_usage_threshold: float = 0.9  # Throttle at 90% CPU usage
+    
+    # Optimization settings
+    enable_optimization: bool = True
+    optimization_strategy: str = "adaptive"  # adaptive, latency_focused, resource_efficient, quality_focused, balanced
+    adaptation_interval_seconds: float = 30.0
+    metrics_window_size: int = 100
+    enable_resource_monitoring: bool = True
+    monitor_interval_seconds: float = 1.0
+    
+    # Performance constraints
+    target_latency_ms: float = 2000.0
+    max_memory_mb: float = 4096.0
+    max_cpu_percent: float = 80.0
+    max_cost_per_request: float = 0.01
+    battery_threshold_percent: float = 20.0
     
     @classmethod
     def from_dict(cls, config_dict: Dict[str, Any]) -> "DualTrackConfig":
