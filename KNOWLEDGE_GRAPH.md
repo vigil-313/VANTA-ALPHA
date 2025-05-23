@@ -632,5 +632,35 @@
   - Related: CON-LG-001, CON-TECH-007, CON-ARCH-001
   - Documents: TASK-LG-001, TASK-LG-002
 
+- CON-LG-007: **Conditional Routing Functions**
+  - Definition: Functions that determine workflow paths based on state conditions and system status
+  - Related: CON-LG-001, CON-LG-008, CON-VANTA-012, CON-ARCH-001
+  - Documents: TASK-LG-003
+
+- CON-LG-008: **LangGraph Workflow Orchestration**
+  - Definition: Complete graph structure that connects all nodes with conditional routing logic
+  - Related: CON-LG-001, CON-LG-007, CON-TECH-005, CON-VANTA-012
+  - Documents: TASK-LG-003
+
+- CON-LG-009: **Workflow Persistence Strategies**
+  - Definition: Multiple backend approaches for maintaining conversation state across sessions
+  - Related: CON-LG-008, CON-VANTA-002, CON-IMP-001
+  - Documents: TASK-LG-003
+
+- CON-LG-010: **Parallel Processing Synchronization**
+  - Definition: Coordination mechanisms for dual-track processing with timeout handling
+  - Related: CON-LG-007, CON-LG-008, CON-VANTA-012, CON-HVA-001
+  - Documents: TASK-LG-003
+
+- CON-LG-011: **Graph Visualization and Management**
+  - Definition: Tools and utilities for workflow visualization, debugging, and management
+  - Related: CON-LG-008, CON-IMP-007, CON-TEST-001
+  - Documents: TASK-LG-003
+
+- CON-LG-012: **Workflow Error Resilience**
+  - Definition: Comprehensive error handling and graceful degradation in workflow execution
+  - Related: CON-LG-007, CON-LG-008, CON-IMP-007, CON-ARCH-001
+  - Documents: TASK-LG-003
+
 ## Last Updated
-2025-05-22T09:15:00Z | SES-V0-041 | LangGraph Node Functions Implementation
+2025-05-22T11:30:00Z | SES-V0-042 | LangGraph Graph Definition and Conditional Routing Implementation
