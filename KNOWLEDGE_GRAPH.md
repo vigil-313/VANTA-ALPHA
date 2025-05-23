@@ -602,5 +602,35 @@
   - Related: CON-IMP-002, CON-IMP-022, CON-VANTA-011
   - Documents: DOC-IMP-005
 
+- CON-LG-001: **LangGraph Node Functions**
+  - Definition: Core processing functions that implement VANTA's workflow as LangGraph nodes
+  - Related: CON-TECH-005, CON-VANTA-001, CON-VANTA-002, CON-VANTA-012
+  - Documents: TASK-LG-002
+  
+- CON-LG-002: **Voice Processing Nodes**
+  - Definition: LangGraph nodes for voice-related processing (activation, audio processing, speech synthesis)
+  - Related: CON-LG-001, CON-VANTA-001, CON-VANTA-005, CON-VANTA-006
+  - Documents: TASK-LG-002
+
+- CON-LG-003: **Memory Processing Nodes**
+  - Definition: LangGraph nodes for memory operations (context retrieval, memory updates, pruning)
+  - Related: CON-LG-001, CON-VANTA-002, CON-VANTA-007
+  - Documents: TASK-LG-002
+
+- CON-LG-004: **Dual-Track Processing Nodes**
+  - Definition: LangGraph nodes for dual-track architecture (routing, local/API processing, integration)
+  - Related: CON-LG-001, CON-VANTA-012, CON-HVA-001, CON-LM-001, CON-AM-001
+  - Documents: TASK-LG-002
+
+- CON-LG-005: **Node Function Modularity**
+  - Definition: Organization of node functions into logical modules for maintainability
+  - Related: CON-LG-001, CON-IMP-007
+  - Documents: TASK-LG-002
+
+- CON-LG-006: **State-Based Processing**
+  - Definition: Processing workflow based on pure functions that operate on shared state
+  - Related: CON-LG-001, CON-TECH-007, CON-ARCH-001
+  - Documents: TASK-LG-001, TASK-LG-002
+
 ## Last Updated
-2025-05-27T14:30:00Z | SES-V0-034 | Implemented API Model Client Integration
+2025-05-22T09:15:00Z | SES-V0-041 | LangGraph Node Functions Implementation
