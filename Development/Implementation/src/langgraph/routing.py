@@ -237,6 +237,36 @@ def should_update_memory(state: VANTAState) -> str:
         return "update"
 
 
+def should_summarize_conversation(state: VANTAState) -> str:
+    """
+    Determine if conversation summarization is needed.
+    
+    This function checks if the conversation history has grown beyond the
+    configured threshold and needs to be summarized to manage memory usage.
+    
+    Args:
+        state: Current VANTA state
+        
+    Returns:
+        "summarize" if summarization is needed, "continue" otherwise
+    """
+    try:
+        memory = state.get("memory", {})
+        conversation_history = memory.get("conversation_history", [])
+        summarization_threshold = state.get("config", {}).get("summarization_threshold", 10)
+        
+        if len(conversation_history) >= summarization_threshold:
+            logger.info(f"Conversation history length ({len(conversation_history)}) exceeds threshold ({summarization_threshold}), triggering summarization")
+            return "summarize"
+        
+        logger.debug(f"Conversation history length ({len(conversation_history)}) below threshold ({summarization_threshold}), continuing normally")
+        return "continue"
+        
+    except Exception as e:
+        logger.error(f"Error in should_summarize_conversation: {e}")
+        return "continue"  # Default to continue on error
+
+
 # Mapping of routing function names to functions for easy access
 ROUTING_FUNCTIONS = {
     "should_process": should_process,
@@ -244,6 +274,7 @@ ROUTING_FUNCTIONS = {
     "check_processing_complete": check_processing_complete,
     "should_synthesize_speech": should_synthesize_speech,
     "should_update_memory": should_update_memory,
+    "should_summarize_conversation": should_summarize_conversation,
 }
 
 

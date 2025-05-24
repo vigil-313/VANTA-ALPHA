@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-VANTA LangGraph Memory Processing Nodes
+Enhanced VANTA LangGraph Memory Processing Nodes
 
-This module implements the LangGraph nodes for memory-related processing in the VANTA system,
-including context retrieval and memory updating.
+This module implements enhanced memory integration nodes for the VANTA system,
+including context retrieval, conversation storage, and conversation summarization.
 """
+# TASK-REF: INT_003 - Memory System Integration
 # TASK-REF: LG_002 - LangGraph Node Implementation
 # CONCEPT-REF: CON-VANTA-002 - Memory Engine
 # DOC-REF: DOC-ARCH-001 - V0 Architecture Overview
@@ -13,19 +14,58 @@ including context retrieval and memory updating.
 import logging
 import time
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 
 from ..state.vanta_state import VANTAState, ActivationStatus
-from ...memory.core import MemoryEngine
+from ...memory.core import MemorySystem
 
 logger = logging.getLogger(__name__)
 
+# Global memory system instance (will be initialized by the application)
+_memory_system: Optional[MemorySystem] = None
 
-def retrieve_context(state: VANTAState) -> Dict[str, Any]:
+def initialize_memory_system(config: Optional[Dict[str, Any]] = None) -> None:
+    """Initialize the global memory system instance."""
+    global _memory_system
+    _memory_system = MemorySystem(config)
+    _memory_system.initialize()
+
+def get_memory_system() -> MemorySystem:
+    """Get the global memory system instance."""
+    if _memory_system is None:
+        raise RuntimeError("Memory system not initialized. Call initialize_memory_system() first.")
+    return _memory_system
+
+def estimate_token_count(text: Any) -> int:
+    """Estimate token count for text (simple approximation)."""
+    if isinstance(text, str):
+        return len(text.split()) * 1.3  # Rough approximation
+    elif isinstance(text, dict):
+        return estimate_token_count(str(text))
+    return 0
+
+def build_prompt_with_memory(user_input: str, memory_context: Optional[Dict], conversation_summary: Optional[str] = None) -> str:
+    """Build enhanced prompt with memory context."""
+    prompt_parts = []
+    
+    if conversation_summary:
+        prompt_parts.append(f"Conversation Summary: {conversation_summary}")
+    
+    if memory_context and memory_context.get("results"):
+        prompt_parts.append("Relevant Context:")
+        for i, result in enumerate(memory_context["results"][:3]):  # Limit to top 3
+            prompt_parts.append(f"- {result.get('content', '')}")
+    
+    prompt_parts.append(f"User: {user_input}")
+    
+    return "\n\n".join(prompt_parts)
+
+
+async def retrieve_memory_context_node(state: VANTAState) -> Dict[str, Any]:
     """
-    Retrieves relevant context from the memory system.
+    Retrieve relevant memory context for current input.
     
     This node uses the Memory System to retrieve relevant context based on the
     latest user message. It performs semantic search and retrieves conversations
@@ -35,107 +75,128 @@ def retrieve_context(state: VANTAState) -> Dict[str, Any]:
         state: Current VANTA state containing messages and memory data
         
     Returns:
-        Dict: Updates with retrieved context information
+        Dict: Updates with retrieved context information and memory metadata
     """
     try:
-        # Skip if inactive or no messages
-        if state["activation"]["status"] != ActivationStatus.PROCESSING:
-            return {}
-        
-        messages = state.get("messages", [])
-        if not messages:
-            return {}
-        
-        # Get the last user message
-        last_message = None
-        for message in reversed(messages):
-            if hasattr(message, 'type') and message.type == 'human':
-                last_message = message
-                break
-            elif message.__class__.__name__ == 'HumanMessage':
-                last_message = message
-                break
-        
-        if not last_message or not last_message.content:
-            return {}
-        
-        # Initialize memory engine
-        memory_engine = MemoryEngine()
-        
-        # Retrieve relevant context
         start_time = time.time()
-        query_text = last_message.content
         
-        # Get conversation context
-        conversation_context = memory_engine.retrieve_conversation_context(
-            query=query_text,
+        # Skip if no messages or not processing
+        messages = state.get("messages", [])
+        if not messages or state["activation"]["status"] != ActivationStatus.PROCESSING:
+            return {
+                "memory": {
+                    **state.get("memory", {}),
+                    "retrieved_context": {},
+                    "context_retrieval_time": 0,
+                    "last_retrieval": datetime.now(),
+                    "status": "no_input_to_process"
+                }
+            }
+        
+        # Get the last user message for context retrieval
+        last_user_message = None
+        for message in reversed(messages):
+            if isinstance(message, HumanMessage) or (hasattr(message, 'type') and message.type == 'human'):
+                last_user_message = message
+                break
+        
+        if not last_user_message or not last_user_message.content:
+            return {
+                "memory": {
+                    **state.get("memory", {}),
+                    "retrieved_context": {},
+                    "context_retrieval_time": 0,
+                    "last_retrieval": datetime.now(),
+                    "status": "no_user_message"
+                }
+            }
+        
+        # Get memory system
+        memory_system = get_memory_system()
+        
+        # Retrieve context using working memory
+        user_input = last_user_message.content
+        context_results = memory_system.working_memory.retrieve_context(
+            query=user_input,
             max_results=5
         )
         
-        # Get semantic context
-        semantic_context = memory_engine.retrieve_semantic_context(
-            query=query_text,
-            max_results=3
-        )
+        # Calculate context window usage
+        context_tokens = estimate_token_count(context_results)
+        context_window_size = state.get("config", {}).get("context_window_size", 4000)
+        available_window = context_window_size - context_tokens
         
         retrieval_time = time.time() - start_time
         
-        # Prepare retrieved context
-        retrieved_context = {
-            "query": query_text,
-            "timestamp": datetime.now().isoformat(),
-            "conversation_context": conversation_context,
-            "semantic_context": semantic_context,
+        # Extract memory references
+        memory_refs = []
+        if context_results and isinstance(context_results, dict):
+            for result in context_results.get("results", []):
+                if result.get("memory_id"):
+                    memory_refs.append(result["memory_id"])
+        
+        # Prepare enhanced memory context
+        enhanced_context = {
+            "query": user_input,
+            "results": context_results.get("results", []) if context_results else [],
             "retrieval_time": retrieval_time,
-            "total_results": len(conversation_context) + len(semantic_context),
+            "timestamp": datetime.now(),
+            "memory_references": memory_refs,
+            "context_tokens": context_tokens,
+            "available_tokens": available_window
         }
         
-        # Return memory updates
         return {
             "memory": {
-                "retrieved_context": retrieved_context,
-                "last_retrieval_time": datetime.now().isoformat(),
+                **state.get("memory", {}),
+                "retrieved_context": enhanced_context,
+                "memory_references": memory_refs,
+                "context_window_size": available_window,
+                "last_retrieval": datetime.now(),
+                "status": "context_retrieved"
             }
         }
-    
+        
     except Exception as e:
-        logger.error(f"Error retrieving context: {e}")
-        
-        # Return empty context on error
+        logger.error(f"Memory context retrieval failed: {e}")
         return {
             "memory": {
-                "retrieved_context": {
-                    "query": state.get("messages", [])[-1].content if state.get("messages") else "",
-                    "timestamp": datetime.now().isoformat(),
-                    "conversation_context": [],
-                    "semantic_context": [],
-                    "error": str(e),
-                    "total_results": 0,
-                },
-                "context_error": str(e),
+                **state.get("memory", {}),
+                "retrieved_context": {"error": str(e)},
+                "context_retrieval_time": 0,
+                "last_retrieval": datetime.now(),
+                "status": "retrieval_error",
+                "error": f"Memory retrieval error: {str(e)}"
             }
         }
 
 
-def update_memory(state: VANTAState) -> Dict[str, Any]:
+async def store_conversation_node(state: VANTAState) -> Dict[str, Any]:
     """
-    Updates memory system with the current conversation.
+    Store conversation turn in memory system.
     
-    This node updates the Memory System with the latest conversation exchange,
-    storing both the user query and AI response along with metadata for
-    future retrieval.
+    This node stores the current conversation exchange in the memory system
+    for future retrieval and context building.
     
     Args:
-        state: Current VANTA state containing messages and conversation data
+        state: Current VANTA state containing conversation data
         
     Returns:
-        Dict: Updates with new conversation history
+        Dict: Updates with memory storage results
     """
     try:
-        # Skip if no complete conversation pair
+        start_time = time.time()
+        
+        # Check if we have both user input and response
         messages = state.get("messages", [])
         if len(messages) < 2:
-            return {}
+            return {
+                "memory": {
+                    **state.get("memory", {}),
+                    "last_storage_status": "insufficient_messages",
+                    "last_storage_time": datetime.now()
+                }
+            }
         
         # Find the last user-assistant exchange
         user_message = None
@@ -143,140 +204,204 @@ def update_memory(state: VANTAState) -> Dict[str, Any]:
         
         for i in range(len(messages) - 1, -1, -1):
             message = messages[i]
-            
-            if (hasattr(message, 'type') and message.type == 'ai') or message.__class__.__name__ == 'AIMessage':
+            if isinstance(message, AIMessage) or (hasattr(message, 'type') and message.type == 'ai'):
                 if ai_message is None:
                     ai_message = message
-            elif (hasattr(message, 'type') and message.type == 'human') or message.__class__.__name__ == 'HumanMessage':
+            elif isinstance(message, HumanMessage) or (hasattr(message, 'type') and message.type == 'human'):
                 if user_message is None and ai_message is not None:
                     user_message = message
-                    break  # Found complete pair
+                    break
         
         if not user_message or not ai_message:
-            return {}
+            return {
+                "memory": {
+                    **state.get("memory", {}),
+                    "last_storage_status": "incomplete_conversation_pair",
+                    "last_storage_time": datetime.now()
+                }
+            }
         
-        # Initialize memory engine
-        memory_engine = MemoryEngine()
+        # Get memory system
+        memory_system = get_memory_system()
         
-        # Create conversation entry
-        start_time = time.time()
-        timestamp = datetime.now().isoformat()
-        
-        conversation_entry = {
-            "id": f"conv_{int(time.time())}_{hash(user_message.content) % 10000}",
-            "timestamp": timestamp,
+        # Create conversation message with enhanced metadata
+        conversation_message = {
             "user_message": user_message.content,
-            "ai_message": ai_message.content,
-            "context": state["memory"].get("retrieved_context", {}),
-            "processing_metadata": state.get("processing", {}),
-            "audio_reference": state["audio"].get("audio_path", ""),
+            "assistant_message": ai_message.content,
+            "timestamp": datetime.now(),
+            "processing_path": state.get("processing", {}).get("path"),
+            "metadata": {
+                "dual_track_results": state.get("processing", {}).get("dual_track_results"),
+                "memory_context_used": bool(state.get("memory", {}).get("retrieved_context")),
+                "activation_mode": state.get("activation", {}).get("status"),
+                "audio_reference": state.get("audio", {}).get("current_audio")
+            }
         }
         
-        # Store in memory system
-        memory_engine.store_conversation(conversation_entry)
+        # Store in working memory
+        memory_id = memory_system.working_memory.store_conversation(conversation_message)
         
-        # Update embeddings if configured
-        try:
-            memory_engine.update_embeddings(
-                text=f"{user_message.content} {ai_message.content}",
-                metadata=conversation_entry
-            )
-        except Exception as e:
-            logger.warning(f"Failed to update embeddings: {e}")
+        # Update conversation history in state
+        current_history = list(state.get("memory", {}).get("conversation_history", []))
+        current_history.append({
+            "memory_id": memory_id,
+            "timestamp": conversation_message["timestamp"],
+            "user_message": conversation_message["user_message"],
+            "assistant_message": conversation_message["assistant_message"]
+        })
+        
+        # Track memory operation
+        current_operations = list(state.get("memory", {}).get("memory_operations", []))
+        current_operations.append({
+            "operation": "store",
+            "memory_id": memory_id,
+            "timestamp": datetime.now(),
+            "processing_time": time.time() - start_time
+        })
         
         storage_time = time.time() - start_time
         
-        # Get updated conversation history
-        current_history = state["memory"].get("conversation_history", [])
-        updated_history = current_history + [conversation_entry]
-        
-        # Limit history size to prevent memory bloat
-        max_history = state["config"].get("max_conversation_history", 100)
-        if len(updated_history) > max_history:
-            updated_history = updated_history[-max_history:]
-        
-        # Return memory updates
         return {
             "memory": {
-                "conversation_history": updated_history,
-                "last_update_time": timestamp,
-                "storage_time": storage_time,
-                "total_conversations": len(updated_history),
+                **state.get("memory", {}),
+                "conversation_history": current_history,
+                "memory_operations": current_operations,
+                "last_storage_time": datetime.now(),
+                "last_storage_status": "success",
+                "storage_processing_time": storage_time
             }
         }
-    
+        
     except Exception as e:
-        logger.error(f"Error updating memory: {e}")
-        
-        # Return error information
+        logger.error(f"Memory storage failed: {e}")
         return {
             "memory": {
-                "update_error": str(e),
-                "last_update_time": datetime.now().isoformat(),
+                **state.get("memory", {}),
+                "last_storage_status": "error",
+                "last_storage_time": datetime.now(),
+                "storage_error": f"Memory storage error: {str(e)}"
             }
         }
 
 
-def prune_memory(state: VANTAState) -> Dict[str, Any]:
+async def summarize_conversation_node(state: VANTAState) -> Dict[str, Any]:
     """
-    Prunes old memory entries to manage storage size.
+    Generate conversation summary when history exceeds limits.
     
-    This node periodically cleans up old memory entries to prevent
-    unlimited growth of the memory system while preserving important
-    conversation history.
+    This node generates a summary of the conversation history when it becomes
+    too long, helping to maintain context while managing memory usage.
     
     Args:
-        state: Current VANTA state containing memory data
+        state: Current VANTA state with conversation history
         
     Returns:
-        Dict: Updates with pruned memory information
+        Dict: Updates with summarized conversation data
     """
     try:
-        # Check if pruning is needed
-        conversation_history = state["memory"].get("conversation_history", [])
-        max_conversations = state["config"].get("max_conversation_history", 100)
-        
-        if len(conversation_history) <= max_conversations:
-            return {}  # No pruning needed
-        
-        # Initialize memory engine for advanced pruning
-        memory_engine = MemoryEngine()
-        
-        # Perform intelligent pruning
         start_time = time.time()
         
-        # Keep most recent conversations
-        recent_conversations = conversation_history[-max_conversations:]
+        conversation_history = state.get("memory", {}).get("conversation_history", [])
+        summarization_threshold = state.get("config", {}).get("summarization_threshold", 10)
         
-        # Archive old conversations
-        archived_conversations = conversation_history[:-max_conversations]
+        # Check if summarization is needed
+        if len(conversation_history) < summarization_threshold:
+            return {
+                "memory": {
+                    **state.get("memory", {}),
+                    "summarization_status": "not_needed",
+                    "last_summarization_check": datetime.now()
+                }
+            }
         
-        # Store archived conversations in long-term storage
-        if archived_conversations:
-            try:
-                memory_engine.archive_conversations(archived_conversations)
-            except Exception as e:
-                logger.warning(f"Failed to archive conversations: {e}")
+        # Get memory system
+        memory_system = get_memory_system()
         
-        pruning_time = time.time() - start_time
+        # Generate summary of older conversations
+        messages_to_summarize = conversation_history[:-5]  # Keep last 5 messages
         
-        # Return updated memory state
+        if not messages_to_summarize:
+            return {
+                "memory": {
+                    **state.get("memory", {}),
+                    "summarization_status": "no_messages_to_summarize",
+                    "last_summarization_check": datetime.now()
+                }
+            }
+        
+        # Create summary text
+        summary_text = memory_system.working_memory.generate_summary(messages_to_summarize)
+        
+        # Keep recent messages and summary
+        trimmed_history = conversation_history[-5:]  # Keep recent messages
+        
+        summarization_time = time.time() - start_time
+        
         return {
             "memory": {
-                "conversation_history": recent_conversations,
-                "archived_count": len(archived_conversations),
-                "pruning_time": pruning_time,
-                "last_pruning_time": datetime.now().isoformat(),
+                **state.get("memory", {}),
+                "conversation_history": trimmed_history,
+                "conversation_summary": summary_text,
+                "last_summarization_time": datetime.now(),
+                "summarization_status": "completed",
+                "summarization_processing_time": summarization_time,
+                "summarized_message_count": len(messages_to_summarize)
             }
         }
-    
+        
     except Exception as e:
-        logger.error(f"Error pruning memory: {e}")
-        
-        # Return error information without changing memory
+        logger.error(f"Memory summarization failed: {e}")
         return {
             "memory": {
-                "pruning_error": str(e),
-                "last_pruning_time": datetime.now().isoformat(),
+                **state.get("memory", {}),
+                "summarization_status": "error",
+                "last_summarization_time": datetime.now(),
+                "summarization_error": f"Memory summarization error: {str(e)}"
             }
         }
+
+
+async def handle_memory_error(state: VANTAState, error: Exception) -> Dict[str, Any]:
+    """
+    Handle memory system errors gracefully.
+    
+    This function provides fallback behavior when the memory system encounters
+    errors, ensuring the conversation can continue even if memory is unavailable.
+    
+    Args:
+        state: Current VANTA state
+        error: The exception that occurred
+        
+    Returns:
+        Dict: Fallback memory state
+    """
+    logger.error(f"Memory system error: {error}")
+    
+    # Provide fallback behavior using existing conversation history
+    conversation_history = state.get("memory", {}).get("conversation_history", [])
+    fallback_context = {
+        "conversation_history": conversation_history[-3:],  # Last 3 messages
+        "retrieved_context": {},
+        "conversation_summary": "Memory system temporarily unavailable",
+        "status": "fallback_mode",
+        "error": f"Memory error (using fallback): {str(error)}",
+        "last_error_time": datetime.now()
+    }
+    
+    return {"memory": fallback_context}
+
+
+# Legacy function names for backward compatibility
+def retrieve_context(state: VANTAState) -> Dict[str, Any]:
+    """Legacy wrapper for retrieve_memory_context_node."""
+    import asyncio
+    return asyncio.run(retrieve_memory_context_node(state))
+
+def update_memory(state: VANTAState) -> Dict[str, Any]:
+    """Legacy wrapper for store_conversation_node."""
+    import asyncio
+    return asyncio.run(store_conversation_node(state))
+
+def prune_memory(state: VANTAState) -> Dict[str, Any]:
+    """Legacy wrapper for summarize_conversation_node."""
+    import asyncio
+    return asyncio.run(summarize_conversation_node(state))

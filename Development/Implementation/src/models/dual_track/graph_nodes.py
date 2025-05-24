@@ -1,12 +1,14 @@
+# TASK-REF: INT_003 - Memory System Integration
 # TASK-REF: DP-002 - Dual-Track Response Integration System
 # CONCEPT-REF: CON-VANTA-010 - Dual-Track Processing Architecture
 # DOC-REF: DOC-DEV-ARCH-COMP-2 - Dual-Track Processing Component Specification
 
 """
-LangGraph integration nodes for the dual-track processing system.
+LangGraph integration nodes for the dual-track processing system with memory integration.
 
 This module provides LangGraph-compatible node functions that integrate the sophisticated
-dual-track processing capabilities with the VANTA workflow orchestration system.
+dual-track processing capabilities with the VANTA workflow orchestration system,
+enhanced with memory context integration.
 """
 
 import logging
@@ -19,6 +21,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from langchain_core.messages import AIMessage, HumanMessage
 
 from ..langgraph.state.vanta_state import VANTAState, ActivationStatus, ProcessingPath
+from ..langgraph.nodes.memory_nodes import build_prompt_with_memory
 from .router import ProcessingRouter
 from .local_model import LocalModelController
 from .api_client import APIModelController
@@ -203,17 +206,29 @@ class DualTrackGraphNodes:
                 return {}
             
             memory = state.get("memory", {})
+            
+            # Build enhanced prompt with memory context
+            memory_context = memory.get("retrieved_context", {})
+            conversation_summary = memory.get("conversation_summary")
+            enhanced_prompt = build_prompt_with_memory(
+                user_input=user_message.content,
+                memory_context=memory_context,
+                conversation_summary=conversation_summary
+            )
+            
             context = {
                 "conversation_history": memory.get("conversation_history", [])[-3:],  # Last 3 for local
-                "retrieved_context": memory.get("retrieved_context", {}),
-                "user_preferences": memory.get("user_preferences", {})
+                "retrieved_context": memory_context,
+                "user_preferences": memory.get("user_preferences", {}),
+                "memory_references": memory.get("memory_references", []),
+                "memory_context_used": bool(memory_context.get("results"))
             }
             
-            # Process with local model
+            # Process with local model using enhanced prompt
             start_time = time.time()
             
             try:
-                local_response = self.local_controller.generate(user_message.content, context)
+                local_response = self.local_controller.generate(enhanced_prompt, context)
                 local_time = time.time() - start_time
                 
                 logger.info(f"Local processing completed in {local_time:.2f}s")
@@ -300,16 +315,21 @@ class DualTrackGraphNodes:
             messages = state.get("messages", [])
             memory = state.get("memory", {})
             
-            # Build conversation context for API
-            api_messages = self._build_api_conversation(messages, memory)
+            # Build enhanced conversation context for API with memory
+            memory_context = memory.get("retrieved_context", {})
+            conversation_summary = memory.get("conversation_summary")
+            api_messages = self._build_api_conversation_with_memory(messages, memory, memory_context, conversation_summary)
             
             context = {
                 "conversation_history": memory.get("conversation_history", [])[-5:],  # Last 5 for API
-                "retrieved_context": memory.get("retrieved_context", {}),
-                "user_preferences": memory.get("user_preferences", {})
+                "retrieved_context": memory_context,
+                "user_preferences": memory.get("user_preferences", {}),
+                "memory_references": memory.get("memory_references", []),
+                "memory_context_used": bool(memory_context.get("results")),
+                "conversation_summary": conversation_summary
             }
             
-            # Process with API model
+            # Process with API model using enhanced context
             start_time = time.time()
             
             try:
@@ -516,6 +536,49 @@ class DualTrackGraphNodes:
                 api_messages.extend([
                     {"role": "user", "content": conv["user_message"]},
                     {"role": "assistant", "content": conv["ai_message"]}
+                ])
+        
+        # Add current messages
+        for message in messages[-5:]:  # Last 5 messages
+            if isinstance(message, HumanMessage):
+                api_messages.append({"role": "user", "content": message.content})
+            elif isinstance(message, AIMessage):
+                api_messages.append({"role": "assistant", "content": message.content})
+        
+        return api_messages
+    
+    def _build_api_conversation_with_memory(self, messages: List[Any], memory: Dict[str, Any], 
+                                          memory_context: Dict[str, Any], conversation_summary: Optional[str]) -> List[Dict[str, str]]:
+        """Build enhanced conversation context for API model with memory integration."""
+        api_messages = []
+        
+        # Add conversation summary if available
+        if conversation_summary:
+            api_messages.append({
+                "role": "system",
+                "content": f"Conversation Summary: {conversation_summary}"
+            })
+        
+        # Add enhanced memory context
+        if memory_context and memory_context.get("results"):
+            context_content = "Relevant Context:\n"
+            for i, result in enumerate(memory_context["results"][:3]):  # Top 3 results
+                content = result.get("content", result.get("user_message", ""))
+                if content:
+                    context_content += f"- {content}\n"
+            
+            api_messages.append({
+                "role": "system", 
+                "content": context_content.strip()
+            })
+        
+        # Add recent conversation history from memory
+        conversation_history = memory.get("conversation_history", [])
+        for conv in conversation_history[-3:]:  # Last 3 conversations
+            if "user_message" in conv and "assistant_message" in conv:
+                api_messages.extend([
+                    {"role": "user", "content": conv["user_message"]},
+                    {"role": "assistant", "content": conv["assistant_message"]}
                 ])
         
         # Add current messages

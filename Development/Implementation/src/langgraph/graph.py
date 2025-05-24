@@ -76,12 +76,18 @@ from .nodes import (
     update_memory,
     prune_memory
 )
+from .nodes.memory_nodes import (
+    retrieve_memory_context_node,
+    store_conversation_node,
+    summarize_conversation_node
+)
 from .routing import (
     should_process,
     determine_processing_path,
     check_processing_complete,
     should_synthesize_speech,
-    should_update_memory
+    should_update_memory,
+    should_summarize_conversation
 )
 
 logger = logging.getLogger(__name__)
@@ -150,6 +156,7 @@ def create_vanta_workflow() -> StateGraph:
         workflow.add_node("check_activation", check_activation)
         workflow.add_node("process_audio", process_audio)
         workflow.add_node("retrieve_context", retrieve_context)
+        workflow.add_node("retrieve_memory_context", retrieve_memory_context_node)
         workflow.add_node("router_node", router_node)
         workflow.add_node("local_model_node", local_model_node)
         workflow.add_node("api_model_node", api_model_node)
@@ -157,6 +164,8 @@ def create_vanta_workflow() -> StateGraph:
         workflow.add_node("integration_check", create_integration_check_node)
         workflow.add_node("integration_node", integration_node)
         workflow.add_node("synthesize_speech", synthesize_speech)
+        workflow.add_node("store_conversation", store_conversation_node)
+        workflow.add_node("summarize_conversation", summarize_conversation_node)
         workflow.add_node("update_memory", update_memory)
         workflow.add_node("prune_memory", prune_memory)
         
@@ -175,9 +184,10 @@ def create_vanta_workflow() -> StateGraph:
             }
         )
         
-        # 2. Sequential processing: audio -> context -> routing
+        # 2. Sequential processing: audio -> context -> memory context -> routing
         workflow.add_edge("process_audio", "retrieve_context")
-        workflow.add_edge("retrieve_context", "router_node")
+        workflow.add_edge("retrieve_context", "retrieve_memory_context")
+        workflow.add_edge("retrieve_memory_context", "router_node")
         
         # 3. Conditional routing based on processing path
         workflow.add_conditional_edges(
@@ -214,14 +224,27 @@ def create_vanta_workflow() -> StateGraph:
             should_synthesize_speech,
             {
                 "synthesize": "synthesize_speech",
-                "skip": "update_memory"
+                "skip": "store_conversation"
             }
         )
         
-        # 8. From speech synthesis to memory update
-        workflow.add_edge("synthesize_speech", "update_memory")
+        # 8. From speech synthesis to conversation storage
+        workflow.add_edge("synthesize_speech", "store_conversation")
         
-        # 9. Memory update and pruning
+        # 9. Enhanced memory flow with conversation storage and summarization
+        workflow.add_conditional_edges(
+            "store_conversation",
+            should_summarize_conversation,
+            {
+                "summarize": "summarize_conversation",
+                "continue": "update_memory"
+            }
+        )
+        
+        # 10. From summarization to legacy memory update (for backward compatibility)
+        workflow.add_edge("summarize_conversation", "update_memory")
+        
+        # 11. Memory update and pruning (legacy nodes for backward compatibility)
         workflow.add_conditional_edges(
             "update_memory",
             should_update_memory,
@@ -231,7 +254,7 @@ def create_vanta_workflow() -> StateGraph:
             }
         )
         
-        # 10. Final step - end workflow
+        # 12. Final step - end workflow
         workflow.add_edge("prune_memory", END)
         
         logger.info("VANTA workflow graph created successfully")
