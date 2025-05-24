@@ -1,0 +1,292 @@
+# Integration Test Configuration for VANTA System
+# TASK-REF: INT_002 - End-to-End System Integration Testing
+
+# Test Environment Configuration
+test_environment:
+  name: "integration_testing"
+  mode: "mock"  # mock, hybrid, live
+  logging_level: "INFO"
+  parallel_execution: true
+  max_concurrent_tests: 5
+
+# Audio System Configuration
+audio:
+  mock_mode: true
+  sample_rate: 16000
+  format: "wav"
+  channels: 1
+  test_audio_duration: 5.0
+  
+  # Mock audio generation
+  mock_audio:
+    simple_greeting: 
+      duration: 1.0
+      frequency: 440
+    complex_question:
+      duration: 5.0
+      frequency: 330
+    default:
+      duration: 2.0
+      frequency: 440
+
+# Memory System Configuration
+memory:
+  backend: "mock"
+  test_mode: true
+  
+  # Memory test scenarios
+  mock_memory:
+    conversation_threshold: 10
+    context_window_size: 4000
+    summarization_threshold: 20
+    max_history_length: 100
+    
+  # Failure simulation
+  failure_simulation:
+    context_retrieval_failure_rate: 0.0  # Set to non-zero to simulate failures
+    storage_failure_rate: 0.0
+    memory_system_failure_rate: 0.0
+
+# Model Configuration
+models:
+  mock_mode: true
+  
+  # Local model configuration
+  local_model:
+    model_name: "mock_local_model"
+    mock_response_time: 1.0  # seconds
+    mock_response_quality: 0.85
+    failure_rate: 0.0  # Set to non-zero to simulate failures
+    
+  # API model configuration  
+  api_model:
+    provider: "mock_api"
+    mock_response_time: 0.5  # seconds
+    mock_response_quality: 0.90
+    failure_rate: 0.0  # Set to non-zero to simulate failures
+    
+  # Dual-track processing
+  dual_track:
+    enabled: true
+    parallel_processing: true
+    timeout_seconds: 5.0
+    fallback_enabled: true
+
+# LangGraph Configuration
+langgraph:
+  recursion_limit: 50
+  max_execution_time: 10.0  # seconds
+  enable_persistence: false  # Use memory persistence for tests
+  enable_checkpoints: false
+  
+  # Node configuration
+  nodes:
+    speech_to_text:
+      enabled: true
+      mock_mode: true
+      timeout: 2.0
+      
+    memory_retrieval:
+      enabled: true
+      mock_mode: true
+      timeout: 1.0
+      
+    dual_track_processing:
+      enabled: true
+      mock_mode: true
+      timeout: 5.0
+      
+    memory_storage:
+      enabled: true
+      mock_mode: true
+      timeout: 1.0
+      
+    text_to_speech:
+      enabled: true
+      mock_mode: true
+      timeout: 2.0
+
+# Performance Testing Configuration
+performance:
+  # Latency targets (milliseconds)
+  latency_targets:
+    simple_greeting: 1500
+    complex_reasoning: 4000
+    memory_enhanced: 3000
+    latency_sensitive: 800
+    quality_focused: 6000
+    resource_constrained: 500
+    
+  # Resource limits
+  resource_limits:
+    memory_mb: 512
+    cpu_percent: 80
+    disk_io_mb_per_sec: 100
+    
+  # Load testing
+  load_testing:
+    max_concurrent_conversations: 10
+    conversation_duration_range: [5, 30]  # seconds
+    message_interval_range: [1, 5]  # seconds
+    
+  # Performance monitoring
+  monitoring:
+    enabled: true
+    collection_interval: 0.1  # seconds
+    metrics_retention: 300  # seconds
+
+# Error Recovery Configuration
+error_recovery:
+  # Error simulation rates (0.0 = no errors, 1.0 = always fail)
+  simulation:
+    memory_system_failure_rate: 0.0
+    local_model_failure_rate: 0.0
+    api_model_failure_rate: 0.0
+    audio_system_failure_rate: 0.0
+    network_failure_rate: 0.0
+    
+  # Recovery behavior
+  recovery:
+    max_retry_attempts: 3
+    retry_delay_seconds: 1.0
+    enable_graceful_degradation: true
+    maintain_conversation_continuity: true
+    
+  # Fallback configuration
+  fallbacks:
+    memory_unavailable: "continue_without_memory"
+    local_model_unavailable: "api_model_only"
+    api_model_unavailable: "local_model_only"
+    audio_unavailable: "text_mode"
+
+# Test Scenarios Configuration
+test_scenarios:
+  # Basic functionality tests
+  basic:
+    - name: "simple_greeting"
+      user_input: "Hello, how are you today?"
+      expected_response_type: "greeting"
+      performance_target_ms: 1500
+      
+    - name: "complex_reasoning"
+      user_input: "Can you explain the differences between machine learning and artificial intelligence?"
+      expected_response_type: "educational"
+      performance_target_ms: 4000
+      
+  # Memory integration tests
+  memory:
+    - name: "memory_enhanced_conversation"
+      user_input: "Building on our previous discussion about AI, how does deep learning fit in?"
+      conversation_history_length: 4
+      memory_context_required: true
+      performance_target_ms: 3000
+      
+    - name: "long_conversation_summarization"
+      conversation_history_length: 25
+      trigger_summarization: true
+      performance_target_ms: 5000
+      
+  # Performance tests
+  performance:
+    - name: "latency_sensitive"
+      user_input: "Quick question - what time is it?"
+      performance_target_ms: 800
+      priority: "speed"
+      
+    - name: "quality_focused" 
+      user_input: "Write a detailed analysis of renewable energy trends in 2024"
+      performance_target_ms: 6000
+      priority: "quality"
+      
+    - name: "resource_constrained"
+      user_input: "Simple math: what is 2 + 2?"
+      memory_limit_mb: 50
+      performance_target_ms: 500
+      priority: "efficiency"
+      
+  # Error recovery tests
+  error_recovery:
+    - name: "memory_failure_scenario"
+      user_input: "Continue our conversation from earlier"
+      simulate_memory_failure: true
+      expected_fallback: "continue_without_memory"
+      
+    - name: "local_model_failure"
+      user_input: "Help me with a technical problem"
+      simulate_local_model_failure: true
+      expected_fallback: "api_model_only"
+      
+    - name: "cascading_failures"
+      user_input: "Test multiple system failures"
+      simulate_memory_failure: true
+      simulate_local_model_failure: true
+      simulate_tts_failure: true
+      expected_fallback: "minimal_functionality"
+
+# Concurrent Testing Configuration
+concurrent_testing:
+  enabled: true
+  max_workers: 5
+  conversation_scenarios:
+    - type: "speed_focused"
+      count: 3
+      user_input_template: "Speed test conversation {}"
+      
+    - type: "quality_focused" 
+      count: 2
+      user_input_template: "Quality test conversation {}"
+      
+    - type: "resource_constrained"
+      count: 2
+      user_input_template: "Resource test conversation {}"
+
+# Validation Configuration
+validation:
+  # Response validation
+  response:
+    min_length: 10
+    max_length: 5000
+    required_content_checks: []
+    forbidden_content_checks: ["error", "failed", "unavailable"]
+    
+  # State validation
+  state:
+    required_fields: ["conversation_id", "session_id", "final_response", "timestamp"]
+    optional_fields: ["memory_context", "conversation_history", "processing_stats"]
+    
+  # Performance validation
+  performance:
+    max_execution_time: 10.0  # seconds
+    max_memory_usage_mb: 256
+    min_success_rate: 0.95
+
+# Reporting Configuration
+reporting:
+  enabled: true
+  output_format: "json"
+  include_detailed_metrics: true
+  include_error_details: true
+  include_performance_graphs: false  # Requires matplotlib
+  
+  # Report sections
+  sections:
+    - "test_summary"
+    - "performance_metrics"
+    - "error_recovery_results"
+    - "resource_usage"
+    - "recommendations"
+
+# Development and Debugging
+development:
+  debug_mode: false
+  verbose_logging: false
+  save_intermediate_states: false
+  enable_profiling: false
+  
+  # Test data persistence
+  persist_test_data: false
+  test_data_directory: "./test_data"
+  
+  # Mock data generation
+  generate_mock_data: true
+  mock_data_seed: 42  # For reproducible tests
