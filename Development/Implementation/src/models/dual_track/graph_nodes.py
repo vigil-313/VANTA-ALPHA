@@ -20,8 +20,8 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 
 from langchain_core.messages import AIMessage, HumanMessage
 
-from ..langgraph.state.vanta_state import VANTAState, ActivationStatus, ProcessingPath
-from ..langgraph.nodes.memory_nodes import build_prompt_with_memory
+from ...langgraph.state.vanta_state import VANTAState, ActivationStatus, ProcessingPath
+from ...langgraph.nodes.memory_nodes import build_prompt_with_memory
 from .router import ProcessingRouter
 from .local_model import LocalModelController
 from .api_client import APIModelController

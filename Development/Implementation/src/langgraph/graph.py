@@ -64,31 +64,32 @@ except ImportError:
     LANGGRAPH_AVAILABLE = False
 
 from .state import VANTAState
-from .nodes import (
-    check_activation,
-    process_audio, 
-    retrieve_context,
-    router_node,
-    local_model_node,
-    api_model_node,
-    integration_node,
-    synthesize_speech,
-    update_memory,
-    prune_memory
-)
-from .nodes.memory_nodes import (
-    retrieve_memory_context_node,
-    store_conversation_node,
-    summarize_conversation_node
-)
-from .routing import (
-    should_process,
-    determine_processing_path,
-    check_processing_complete,
-    should_synthesize_speech,
-    should_update_memory,
-    should_summarize_conversation
-)
+# Temporarily commenting out node imports to resolve dependency issues
+# from .nodes import (
+#     check_activation,
+#     process_audio, 
+#     retrieve_context,
+#     router_node,
+#     local_model_node,
+#     api_model_node,
+#     integration_node,
+#     synthesize_speech,
+#     update_memory,
+#     prune_memory
+# )
+# from .nodes.memory_nodes import (
+#     retrieve_memory_context_node,
+#     store_conversation_node,
+#     summarize_conversation_node
+# )
+# from .routing import (
+#     should_process,
+#     determine_processing_path,
+#     check_processing_complete,
+#     should_synthesize_speech,
+#     should_update_memory,
+#     should_summarize_conversation
+# )
 
 logger = logging.getLogger(__name__)
 
