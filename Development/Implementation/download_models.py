@@ -61,7 +61,10 @@ def download_with_hf_hub(model_key: str, model_info, model_path: Path) -> bool:
     """Download using Hugging Face Hub (most reliable)."""
     # Map our model keys to HF repo info (verified working repos)
     hf_models = {
-        "llama31-70b-q8": ("QuantFactory/Meta-Llama-3.1-70B-Instruct-GGUF", "Meta-Llama-3.1-70B-Instruct.Q8_0.gguf"),
+        "llama31-70b-q8": ("bartowski/Meta-Llama-3.1-70B-Instruct-GGUF", [
+            "Meta-Llama-3.1-70B-Instruct-Q8_0/Meta-Llama-3.1-70B-Instruct-Q8_0-00001-of-00002.gguf",
+            "Meta-Llama-3.1-70B-Instruct-Q8_0/Meta-Llama-3.1-70B-Instruct-Q8_0-00002-of-00002.gguf"
+        ]),
         "llama31-70b-base": ("QuantFactory/Meta-Llama-3.1-70B-GGUF", "Meta-Llama-3.1-70B.Q8_0.gguf"),
         "llama31-8b-q8": ("QuantFactory/Meta-Llama-3.1-8B-Instruct-GGUF", "Meta-Llama-3.1-8B-Instruct.Q8_0.gguf")
     }
@@ -69,11 +72,18 @@ def download_with_hf_hub(model_key: str, model_info, model_path: Path) -> bool:
     if model_key not in hf_models:
         raise Exception(f"No Hugging Face mapping for {model_key}")
     
-    repo_id, filename = hf_models[model_key]
+    repo_id, filenames = hf_models[model_key]
+    if isinstance(filenames, str):
+        filenames = [filenames]  # Single file
     
     print(f"🤗 Using Hugging Face Hub...")
     print(f"   Repository: {repo_id}")
-    print(f"   File: {filename}")
+    if len(filenames) > 1:
+        print(f"   Files: {len(filenames)} parts (split model)")
+        for i, f in enumerate(filenames):
+            print(f"     Part {i+1}: {f.split('/')[-1]}")
+    else:
+        print(f"   File: {filenames[0]}")
     
     try:
         # Check if user is logged in
@@ -88,26 +98,43 @@ def download_with_hf_hub(model_key: str, model_info, model_path: Path) -> bool:
         
         print(f"🔄 Starting download (this may take a while)...")
         
-        # Download the file
-        downloaded_path = hf_hub_download(
-            repo_id=repo_id,
-            filename=filename,
-            local_dir=model_path.parent,
-            local_dir_use_symlinks=False,
-            resume_download=True
-        )
+        downloaded_files = []
+        for i, filename in enumerate(filenames):
+            if len(filenames) > 1:
+                print(f"📥 Downloading part {i+1}/{len(filenames)}: {filename.split('/')[-1]}")
+            
+            # Download each file
+            downloaded_path = hf_hub_download(
+                repo_id=repo_id,
+                filename=filename,
+                local_dir=model_path.parent,
+                local_dir_use_symlinks=False,
+                resume_download=True
+            )
+            downloaded_files.append(Path(downloaded_path))
         
-        # Move to expected location if needed
-        downloaded_file = Path(downloaded_path)
-        if downloaded_file != model_path:
-            downloaded_file.rename(model_path)
+        # Handle single vs split models
+        if len(downloaded_files) == 1:
+            # Single file - move to expected location if needed
+            if downloaded_files[0] != model_path:
+                downloaded_files[0].rename(model_path)
+            final_path = model_path
+        else:
+            # Split model - keep first part as main file reference
+            final_path = downloaded_files[0]
+            print(f"✅ Split model downloaded to: {final_path.parent}")
         
-        if model_path.exists() and model_path.stat().st_size > 1024*1024:  # At least 1MB
+        # Check if download was successful
+        total_size = sum(f.stat().st_size for f in downloaded_files if f.exists())
+        if total_size > 1024*1024:  # At least 1MB total
             print(f"✅ Successfully downloaded {model_info.name}")
-            print(f"   File size: {model_path.stat().st_size / (1024**3):.1f} GB")
+            print(f"   Total size: {total_size / (1024**3):.1f} GB")
+            if len(downloaded_files) > 1:
+                print(f"   Files: {len(downloaded_files)} parts")
+                print(f"   Main file for VANTA: {final_path}")
             return True
         else:
-            print(f"❌ Download completed but file seems incomplete")
+            print(f"❌ Download completed but files seem incomplete")
             return False
             
     except Exception as e:

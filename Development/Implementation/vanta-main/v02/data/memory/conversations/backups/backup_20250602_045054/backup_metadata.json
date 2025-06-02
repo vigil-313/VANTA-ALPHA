@@ -1,0 +1,9 @@
+{
+  "created": "2025-06-02T04:50:54.797706",
+  "source_path": "./data/memory/conversations",
+  "backup_path": "./data/memory/conversations/backups/backup_20250602_045054",
+  "contents": [
+    "conversations",
+    "preferences"
+  ]
+}

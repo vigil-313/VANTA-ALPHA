@@ -93,6 +93,12 @@ class ModelManager:
         if not model_info:
             return False
         
+        # For split models, check if the first part exists
+        if model_key == "llama31-70b-q8":
+            # This is a split model, check for first part
+            split_path = self.models_dir / "Meta-Llama-3.1-70B-Instruct-Q8_0" / "Meta-Llama-3.1-70B-Instruct-Q8_0-00001-of-00002.gguf"
+            return split_path.exists()
+        
         model_path = self.models_dir / model_info.path
         return model_path.exists()
     
@@ -101,6 +107,11 @@ class ModelManager:
         model_info = self.get_model_info(model_key)
         if not model_info:
             return None
+        
+        # For split models, return path to first part
+        if model_key == "llama31-70b-q8":
+            split_path = self.models_dir / "Meta-Llama-3.1-70B-Instruct-Q8_0" / "Meta-Llama-3.1-70B-Instruct-Q8_0-00001-of-00002.gguf"
+            return str(split_path) if split_path.exists() else None
             
         model_path = self.models_dir / model_info.path
         return str(model_path) if model_path.exists() else None
@@ -109,12 +120,12 @@ class ModelManager:
         """Get download URLs for a model."""
         urls = {
             "llama31-70b-q8": [
-                "https://huggingface.co/microsoft/Llama-3.1-70B-Instruct-GGUF/resolve/main/Llama-3.1-70B-Instruct-Q8_0.gguf",
-                "https://huggingface.co/bartowski/Llama-3.1-70B-Instruct-GGUF/resolve/main/Llama-3.1-70B-Instruct-Q8_0.gguf"
+                "https://huggingface.co/QuantFactory/Meta-Llama-3.1-70B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-70B-Instruct.Q8_0.gguf",
+                "https://huggingface.co/bartowski/Meta-Llama-3.1-70B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-70B-Instruct-Q8_0.gguf"
             ],
             "llama31-70b-base": [
-                "https://huggingface.co/microsoft/Llama-3.1-70B-GGUF/resolve/main/Llama-3.1-70B-Q8_0.gguf",
-                "https://huggingface.co/bartowski/Llama-3.1-70B-GGUF/resolve/main/Llama-3.1-70B-Q8_0.gguf"
+                "https://huggingface.co/QuantFactory/Meta-Llama-3.1-70B-GGUF/resolve/main/Meta-Llama-3.1-70B.Q8_0.gguf",
+                "https://huggingface.co/bartowski/Meta-Llama-3.1-70B-GGUF/resolve/main/Meta-Llama-3.1-70B.Q8_0.gguf"
             ]
         }
         return urls.get(model_key, [])

@@ -14,7 +14,8 @@ VANTA now supports multiple local models with easy switching between them. This 
 
 ### **Current Models:**
 ```
-llama2-7b-q2          Llama 2 7B (Q2_K)           ~4GB    Basic      ✅ Downloaded
+llama2-7b-q2          Llama 2 7B (Q2_K)           ~4GB    Basic      ❌ Not Downloaded
+llama31-8b-q8         Llama 3.1 8B (Q8_0)         ~8GB    High       ✅ Downloaded 👈 CURRENT
 llama31-70b-q8        Llama 3.1 70B (Q8_0)        ~70GB   Premium    ❌ Not Downloaded  
 llama31-70b-base      Llama 3.1 70B (Base)        ~70GB   Premium    ❌ Not Downloaded
 ```
@@ -24,6 +25,7 @@ llama31-70b-base      Llama 3.1 70B (Base)        ~70GB   Premium    ❌ Not Dow
 | Model | Memory | Speed | Quality | Use Case |
 |-------|--------|-------|---------|----------|
 | **Llama 2 7B Q2** | ~4GB | ⚡⚡⚡ | ⭐⭐⭐ | Fast testing, basic chat |
+| **Llama 3.1 8B Q8** | ~8GB | ⚡⚡ | ⭐⭐⭐⭐ | **CURRENT** - Great balance |
 | **Llama 3.1 70B Q8** | ~70GB | ⚡ | ⭐⭐⭐⭐⭐ | Production conversations |
 | **Llama 3.1 70B Base** | ~70GB | ⚡ | ⭐⭐⭐⭐⭐ | Research, fine-tuning |
 
@@ -97,11 +99,11 @@ python main_vanta.py
 
 ### **Your M4 Max + 128GB Setup:**
 
-#### **Llama 2 7B Q2_K (Current):**
-- **Memory Usage:** ~4GB (3% of total)
-- **Loading Time:** ~0.25 seconds
-- **Response Time:** 1.5-3.5 seconds
-- **Quality:** Good for basic conversations
+#### **Llama 3.1 8B Q8_0 (CURRENT):**
+- **Memory Usage:** ~8GB (6% of total)
+- **Loading Time:** ~0.3 seconds
+- **Response Time:** 1.5-3 seconds
+- **Quality:** Excellent balance of speed and capability
 
 #### **Llama 3.1 70B Q8_0 (Target):**
 - **Memory Usage:** ~70GB (55% of total)
@@ -118,12 +120,13 @@ python main_vanta.py
 ## 🎯 Recommended Workflow
 
 ### **For Development:**
-1. **Start with Llama 2 7B** for quick prompt testing
-2. **Switch to Llama 3.1 70B Q8** for final validation
+1. **Start with Llama 3.1 8B Q8** (current) for quick testing ✅
+2. **Switch to Llama 3.1 70B Q8** for maximum quality
 3. **Use Base model** for advanced experimentation
 
 ### **For Production:**
-- **Primary:** Llama 3.1 70B Q8_0 (best quality)
+- **Current:** Llama 3.1 8B Q8_0 (excellent balance) ✅
+- **Upgrade:** Llama 3.1 70B Q8_0 (best quality)
 - **Fallback:** Llama 2 7B Q2_K (if memory constraints)
 
 ## 🚨 Important Notes
@@ -165,8 +168,8 @@ python switch_model.py list
 # Check file exists
 ls -la ../../models/
 
-# Reset to default
-python switch_model.py llama2-7b-q2
+# Reset to current default
+python switch_model.py llama31-8b-q8
 ```
 
 ### **Memory Issues:**
@@ -196,9 +199,11 @@ cd vanta-main/v01 && python main_vanta.py    # Test current model
 
 ## 🚀 Next Steps
 
-1. **Download Llama 3.1 70B Q8_0** for dramatically improved VANTA quality
+1. **Download Llama 3.1 70B Q8_0** for even better VANTA quality
 2. **Test the difference** in conversation quality and reasoning
-3. **Compare performance** with your current 7B model
+3. **Compare performance** with your current 8B model
 4. **Experiment with base model** for advanced use cases
+
+**Current Status:** ✅ Running stable with Llama 3.1 8B - great performance!
 
 Your M4 Max + 128GB system is perfect for running these large models locally while maintaining privacy and control!
