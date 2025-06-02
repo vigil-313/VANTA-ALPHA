@@ -99,7 +99,15 @@ class APIClient:
             api_key = getattr(self.config, 'api_key', None)
             if not api_key:
                 import os
+                # Try to load from .env file if not in environment
                 api_key = os.environ.get('ANTHROPIC_API_KEY')
+                if not api_key:
+                    try:
+                        from dotenv import load_dotenv
+                        load_dotenv()
+                        api_key = os.environ.get('ANTHROPIC_API_KEY')
+                    except ImportError:
+                        pass  # dotenv not available
             
             if not api_key:
                 raise ConfigurationError("Anthropic API key not found in config or environment")
@@ -184,9 +192,9 @@ class APIClient:
             
             # Add completion time to usage
             completion_time = time.time() - start_time
-            if "usage" not in response:
-                response["usage"] = {}
-            response["usage"]["completion_time"] = completion_time
+            # Fixed: response is APIModelResponse object
+                # response.usage = {}
+            response.usage["completion_time"] = completion_time
             
             return response
             

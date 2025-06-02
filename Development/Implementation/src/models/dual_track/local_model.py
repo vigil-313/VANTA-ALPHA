@@ -192,24 +192,30 @@ class LocalModel:
     
     def _build_prompt(self, query: str, context: Optional[Dict[str, Any]]) -> str:
         """Build a prompt with query and optional context."""
-        # Basic chat template
-        if not context:
-            return f"USER: {query}\nASSISTANT:"
+        # VANTA system prompt for conversational, concise responses
+        system_prompt = """You are VANTA, a friendly and helpful AI assistant. Keep your responses:
+- Conversational and natural (no asterisks or dramatic actions)
+- Brief and to the point (1-2 sentences for simple questions, 2-3 for complex ones)
+- Helpful and informative
+- Warm but professional
+
+Speak naturally like a knowledgeable friend who gives clear, concise answers."""
         
-        # Include relevant context
-        context_parts = []
-        if isinstance(context, dict):
+        # Include relevant context if provided
+        context_str = ""
+        if context and isinstance(context, dict):
+            context_parts = []
             for key, value in context.items():
                 if isinstance(value, (str, int, float)):
                     context_parts.append(f"- {key}: {value}")
                 elif isinstance(value, list) and value:
                     context_parts.append(f"- {key}: {', '.join(map(str, value[:3]))}")
+            
+            if context_parts:
+                context_str = "\n\nContext information:\n" + "\n".join(context_parts)
         
-        if context_parts:
-            context_str = "Context information:\n" + "\n".join(context_parts)
-            return f"{context_str}\n\nUSER: {query}\nASSISTANT:"
-        else:
-            return f"USER: {query}\nASSISTANT:"
+        # Build the complete prompt
+        return f"{system_prompt}{context_str}\n\nUSER: {query}\nASSISTANT:"
     
     def get_model_stats(self) -> Dict[str, Any]:
         """Get model performance statistics."""

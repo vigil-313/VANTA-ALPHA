@@ -89,7 +89,7 @@ class ProcessingRouter:
         
         # Reasoning indicators
         self.reasoning_pattern = re.compile(
-            r'\b(because|therefore|since|given|if|then|analyze|compare|explain why|reason)\b',
+            r'\b(because|therefore|since|given|if|then|analyze|compare|explain why|reason|implications|propose|solutions|evaluate|assess|examine|consider|determine)\b',
             re.IGNORECASE
         )
         
@@ -185,15 +185,24 @@ class ProcessingRouter:
     
     def _calculate_context_dependency(self, query: str, context: Optional[Dict[str, Any]]) -> float:
         """Calculate how much the query depends on context."""
-        if not context:
-            return 0.0
-        
-        # Check for pronouns and references
+        # Check for pronouns and references even without context
         pronouns = re.findall(r'\b(it|this|that|they|them|he|she|his|her|their)\b', query.lower())
         references = re.findall(r'\b(the|such|said|mentioned|above|before|previous)\b', query.lower())
         
-        # Calculate dependency score
-        dependency_score = (len(pronouns) * 0.3 + len(references) * 0.2) / len(query.split())
+        # Context-dependent phrases
+        context_phrases = re.findall(r'\b(we discussed|you mentioned|as we talked|that issue|the topic)\b', query.lower())
+        
+        # Calculate dependency score based on query content
+        query_words = len(query.split())
+        if query_words == 0:
+            return 0.0
+            
+        dependency_score = (len(pronouns) * 0.4 + len(references) * 0.3 + len(context_phrases) * 0.5) / query_words
+        
+        # Boost score if context is actually provided
+        if context:
+            dependency_score *= 1.5
+            
         return min(dependency_score, 1.0)
     
     def _calculate_complexity_score(self, token_count: int, entity_count: int, 
@@ -217,6 +226,14 @@ class ProcessingRouter:
     def _apply_routing_logic(self, features: QueryFeatures) -> Tuple[ProcessingPath, float, str]:
         """Apply routing logic based on query features."""
         
+        # Rule 0: Empty queries use default path
+        if features.token_count == 0:
+            return (
+                self.config.default_path,
+                0.5,
+                f"Empty query, using default path ({self.config.default_path.value})"
+            )
+        
         # Rule 1: Short social interactions go to local model
         if features.token_count < self.config.threshold_simple and features.social_chat:
             return ProcessingPath.LOCAL, 0.9, "Short social interaction"
@@ -232,7 +249,7 @@ class ProcessingRouter:
             return ProcessingPath.API, 0.85, "Complex reasoning or creativity required"
         
         # Rule 4: High context dependency goes to API
-        if features.context_dependency > 0.7:
+        if features.context_dependency > 0.2:
             return ProcessingPath.API, 0.75, "Highly context-dependent"
         
         # Rule 5: Very long queries go to API
@@ -240,7 +257,7 @@ class ProcessingRouter:
             return ProcessingPath.API, 0.8, "Long, complex query"
         
         # Rule 6: Time-sensitive queries prefer local for speed
-        if features.time_sensitivity > 0.8:
+        if features.time_sensitivity > 0.3:
             return ProcessingPath.LOCAL, 0.7, "Time-sensitive query requiring fast response"
         
         # Rule 7: Medium complexity gets parallel processing

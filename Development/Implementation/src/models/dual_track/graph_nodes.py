@@ -114,11 +114,11 @@ class DualTrackGraphNodes:
             
             # Update statistics
             self.processing_stats["total_requests"] += 1
-            self.processing_stats["path_usage"][routing_decision.path] += 1
+            self.processing_stats["path_usage"][routing_decision.path.value] += 1
             
             # Prepare processing metadata
             processing_metadata = {
-                "path": routing_decision.path,
+                "path": routing_decision.path.value,
                 "confidence": routing_decision.confidence,
                 "reasoning": routing_decision.reasoning,
                 "features": routing_decision.features,
@@ -142,8 +142,8 @@ class DualTrackGraphNodes:
                 "integration_error": None,
                 
                 # Performance metadata
-                "estimated_local_time": routing_decision.estimated_local_time,
-                "estimated_api_time": routing_decision.estimated_api_time,
+                "estimated_local_time": 0.0,
+                "estimated_api_time": 0.0,
                 "timeout_local": self.config.local_model.generation_timeout,
                 "timeout_api": self.config.api_model.timeout
             }
@@ -228,7 +228,7 @@ class DualTrackGraphNodes:
             start_time = time.time()
             
             try:
-                local_response = self.local_controller.generate(enhanced_prompt, context)
+                local_response = self.local_controller.process_query(enhanced_prompt)
                 local_time = time.time() - start_time
                 
                 logger.info(f"Local processing completed in {local_time:.2f}s")
@@ -333,7 +333,7 @@ class DualTrackGraphNodes:
             start_time = time.time()
             
             try:
-                api_response = self.api_controller.generate(api_messages, context)
+                api_response = self.api_controller.process_query(api_messages, context)
                 api_time = time.time() - start_time
                 
                 logger.info(f"API processing completed in {api_time:.2f}s")

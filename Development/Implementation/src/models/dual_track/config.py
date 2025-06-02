@@ -57,7 +57,7 @@ class RouterConfig:
 @dataclass 
 class LocalModelConfig:
     """Configuration for local model processing."""
-    model_path: str = "models/llama2-7b-chat-q4_k_m.gguf"
+    model_path: str = "models/llama-2-7b-chat.Q2_K.gguf"
     max_tokens: int = 512
     temperature: float = 0.7
     top_p: float = 0.9
@@ -72,7 +72,7 @@ class LocalModelConfig:
     memory_limit: Optional[int] = None  # Memory limit in MB
     
     # Timeout settings
-    generation_timeout: float = 5.0  # Max time for generation in seconds
+    generation_timeout: float = 15.0  # Max time for generation in seconds
     loading_timeout: float = 30.0  # Max time for model loading
 
 
@@ -80,7 +80,7 @@ class LocalModelConfig:
 class APIModelConfig:
     """Configuration for API model processing."""
     provider: str = "anthropic"  # "anthropic" or "openai"
-    model: str = "claude-3-sonnet-20240229"
+    model: str = "claude-3-7-sonnet-20250219"
     max_tokens: int = 1024
     temperature: float = 0.7
     stream: bool = True
