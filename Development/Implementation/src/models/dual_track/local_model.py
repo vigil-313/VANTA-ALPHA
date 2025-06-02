@@ -36,6 +36,8 @@ class LocalModel:
     
     def __init__(self, config: Optional[LocalModelConfig] = None):
         """Initialize the local model."""
+        self.logger = logging.getLogger(__name__)
+        
         # Use model manager configuration if available, otherwise fall back to config
         if config is None:
             try:
@@ -48,7 +50,6 @@ class LocalModel:
                 self.config = DEFAULT_CONFIG.local_model
         else:
             self.config = config
-        self.logger = logging.getLogger(__name__)
         
         self.model = None
         self.model_info = {}
