@@ -232,20 +232,23 @@ class DualTrackGraphNodes:
                 
                 logger.info(f"Local processing completed in {local_time:.2f}s")
                 
-                return {
-                    "processing": {
-                        "local_response": local_response,
-                        "local_completed": True,
-                        "local_processing_time": local_time,
-                        "local_error": None,
-                        "local_metadata": {
-                            "model_name": getattr(self.local_controller, 'model_name', 'unknown'),
-                            "generation_time": local_response.get("generation_time", local_time),
-                            "tokens_generated": local_response.get("tokens_generated", 0),
-                            "finish_reason": local_response.get("finish_reason", "completed"),
-                            "timestamp": datetime.now().isoformat()
-                        }
+                # Merge with existing processing data
+                processing_update = {
+                    "local_response": local_response,
+                    "local_completed": True,
+                    "local_processing_time": local_time,
+                    "local_error": None,
+                    "local_metadata": {
+                        "model_name": getattr(self.local_controller, 'model_name', 'unknown'),
+                        "generation_time": local_response.get("generation_time", local_time),
+                        "tokens_generated": local_response.get("tokens_generated", 0),
+                        "finish_reason": local_response.get("finish_reason", "completed"),
+                        "timestamp": datetime.now().isoformat()
                     }
+                }
+                
+                return {
+                    "processing": processing_update
                 }
                 
             except LocalModelError as e:

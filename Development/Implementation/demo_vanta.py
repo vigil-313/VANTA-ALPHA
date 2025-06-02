@@ -153,14 +153,20 @@ def demo_interaction():
             if path in ['local', 'parallel', 'staged']:
                 print("🧠 Processing with local model...")
                 local_update = nodes.enhanced_local_processing_node(state)
-                if local_update:  # Only update if we got something back
-                    state.update(local_update)
+                if local_update and 'processing' in local_update:
+                    # Merge processing data instead of overwriting
+                    current_processing = state.get('processing', {})
+                    current_processing.update(local_update['processing'])
+                    state['processing'] = current_processing
             
             if path in ['api', 'parallel', 'staged']:
                 print("☁️  Processing with API model...")
                 api_update = nodes.enhanced_api_processing_node(state)
-                if api_update:  # Only update if we got something back
-                    state.update(api_update)
+                if api_update and 'processing' in api_update:
+                    # Merge processing data instead of overwriting
+                    current_processing = state.get('processing', {})
+                    current_processing.update(api_update['processing'])
+                    state['processing'] = current_processing
             
             # 3. Integration
             print("🔧 Integrating responses...")
