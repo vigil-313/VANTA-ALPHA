@@ -44,7 +44,7 @@ class ModelManager:
             ),
             "llama31-70b-q8": ModelInfo(
                 name="Llama 3.1 70B (Q8_0)",
-                path="llama-3.1-70b-instruct-q8_0.gguf",
+                path="Meta-Llama-3.1-70B-Instruct.Q8_0.gguf",
                 description="Premium quality model with excellent reasoning",
                 memory_usage="~70GB",
                 context_window=8192,
@@ -54,13 +54,23 @@ class ModelManager:
             ),
             "llama31-70b-base": ModelInfo(
                 name="Llama 3.1 70B (Base)",
-                path="llama-3.1-70b-base-q8_0.gguf",
+                path="Meta-Llama-3.1-70B.Q8_0.gguf",
                 description="Base model without instruction tuning (for experimentation)",
                 memory_usage="~70GB",
                 context_window=8192,
                 max_tokens=1024,
                 recommended_temp=0.8,
                 quality_tier="premium"
+            ),
+            "llama31-8b-q8": ModelInfo(
+                name="Llama 3.1 8B (Q8_0)",
+                path="Meta-Llama-3.1-8B-Instruct.Q8_0.gguf",
+                description="Smaller but very capable model - great for testing (much faster download)",
+                memory_usage="~8GB",
+                context_window=8192,
+                max_tokens=1024,
+                recommended_temp=0.7,
+                quality_tier="high"
             )
         }
         
