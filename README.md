@@ -1,169 +1,276 @@
-# VANTA - Voice Assistant Neural Thinking Architecture
+# VANTA
 
 **V**oice-based **A**mbient **N**eural **T**hought **A**ssistant
 
-🎉 **BREAKTHROUGH: FULLY OPERATIONAL DUAL-TRACK AI ASSISTANT** 🎉
-
 ## Overview
 
-VANTA is a **production-ready dual-track AI assistant** that intelligently routes queries between local and cloud models for optimal performance. After major breakthroughs in June 2025, VANTA now features:
+VANTA is a real-time, voice-based AI assistant designed to behave like an ambient presence in your environment. It's a persistent, conversational agent that can listen, respond verbally, maintain memory, and make intelligent decisions about when to speak.
 
-- ✅ **Complete API Integration**: Creative writing and analysis from Claude API
-- ✅ **Intelligent Routing**: Simple queries → Local, Complex tasks → API/Parallel
-- ✅ **Enterprise Memory**: Unlimited session recall with safety guarantees
-- ✅ **LangGraph Workflow**: Sophisticated state management and parallel processing
-- ✅ **Production Architecture**: Thread-safe, error-resilient, high-performance
+The project explores dual-track AI processing, where simple queries are handled by local language models for speed, while complex queries are routed to cloud APIs for higher quality responses.
 
-## 🚀 Live Demo
+## Features
 
+- **Dual-Track Processing**: Routes between local LLM (fast) and cloud API (quality) based on query complexity
+- **Memory System**: Stores conversations with semantic understanding and retrieval
+- **Voice Pipeline**: Text-to-speech and speech-to-text capabilities
+- **Intelligent Routing**: Automatic decision-making about which AI model to use
+- **LangGraph Workflow**: Manages conversation flow and state
+- **Cross-Session Memory**: Remembers conversations across different sessions
+
+## Current Implementation
+
+VANTA consists of several components in various stages of development:
+
+### Working Components:
+- **Text-based conversation** with local models (Llama-3.1-8B/70B)
+- **API integration** with Anthropic Claude for complex queries
+- **Conversation memory storage** using JSON files and ChromaDB
+- **Dual-track routing** that chooses appropriate AI model
+- **Basic voice synthesis** (with some parameter issues to fix)
+
+### In Development:
+- **Memory integration** with LangGraph workflow (partial conflicts)
+- **Always-listening** voice activation
+- **Personality system** and adaptive behavior
+- **Goal tracking** and reflective advice
+
+## Architecture
+
+VANTA uses a modular architecture with clear separation of concerns:
+
+1. **Voice Pipeline**: Audio input/output processing
+2. **Memory Engine**: Conversation storage and semantic retrieval  
+3. **Dual-Track Reasoning**: Local LLM + Cloud API with intelligent routing
+4. **LangGraph Workflow**: State management and conversation flow
+5. **Storage System**: ChromaDB for vectors, JSON for conversations
+
+```
+User Input → Router → ┌─ Local Model (Llama, fast)
+                      └─ API Model (Claude, quality)
+                            ↓
+Memory System ← Response Integration ← Processing
+```
+
+## Quick Start
+
+### Prerequisites
 ```bash
-# Run the full VANTA assistant
-cd Development/Implementation/vanta-main/v01
-source ../../.venv/bin/activate
-python main_vanta.py
-
-# Try these examples:
-# "Write a creative story about AI" → API processing
-# "What's my name?" → Local processing  
-# "Analyze economic trends" → Parallel processing
+pip install langchain-core langgraph anthropic chromadb sentence-transformers llama-cpp-python
 ```
 
-## 🏗️ Architecture
-
-VANTA features a sophisticated dual-track architecture:
-
-```
-┌─ VANTA Dual-Track Architecture ───────────────────┐
-│                                                   │
-│  User Input → Router → ┌─ Local Model (Fast)     │
-│                        └─ API Model (Quality)     │
-│                        └─ Parallel (Both)        │
-│                                                   │
-│  ┌─ LangGraph Workflow ─────────────────────────┐ │
-│  │ ├── Activation Check                        │ │
-│  │ ├── Audio Processing                        │ │
-│  │ ├── Memory Retrieval                        │ │
-│  │ ├── Intelligent Routing                     │ │
-│  │ ├── Dual-Track Processing                   │ │
-│  │ ├── Response Integration                     │ │
-│  │ ├── Speech Synthesis                        │ │
-│  │ └── Memory Storage                          │ │
-│  └─────────────────────────────────────────────┘ │
-│                                                   │
-│  ┌─ Memory System ─────────────────────────────┐  │
-│  │ ├── Session Memory (Unlimited Tracking)     │  │
-│  │ ├── Vector Storage (ChromaDB)               │  │
-│  │ └── Safety Controls (No Fabrication)       │  │
-│  └─────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────┘
-```
-
-## 🎯 Current Status
-
-**VANTA is now fully operational!** (See [VANTA_CURRENT_STATUS_REPORT.md](./VANTA_CURRENT_STATUS_REPORT.md))
-
-### ✅ Working Features:
-- **Dual-Track Processing**: All 3 routing modes (LOCAL/API/PARALLEL) operational
-- **API Integration**: Claude API producing creative stories and complex analysis
-- **Memory System**: Perfect session recall with safety guarantees
-- **LangGraph Workflow**: 12-node pipeline with state management
-- **Platform Support**: macOS with 7 detected capabilities
-- **Voice Pipeline**: Text-to-speech working, speech-to-text integrated
-
-### 📊 Performance:
-- **LOCAL Queries**: 1-3 seconds ("What's my name?")
-- **API Queries**: 7-20 seconds ("Write a creative story")
-- **Memory Recall**: <0.1 seconds (unlimited conversation history)
-- **Routing Accuracy**: 100% (intelligent query classification)
-
-### 🎮 Real Examples:
-```
-User: "Write a creative story about a robot learning to paint"
-VANTA: [Full 1000+ word creative story from Claude API]
-Processing: API (0.85 confidence, 17.6s)
-
-User: "What's my name?"
-VANTA: "I don't have that information from our conversation."
-Processing: LOCAL (0.75 confidence, 2s)
-
-User: "My name is Sarah"
-VANTA: "Nice to meet you, Sarah!"
-User: "What's my name?"
-VANTA: "Your name is Sarah."
-Processing: Perfect memory recall
-```
-
-## 🚀 Quick Start
-
-### Prerequisites:
+### Optional: Set up API access
 ```bash
-# Install dependencies
-pip install langchain-core langgraph anthropic chromadb sentence-transformers
-
-# Set API key (optional, for API/Parallel modes)
 export ANTHROPIC_API_KEY="your-key-here"
 ```
 
-### Run VANTA:
+### Run VANTA
 ```bash
-cd Development/Implementation/vanta-main/v01
-source ../../.venv/bin/activate
-python main_vanta.py
+cd Development/Implementation/vanta-main/v02
+python main_vanta_memory.py
 ```
 
-### Try Different Query Types:
-- **Simple**: "Hello", "What's my name?" → Fast local processing
-- **Creative**: "Write a story", "Create a poem" → High-quality API processing  
-- **Analysis**: "Analyze economics", "Compare concepts" → Parallel processing
+## Project Structure
 
-## 🔧 Development
-
-### Project Structure:
 ```
 VANTA-ALPHA/
-├── VANTA_CURRENT_STATUS_REPORT.md    # Current breakthrough status
-├── Development/Implementation/        # Core implementation
-│   ├── vanta-main/v01/               # Main VANTA application
-│   ├── src/                          # Source code
-│   │   ├── vanta_workflow/           # LangGraph workflow
-│   │   ├── models/dual_track/        # Dual-track processing
-│   │   ├── memory/                   # Memory system
-│   │   └── voice/                    # Voice pipeline
-│   └── tests/                        # Test suite
-└── Documentation/                     # Technical documentation
+├── Development/Implementation/
+│   ├── vanta-main/v01/          # Basic dual-track version
+│   ├── vanta-main/v02/          # Version with memory integration
+│   ├── src/
+│   │   ├── vanta_workflow/      # LangGraph workflow nodes
+│   │   ├── models/dual_track/   # AI model routing and management
+│   │   ├── memory/              # Memory and conversation storage
+│   │   └── voice/               # Speech processing pipeline
+│   └── models/                  # Downloaded language models (8GB-70GB)
 ```
 
-### Key Components:
-- **`vanta_workflow/`**: LangGraph nodes and state management
-- **`models/dual_track/`**: Router, local model, API client, integration
-- **`memory/`**: Vector storage, conversation tracking, safety controls
-- **`voice/`**: Speech-to-text, text-to-speech pipeline
+## Examples
 
-### Architecture Documents:
-- [Current Status Report](./VANTA_CURRENT_STATUS_REPORT.md) - Latest achievements
-- [Implementation Plan](./Development/IMPLEMENTATION_PLAN.md) - Technical roadmap
-- [Architecture Overview](./Development/Architecture/V0_ARCHITECTURE_OVERVIEW.md) - System design
+Simple queries use the local model:
+```
+User: "Hi"
+VANTA: "Hello! How can I help you today?"
+[LOCAL model, 1.95s]
+```
 
-## 🎯 What's Next
+Complex queries route to the API:
+```
+User: "Write a creative story about AI learning to paint"
+VANTA: [Detailed creative story from Claude API]
+[API model, 5.21s]
+```
 
-### Immediate (This Week):
-1. Fix TTS synthesis parameter error
-2. Connect persistent memory storage to LangGraph
-3. Performance optimization for API responses
+Memory works across sessions:
+```
+User: "My name is Sarah"
+VANTA: "Nice to meet you, Sarah!"
+[Later session]
+User: "What's my name?"
+VANTA: "Your name is Sarah."
+[Retrieved from memory]
+```
 
-### Short Term (This Month):
-1. Cross-session memory retrieval
-2. Additional model providers (OpenAI GPT-4)
-3. Advanced voice pipeline features
-4. Production deployment preparation
+## Current Status
 
-## 🏆 Achievements
+This is an experimental side project for learning about AI assistant architectures. Some parts work well, others need refinement:
 
-VANTA represents a breakthrough in AI assistant architecture:
-- **First dual-track system** with intelligent routing
-- **Enterprise-grade memory** with safety guarantees
-- **Production-ready LangGraph** workflow
-- **State-of-the-art API integration** with error handling
-- **Sophisticated parallel processing** without conflicts
+**Performance:**
+- Local queries: 1-3 seconds
+- API queries: 5-20 seconds  
+- Memory retrieval: <0.1 seconds
+- Routing accuracy: Generally good
 
-This transformation from "planning" to "production-ready" happened through systematic engineering and breakthrough problem-solving in LangGraph state management and API integration.
+**Known Issues:**
+- TTS synthesis parameter conflicts
+- Memory system integration conflicts with LangGraph
+- Voice activation not yet implemented
+- Some conversation context loss between dual tracks
+
+See [MEMORY_INTEGRATION_FIX_PLAN.md](Development/Implementation/vanta-main/v02/MEMORY_INTEGRATION_FIX_PLAN.md) for technical details on current development challenges.
+
+## Technical Notes
+
+- Local models run via llama-cpp-python (supports 8B to 70B models)
+- Vector storage uses ChromaDB with sentence-transformers embeddings
+- Memory system stores conversations as timestamped JSON files
+- LangGraph manages conversation state and routing decisions
+- Dual-track processing prevents API costs for simple queries
+
+This project explores practical challenges in building conversational AI systems, including model selection, memory management, and maintaining context across different AI providers.
+
+## Appendix: Rudimentary Architecture for V0
+
+The following diagrams illustrate the current system architecture:
+
+### System Overview
+
+```mermaid
+graph TD
+    User(("User")) <--> A["Voice Interface"]
+    
+    subgraph "Core System"
+        A <--> B["Voice Pipeline"]
+        B <--> C["LangGraph Workflow Engine"]
+        C <--> D["Dual-Track Processing"]
+        C <--> E["Memory System"]
+        D --> F["Response Generation"]
+        F --> A
+    end
+    
+    subgraph "Model Integration"
+        D <--> G["Local Model (8B/70B)"]
+        D <--> H["API Model (Claude)"]
+    end
+    
+    subgraph "Persistent Storage"
+        E <--> I["Vector Database"]
+        E <--> J["Conversation Logs"]
+        E <--> K["Configuration Store"]
+    end
+    
+    style A fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#fbb,stroke:#333,stroke-width:2px
+    style E fill:#bfb,stroke:#333,stroke-width:2px
+```
+
+### LangGraph Workflow Architecture
+
+```mermaid
+graph TD
+    Start(("Start")) --> A["Check Activation Node"]
+    
+    A --> B{"Activation Check"}
+    B -->|"Inactive"| Stop(("End"))
+    B -->|"Active"| C["Process Audio Node"]
+    
+    C --> D["Memory Retrieval Node"]
+    D --> E["Router Node"]
+    
+    E -->|"Local Path"| F["Local Model Node"]
+    E -->|"API Path"| G["API Model Node"]
+    
+    F --> H["Response Integration Node"]
+    G --> H
+    
+    H --> I["Response Generation Node"]
+    I --> J["Speech Synthesis Node"]
+    J --> K["Memory Update Node"]
+    K --> Stop
+    
+    style A fill:#ddf,stroke:#333,stroke-width:1px
+    style C fill:#ddf,stroke:#333,stroke-width:1px
+    style D fill:#ddf,stroke:#333,stroke-width:1px
+    style E fill:#f9f,stroke:#333,stroke-width:2px
+    style F fill:#bbf,stroke:#333,stroke-width:2px
+    style G fill:#fbb,stroke:#333,stroke-width:2px
+    style H fill:#bfb,stroke:#333,stroke-width:2px
+    style I fill:#ddf,stroke:#333,stroke-width:1px
+    style J fill:#ddf,stroke:#333,stroke-width:1px
+    style K fill:#ddf,stroke:#333,stroke-width:1px
+```
+
+### Dual-Track Processing Architecture
+
+```mermaid
+graph LR
+    A["User Query"] --> B["Input Analysis"]
+    B --> C{"Processing Router"}
+    
+    C -->|"Fast Path:<br/>Simple queries<br/>Time-sensitive<br/>Backchanneling"| D["Local Model (Llama)"]
+    C -->|"Deep Path:<br/>Complex queries<br/>Reasoning<br/>Synthesis"| E["API Model (Claude)"]
+    
+    D -->|"Fast Response"| F["Response Integration"]
+    E -->|"Deep Response"| F
+    
+    F --> G["Unified Response"]
+    
+    H["Routing Criteria"] -.-> C
+    I["Context Memory"] -.-> D
+    I -.-> E
+    
+    style C fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#bbf,stroke:#333,stroke-width:2px
+    style E fill:#fbb,stroke:#333,stroke-width:2px
+    style F fill:#bfb,stroke:#333,stroke-width:2px
+```
+
+### Memory System Architecture
+
+```mermaid
+graph TD
+    subgraph "Working Memory (Session State)"
+        A["Active Messages"]
+        B["Current Context"]
+        C["Session Metadata"]
+    end
+    
+    subgraph "Long-Term Memory"
+        D["Vector-Based Semantic Memory"]
+        E["Conversation History"]
+        F["User Preferences"]
+        G["Raw Log Storage"]
+    end
+    
+    A <--> D
+    A <--> E
+    B <--> D
+    B <--> F
+    
+    H["Memory Manager"] --> A
+    H --> B
+    H --> C
+    H --> D
+    H --> E
+    H --> F
+    H --> G
+    
+    I["Memory Query Interface"] <--> H
+    J["Memory Update Interface"] <--> H
+    
+    K["LangGraph State"] <--> I
+    K <--> J
+    
+    style K fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#bfb,stroke:#333,stroke-width:2px
+```
