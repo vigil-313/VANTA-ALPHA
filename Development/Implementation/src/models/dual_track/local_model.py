@@ -191,31 +191,47 @@ class LocalModel:
             )
     
     def _build_prompt(self, query: str, context: Optional[Dict[str, Any]]) -> str:
-        """Build a prompt with query and optional context."""
-        # VANTA system prompt for conversational, concise responses
-        system_prompt = """You are VANTA, a friendly and helpful AI assistant. Keep your responses:
-- Conversational and natural (no asterisks or dramatic actions)
-- Brief and to the point (1-2 sentences for simple questions, 2-3 for complex ones)
-- Helpful and informative
-- Warm but professional
+        """Build a prompt with query and conversation context."""
+        # VANTA system prompt for honest memory handling
+        system_prompt = """You are VANTA, an AI assistant. Key instructions:
 
-Speak naturally like a knowledgeable friend who gives clear, concise answers."""
+- USE ONLY the conversation history provided below to answer questions about the user
+- If user asks about personal details NOT in the conversation history, say "I don't have that information from our conversation"
+- NEVER invent or guess personal details that aren't explicitly mentioned in the conversation history
+- Keep responses clear and direct (no asterisks, actions, or emotions)
+- Brief and to the point (1-2 sentences for simple questions, 2-3 for complex ones)
+- Professional and factual
+- Be honest about memory limitations
+
+Only use information that is explicitly provided in the conversation history below."""
         
-        # Include relevant context if provided
-        context_str = ""
+        # Build conversation history if available
+        conversation_str = ""
         if context and isinstance(context, dict):
-            context_parts = []
-            for key, value in context.items():
-                if isinstance(value, (str, int, float)):
-                    context_parts.append(f"- {key}: {value}")
-                elif isinstance(value, list) and value:
-                    context_parts.append(f"- {key}: {', '.join(map(str, value[:3]))}")
+            # Check for conversation history
+            conversation_history = context.get("conversation_history", [])
+            if conversation_history:
+                conversation_str = "\n\nConversation History:"
+                for conv in conversation_history:  # ALL conversation history!
+                    if isinstance(conv, dict):
+                        user_msg = conv.get("user_message", "")
+                        ai_msg = conv.get("assistant_message", "")
+                        if user_msg and ai_msg:
+                            conversation_str += f"\nUSER: {user_msg}\nASSISTANT: {ai_msg}"
             
-            if context_parts:
-                context_str = "\n\nContext information:\n" + "\n".join(context_parts)
+            # Add other context if provided
+            other_context = []
+            for key, value in context.items():
+                if key != "conversation_history" and isinstance(value, (str, int, float)) and value:
+                    other_context.append(f"- {key}: {value}")
+                elif key != "conversation_history" and isinstance(value, list) and value:
+                    other_context.append(f"- {key}: {', '.join(map(str, value[:3]))}")
+            
+            if other_context:
+                conversation_str += "\n\nAdditional Context:\n" + "\n".join(other_context)
         
-        # Build the complete prompt
-        return f"{system_prompt}{context_str}\n\nUSER: {query}\nASSISTANT:"
+        # Build the complete prompt with conversation context
+        return f"{system_prompt}{conversation_str}\n\nUSER: {query}\nASSISTANT:"
     
     def get_model_stats(self) -> Dict[str, Any]:
         """Get model performance statistics."""

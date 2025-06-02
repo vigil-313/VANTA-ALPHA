@@ -20,8 +20,8 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 
 from langchain_core.messages import AIMessage, HumanMessage
 
-from ...langgraph.state.vanta_state import VANTAState, ActivationStatus, ProcessingPath
-from ...langgraph.nodes.memory_nodes import build_prompt_with_memory
+from ...vanta_workflow.state.vanta_state import VANTAState, ActivationStatus, ProcessingPath
+from ...vanta_workflow.nodes.memory_nodes import build_prompt_with_memory
 from .router import ProcessingRouter
 from .local_model import LocalModelController
 from .api_client import APIModelController
@@ -207,34 +207,52 @@ class DualTrackGraphNodes:
             
             memory = state.get("memory", {})
             
-            # Build enhanced prompt with memory context
+            # Build context with conversation history for local model
             memory_context = memory.get("retrieved_context", {})
             conversation_summary = memory.get("conversation_summary")
-            enhanced_prompt = build_prompt_with_memory(
-                user_input=user_message.content,
-                memory_context=memory_context,
-                conversation_summary=conversation_summary
-            )
             
+            # Extract conversation history from accumulated messages (the real source of truth)
+            conversation_history = []
+            for i in range(0, len(messages) - 1, 2):  # Skip current message, pair user/ai
+                if i + 1 < len(messages):
+                    user_msg = messages[i]
+                    ai_msg = messages[i + 1]
+                    if hasattr(user_msg, 'content') and hasattr(ai_msg, 'content'):
+                        conversation_history.append({
+                            "user_message": user_msg.content,
+                            "assistant_message": ai_msg.content
+                        })
+            
+            # DEBUG: Log what we have for memory debugging
+            logger.info(f"🔍 MEMORY DEBUG - Current messages count: {len(messages)}")
+            logger.info(f"🔍 MEMORY DEBUG - Conversation history count: {len(conversation_history)}")
+            logger.info(f"🔍 MEMORY DEBUG - Conversation history: {conversation_history}")
+            logger.info(f"🔍 MEMORY DEBUG - Memory context: {memory_context}")
+            
+            # Pass conversation history and context to local model
             context = {
-                "conversation_history": memory.get("conversation_history", [])[-3:],  # Last 3 for local
+                "conversation_history": conversation_history,  # ALL conversation history - no limits!
                 "retrieved_context": memory_context,
                 "user_preferences": memory.get("user_preferences", {}),
                 "memory_references": memory.get("memory_references", []),
-                "memory_context_used": bool(memory_context.get("results"))
+                "memory_context_used": bool(memory_context.get("results")),
+                "conversation_summary": conversation_summary
             }
             
-            # Process with local model using enhanced prompt
+            logger.info(f"🔍 MEMORY DEBUG - Context passed to local model: {context}")
+            
+            # Process with local model using raw user input + context
             start_time = time.time()
             
             try:
-                local_response = self.local_controller.process_query(enhanced_prompt)
+                local_response = self.local_controller.process_query(user_message.content, context)
                 local_time = time.time() - start_time
                 
                 logger.info(f"Local processing completed in {local_time:.2f}s")
                 
                 # Merge with existing processing data
                 processing_update = {
+                    **processing,  # Keep existing processing state
                     "local_response": local_response,
                     "local_completed": True,
                     "local_processing_time": local_time,
@@ -323,8 +341,20 @@ class DualTrackGraphNodes:
             conversation_summary = memory.get("conversation_summary")
             api_messages = self._build_api_conversation_with_memory(messages, memory, memory_context, conversation_summary)
             
+            # Extract conversation history from accumulated messages for API too
+            api_conversation_history = []
+            for i in range(0, len(messages) - 1, 2):  # Skip current message, pair user/ai
+                if i + 1 < len(messages):
+                    user_msg = messages[i]
+                    ai_msg = messages[i + 1]
+                    if hasattr(user_msg, 'content') and hasattr(ai_msg, 'content'):
+                        api_conversation_history.append({
+                            "user_message": user_msg.content,
+                            "assistant_message": ai_msg.content
+                        })
+            
             context = {
-                "conversation_history": memory.get("conversation_history", [])[-5:],  # Last 5 for API
+                "conversation_history": api_conversation_history,  # ALL conversation history - no limits!
                 "retrieved_context": memory_context,
                 "user_preferences": memory.get("user_preferences", {}),
                 "memory_references": memory.get("memory_references", []),
@@ -456,8 +486,12 @@ class DualTrackGraphNodes:
                 
                 logger.info(f"Integration completed: {integration_result.source} strategy={integration_result.integration_strategy}")
                 
+                # Preserve existing messages and add AI response
+                existing_messages = state.get("messages", [])
+                new_messages = existing_messages + [ai_message]
+                
                 return {
-                    "messages": [ai_message],
+                    "messages": new_messages,
                     "activation": {
                         "status": ActivationStatus.SPEAKING
                     },
@@ -575,14 +609,22 @@ class DualTrackGraphNodes:
                 "content": context_content.strip()
             })
         
-        # Add recent conversation history from memory
-        conversation_history = memory.get("conversation_history", [])
-        for conv in conversation_history[-3:]:  # Last 3 conversations
-            if "user_message" in conv and "assistant_message" in conv:
-                api_messages.extend([
-                    {"role": "user", "content": conv["user_message"]},
-                    {"role": "assistant", "content": conv["assistant_message"]}
-                ])
+        # Extract conversation history from accumulated messages (not from memory field)
+        # This uses the actual LangGraph message history as the source of truth
+        conversation_pairs = []
+        for i in range(0, len(messages) - 1, 2):  # Pair user/ai messages
+            if i + 1 < len(messages):
+                user_msg = messages[i]
+                ai_msg = messages[i + 1]
+                if hasattr(user_msg, 'content') and hasattr(ai_msg, 'content'):
+                    conversation_pairs.append((user_msg.content, ai_msg.content))
+        
+        # Add ALL conversation pairs - complete memory!
+        for user_content, ai_content in conversation_pairs:
+            api_messages.extend([
+                {"role": "user", "content": user_content},
+                {"role": "assistant", "content": ai_content}
+            ])
         
         # Add current messages
         for message in messages[-5:]:  # Last 5 messages

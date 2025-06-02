@@ -18,7 +18,9 @@ from typing import Dict, Any
 from langchain_core.messages import HumanMessage
 
 from ..state.vanta_state import VANTAState, ActivationMode, ActivationStatus
-from ...voice.pipeline import SpeechToTextProcessor, TextToSpeechProcessor
+from ...voice.pipeline import VoicePipeline
+from ...voice.stt.transcriber import Transcriber
+from ...voice.tts.speech_synthesizer import SpeechSynthesizer
 from ...voice.vad import VoiceActivityDetector
 
 logger = logging.getLogger(__name__)
@@ -140,11 +142,16 @@ def process_audio(state: VANTAState) -> Dict[str, Any]:
             return {}
         
         # Initialize transcriber
-        transcriber = SpeechToTextProcessor()
+        transcriber = Transcriber()
         
-        # Transcribe audio
+        # Handle text input directly (for testing)
         start_time = time.time()
-        transcription = transcriber.transcribe(audio_data)
+        if isinstance(audio_data, str):
+            # Direct text input - no transcription needed
+            transcription = audio_data
+        else:
+            # Real audio data - transcribe it
+            transcription = transcriber.transcribe(audio_data)
         transcription_time = time.time() - start_time
         
         # Create audio metadata
@@ -241,7 +248,7 @@ def synthesize_speech(state: VANTAState) -> Dict[str, Any]:
             return {"activation": {"status": ActivationStatus.INACTIVE}}
         
         # Initialize TTS processor
-        tts_processor = TextToSpeechProcessor()
+        tts_processor = SpeechSynthesizer()
         
         # Get voice settings from config
         voice_settings = state["config"].get("voice_settings", {})

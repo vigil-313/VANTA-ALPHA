@@ -16,9 +16,42 @@ from enum import Enum
 from datetime import datetime
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
 
-# Use a simple annotation for compatibility with multiple LangGraph versions
-# Instead of: from langgraph.graph.message import add_messages
+# Import the add_messages reducer for proper message accumulation
+from langgraph.graph.message import add_messages
 import json
+
+
+def merge_processing_updates(left: Dict[str, Any], right: Dict[str, Any]) -> Dict[str, Any]:
+    """Custom reducer for processing field that merges updates from parallel nodes.
+    
+    This reducer handles updates from both local and API processing nodes
+    when running in parallel mode, merging their results appropriately.
+    
+    Args:
+        left: Existing processing state
+        right: New processing updates
+        
+    Returns:
+        Merged processing state
+    """
+    if not left:
+        return right.copy() if right else {}
+    if not right:
+        return left.copy()
+    
+    # Start with the existing state
+    result = left.copy()
+    
+    # Merge in the new updates
+    for key, value in right.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            # For nested dictionaries, merge recursively
+            result[key] = {**result[key], **value}
+        else:
+            # For other values, update directly
+            result[key] = value
+    
+    return result
 
 
 class ActivationMode(str, Enum):
@@ -87,14 +120,14 @@ class VANTAState(TypedDict):
         memory: Memory references and retrieved context
         config: System configuration including model settings and activation modes
         activation: Current system state including status and activation metadata
-        processing: Dual-track processing state including path and responses
+        processing: Dual-track processing state including path and responses (uses custom reducer)
     """
-    messages: Sequence[BaseMessage]  # Annotated[Sequence[BaseMessage], add_messages]
+    messages: Annotated[Sequence[BaseMessage], add_messages]
     audio: Dict[str, Any]
     memory: Dict[str, Any]
     config: Dict[str, Any]
     activation: Dict[str, Any]
-    processing: Dict[str, Any]
+    processing: Annotated[Dict[str, Any], merge_processing_updates]
 
 
 def create_empty_state() -> VANTAState:

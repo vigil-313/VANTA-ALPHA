@@ -57,7 +57,7 @@ class RouterConfig:
 @dataclass 
 class LocalModelConfig:
     """Configuration for local model processing."""
-    model_path: str = "models/llama-2-7b-chat.Q2_K.gguf"
+    model_path: str = "../../models/llama-2-7b-chat.Q2_K.gguf"
     max_tokens: int = 512
     temperature: float = 0.7
     top_p: float = 0.9

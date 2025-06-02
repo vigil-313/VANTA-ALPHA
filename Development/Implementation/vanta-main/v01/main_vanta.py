@@ -24,10 +24,11 @@ import logging
 from pathlib import Path
 from typing import Dict, Any
 
-# Add the src directory to Python path
+# Add both implementation and src directories to Python path
 IMPLEMENTATION_DIR = Path(__file__).parent.parent.parent
 SRC_DIR = IMPLEMENTATION_DIR / "src"
-sys.path.insert(0, str(SRC_DIR))
+sys.path.insert(0, str(IMPLEMENTATION_DIR))  # For src.* imports
+sys.path.insert(0, str(SRC_DIR))  # For direct imports
 
 # Set up logging
 logging.basicConfig(
@@ -88,7 +89,7 @@ def initialize_vanta_components():
     
     # 1. Try to import LangGraph workflow
     try:
-        from langgraph.graph import compile_vanta_graph, process_with_vanta_graph
+        from src.vanta_workflow.graph import compile_vanta_graph, process_with_vanta_graph
         components_status["langgraph_workflow"] = "✅ Available"
         print("✅ LangGraph workflow system")
     except ImportError as e:
@@ -97,76 +98,31 @@ def initialize_vanta_components():
     
     # 2. Try to import memory system
     try:
-        import sys
-        import os
-        # Change to src directory for imports to work correctly
-        original_cwd = os.getcwd()
-        os.chdir(SRC_DIR)
-        
-        from memory.core import MemorySystem
-        from langgraph.nodes.memory_nodes import initialize_memory_system
-        
-        # Change back to original directory
-        os.chdir(original_cwd)
-        
+        from src.memory.core import MemorySystem
+        from src.vanta_workflow.nodes.memory_nodes import initialize_memory_system
         components_status["memory_system"] = "✅ Available"
         print("✅ Memory system")
     except ImportError as e:
         components_status["memory_system"] = f"❌ Import error: {e}"
         print(f"❌ Memory system: {e}")
-        # Make sure we change back even on error
-        try:
-            os.chdir(original_cwd)
-        except:
-            pass
     
     # 3. Try to import dual-track processing
     try:
-        import sys
-        import os
-        # Change to src directory for imports to work correctly
-        original_cwd = os.getcwd()
-        os.chdir(SRC_DIR)
-        
-        from models.dual_track.graph_nodes import DualTrackGraphNodes
-        
-        # Change back to original directory
-        os.chdir(original_cwd)
-        
+        from src.models.dual_track.graph_nodes import DualTrackGraphNodes
         components_status["dual_track"] = "✅ Available"
         print("✅ Dual-track processing")
     except ImportError as e:
         components_status["dual_track"] = f"❌ Import error: {e}"
         print(f"❌ Dual-track processing: {e}")
-        # Make sure we change back even on error
-        try:
-            os.chdir(original_cwd)
-        except:
-            pass
     
     # 4. Try to import voice pipeline
     try:
-        import sys
-        import os
-        # Change to src directory for imports to work correctly
-        original_cwd = os.getcwd()
-        os.chdir(SRC_DIR)
-        
-        from voice.pipeline import VoicePipeline
-        
-        # Change back to original directory
-        os.chdir(original_cwd)
-        
+        from src.voice.pipeline import VoicePipeline
         components_status["voice_pipeline"] = "✅ Available"
         print("✅ Voice pipeline")
     except ImportError as e:
         components_status["voice_pipeline"] = f"❌ Import error: {e}"
         print(f"❌ Voice pipeline: {e}")
-        # Make sure we change back even on error
-        try:
-            os.chdir(original_cwd)
-        except:
-            pass
     
     # 5. Check local models
     models_dir = IMPLEMENTATION_DIR / "models"
@@ -185,11 +141,89 @@ def run_full_vanta_workflow():
     print("🎯 Attempting to run full VANTA workflow...")
     
     try:
-        # This is where we'll implement the real workflow
-        print("❌ Full workflow not yet implemented (working on import fixes)")
-        print("🔧 Need to fix LangGraph node imports first")
-        return False
+        # Import the real LangGraph workflow
+        from src.vanta_workflow.graph import compile_vanta_graph, process_with_vanta_graph
+        from src.vanta_workflow.state.vanta_state import VANTAState, ActivationStatus
+        from src.vanta_workflow.nodes.memory_nodes import initialize_memory_system
+        from langchain_core.messages import HumanMessage
         
+        print("✅ LangGraph workflow components imported successfully")
+        
+        # Initialize memory system
+        print("🔧 Initializing memory system...")
+        initialize_memory_system()
+        print("✅ Memory system initialized")
+        
+        # Compile the real VANTA graph
+        print("🔧 Compiling VANTA LangGraph workflow...")
+        graph = compile_vanta_graph()
+        print("✅ VANTA LangGraph workflow compiled successfully")
+        
+        print("\n" + "="*50)
+        print("🤖 VANTA - Real LangGraph Workflow")
+        print("="*50)
+        print("This is the COMPLETE VANTA architecture running!")
+        print("Features: Memory integration, dual-track processing, full workflow")
+        print()
+        
+        while True:
+            try:
+                user_input = input("\n👤 You: ").strip()
+                
+                if user_input.lower() in ['quit', 'exit']:
+                    print("👋 Goodbye!")
+                    break
+                
+                if not user_input:
+                    continue
+                
+                # Create state for real LangGraph workflow with just the new message
+                # LangGraph's checkpointer will handle state persistence automatically
+                state = VANTAState(
+                    messages=[HumanMessage(content=user_input)],
+                    activation={'status': ActivationStatus.PROCESSING, 'trigger': 'user_input', 'timestamp': time.time()},
+                    memory={'conversation_history': [], 'retrieved_context': {}, 'user_preferences': {}, 'recent_topics': []},
+                    config={'activation_mode': 'continuous', 'voice_settings': {}},
+                    audio={'current_audio': user_input}
+                )
+                
+                print("🎯 Processing through REAL LangGraph workflow...")
+                
+                # Process with the REAL VANTA workflow
+                result = process_with_vanta_graph(graph, state, thread_id="vanta_session_01")
+                
+                # Show response with cleaner formatting
+                messages = result.get('messages', [])
+                if messages and len(messages) > 1:
+                    response = messages[-1].content
+                    print(f"\n🤖 VANTA: {response}")
+                    
+                    # Show simplified processing stats
+                    processing = result.get('processing', {})
+                    if processing:
+                        path = processing.get('path', 'unknown')
+                        conf = processing.get('confidence', 0)
+                        local_time = processing.get('local_processing_time', 0)
+                        total_time = processing.get('total_processing_time', 0)
+                        print(f"📊 [{path.upper()}] confidence:{conf:.2f} | processing:{local_time:.2f}s | total:{total_time:.2f}s")
+                else:
+                    print("❌ No response generated")
+                
+                print("" + "-" * 60)  # Separator for readability
+                
+            except KeyboardInterrupt:
+                print("\n👋 Goodbye!")
+                break
+            except Exception as e:
+                print(f"❌ Error in workflow: {e}")
+                print("Continuing...")
+        
+        return True
+        
+    except ImportError as e:
+        print(f"❌ LangGraph workflow import failed: {e}")
+        print("🔧 Still need to fix LangGraph node imports")
+        return False
     except Exception as e:
         print(f"❌ Full workflow failed: {e}")
         return False
@@ -199,8 +233,9 @@ def run_fallback_demo():
     print("🔄 Running fallback demo workflow...")
     
     try:
-        from models.dual_track.graph_nodes import DualTrackGraphNodes
-        from langgraph.state.vanta_state import VANTAState, ActivationStatus
+        # Use the same import pattern as the working demo
+        from src.models.dual_track.graph_nodes import DualTrackGraphNodes
+        from src.vanta_workflow.state.vanta_state import VANTAState, ActivationStatus
         from langchain_core.messages import HumanMessage
         
         print("✅ Demo components loaded successfully")

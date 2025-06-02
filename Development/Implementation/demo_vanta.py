@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from langchain_core.messages import HumanMessage, AIMessage
 from src.models.dual_track.graph_nodes import DualTrackGraphNodes
-from src.langgraph.state.vanta_state import VANTAState, ActivationStatus
+from src.vanta_workflow.state.vanta_state import VANTAState, ActivationStatus
 
 def print_header():
     """Print the demo header."""

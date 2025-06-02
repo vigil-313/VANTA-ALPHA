@@ -65,7 +65,7 @@ def determine_processing_path(state: VANTAState) -> str:
         str: "local", "api", or "parallel" based on processing path
     """
     try:
-        path = state["memory"]["processing"]["path"]
+        path = state["processing"]["path"]
         
         if path == "local":
             logger.debug("Routing to local model processing")
@@ -101,7 +101,7 @@ def check_processing_complete(state: VANTAState) -> str:
         str: "ready" if processing is complete, "waiting" otherwise
     """
     try:
-        processing = state["memory"]["processing"]
+        processing = state["processing"]
         path = processing.get("path", "parallel")
         
         # Check appropriate completion flags based on path
@@ -174,11 +174,20 @@ def should_synthesize_speech(state: VANTAState) -> str:
             
         # Get the last message (should be our response)
         last_message = messages[-1]
-        if last_message.get("role") != "assistant":
-            logger.debug("Last message is not from assistant, skipping speech synthesis")
-            return "skip"
-            
-        content = last_message.get("content", "")
+        
+        # Handle both dict and LangChain message objects
+        if hasattr(last_message, 'type'):
+            # LangChain message object
+            if last_message.type != "ai":
+                logger.debug("Last message is not from assistant, skipping speech synthesis")
+                return "skip"
+            content = last_message.content
+        else:
+            # Dict format
+            if last_message.get("role") != "assistant":
+                logger.debug("Last message is not from assistant, skipping speech synthesis")
+                return "skip"
+            content = last_message.get("content", "")
         if not content or content.strip() == "":
             logger.debug("Empty response content, skipping speech synthesis")
             return "skip"

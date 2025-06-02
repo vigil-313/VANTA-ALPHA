@@ -63,7 +63,7 @@ def build_prompt_with_memory(user_input: str, memory_context: Optional[Dict], co
     return "\n\n".join(prompt_parts)
 
 
-async def retrieve_memory_context_node(state: VANTAState) -> Dict[str, Any]:
+def retrieve_memory_context_node(state: VANTAState) -> Dict[str, Any]:
     """
     Retrieve relevant memory context for current input.
     
@@ -114,12 +114,21 @@ async def retrieve_memory_context_node(state: VANTAState) -> Dict[str, Any]:
         # Get memory system
         memory_system = get_memory_system()
         
-        # Retrieve context using working memory
+        # Get context using working memory
         user_input = last_user_message.content
-        context_results = memory_system.working_memory.retrieve_context(
-            query=user_input,
-            max_results=5
-        )
+        context_results = memory_system.working_memory.get_context()
+        
+        # Extract relevant context from the working memory
+        # For now, we'll use the current conversation as context
+        formatted_results = {
+            "results": [
+                {
+                    "content": f"Previous conversation with {len(context_results.get('messages', []))} messages",
+                    "memory_id": "working_memory",
+                    "relevance": 0.8
+                }
+            ]
+        }
         
         # Calculate context window usage
         context_tokens = estimate_token_count(context_results)
@@ -171,7 +180,7 @@ async def retrieve_memory_context_node(state: VANTAState) -> Dict[str, Any]:
         }
 
 
-async def store_conversation_node(state: VANTAState) -> Dict[str, Any]:
+def store_conversation_node(state: VANTAState) -> Dict[str, Any]:
     """
     Store conversation turn in memory system.
     
@@ -238,8 +247,19 @@ async def store_conversation_node(state: VANTAState) -> Dict[str, Any]:
             }
         }
         
-        # Store in working memory
-        memory_id = memory_system.working_memory.store_conversation(conversation_message)
+        # Store in working memory (add as a message)
+        memory_id = memory_system.working_memory.add_message({
+            "role": "user",
+            "content": conversation_message["user_message"],
+            "metadata": conversation_message["metadata"]
+        })
+        
+        # Also add the assistant response
+        memory_system.working_memory.add_message({
+            "role": "assistant", 
+            "content": conversation_message["assistant_message"],
+            "metadata": conversation_message["metadata"]
+        })
         
         # Update conversation history in state
         current_history = list(state.get("memory", {}).get("conversation_history", []))
@@ -284,7 +304,7 @@ async def store_conversation_node(state: VANTAState) -> Dict[str, Any]:
         }
 
 
-async def summarize_conversation_node(state: VANTAState) -> Dict[str, Any]:
+def summarize_conversation_node(state: VANTAState) -> Dict[str, Any]:
     """
     Generate conversation summary when history exceeds limits.
     
@@ -393,15 +413,12 @@ async def handle_memory_error(state: VANTAState, error: Exception) -> Dict[str, 
 # Legacy function names for backward compatibility
 def retrieve_context(state: VANTAState) -> Dict[str, Any]:
     """Legacy wrapper for retrieve_memory_context_node."""
-    import asyncio
-    return asyncio.run(retrieve_memory_context_node(state))
+    return retrieve_memory_context_node(state)
 
 def update_memory(state: VANTAState) -> Dict[str, Any]:
     """Legacy wrapper for store_conversation_node."""
-    import asyncio
-    return asyncio.run(store_conversation_node(state))
+    return store_conversation_node(state)
 
 def prune_memory(state: VANTAState) -> Dict[str, Any]:
     """Legacy wrapper for summarize_conversation_node."""
-    import asyncio
-    return asyncio.run(summarize_conversation_node(state))
+    return summarize_conversation_node(state)
