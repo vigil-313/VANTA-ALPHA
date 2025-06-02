@@ -191,40 +191,54 @@ class LocalModel:
             )
     
     def _build_prompt(self, query: str, context: Optional[Dict[str, Any]]) -> str:
-        """Build a prompt with query and conversation context."""
-        # VANTA system prompt for honest memory handling
-        system_prompt = """You are VANTA, an AI assistant. Key instructions:
+        """Build a prompt with query and LangGraph conversation context."""
+        # VANTA system prompt for natural conversation with memory safety
+        system_prompt = """You are VANTA, a helpful AI assistant. Instructions:
 
-- USE ONLY the conversation history provided below to answer questions about the user
-- If user asks about personal details NOT in the conversation history, say "I don't have that information from our conversation"
-- NEVER invent or guess personal details that aren't explicitly mentioned in the conversation history
-- Keep responses clear and direct (no asterisks, actions, or emotions)
-- Brief and to the point (1-2 sentences for simple questions, 2-3 for complex ones)
-- Professional and factual
-- Be honest about memory limitations
+- Be conversational, helpful, and proactive in your responses
+- When recalling user information, ONLY use facts explicitly mentioned in the conversation history
+- If asked about user details not in the conversation, say "I don't have that information from our conversation"
+- For general questions or conversation, respond naturally without needing prior information
+- When user asks you to ask them something, be specific and direct (e.g., "What's your name?" or "What do you do for work?")
+- Keep responses concise but friendly
+- Be honest about memory limitations only when relevant
 
-Only use information that is explicitly provided in the conversation history below."""
+Be natural and helpful in conversation while being factual about user information."""
         
-        # Build conversation history if available
+        # Build conversation history from LangGraph messages
         conversation_str = ""
         if context and isinstance(context, dict):
-            # Check for conversation history
-            conversation_history = context.get("conversation_history", [])
-            if conversation_history:
+            # Handle LangGraph messages format (preferred)
+            messages = context.get("messages", [])
+            if messages:
+                from langchain_core.messages import HumanMessage, AIMessage
                 conversation_str = "\n\nConversation History:"
-                for conv in conversation_history:  # ALL conversation history!
-                    if isinstance(conv, dict):
-                        user_msg = conv.get("user_message", "")
-                        ai_msg = conv.get("assistant_message", "")
-                        if user_msg and ai_msg:
-                            conversation_str += f"\nUSER: {user_msg}\nASSISTANT: {ai_msg}"
+                
+                # Process LangGraph messages - exclude the current user message
+                for i, message in enumerate(messages[:-1]):  # Skip last message (current query)
+                    if isinstance(message, HumanMessage):
+                        conversation_str += f"\nUSER: {message.content}"
+                    elif isinstance(message, AIMessage):
+                        conversation_str += f"\nASSISTANT: {message.content}"
+            
+            # Fallback: Handle old conversation_history format (backward compatibility)
+            elif "conversation_history" in context:
+                conversation_history = context.get("conversation_history", [])
+                if conversation_history:
+                    conversation_str = "\n\nConversation History:"
+                    for conv in conversation_history:
+                        if isinstance(conv, dict):
+                            user_msg = conv.get("user_message", "")
+                            ai_msg = conv.get("assistant_message", "")
+                            if user_msg and ai_msg:
+                                conversation_str += f"\nUSER: {user_msg}\nASSISTANT: {ai_msg}"
             
             # Add other context if provided
             other_context = []
             for key, value in context.items():
-                if key != "conversation_history" and isinstance(value, (str, int, float)) and value:
+                if key not in ["messages", "conversation_history"] and isinstance(value, (str, int, float)) and value:
                     other_context.append(f"- {key}: {value}")
-                elif key != "conversation_history" and isinstance(value, list) and value:
+                elif key not in ["messages", "conversation_history"] and isinstance(value, list) and value:
                     other_context.append(f"- {key}: {', '.join(map(str, value[:3]))}")
             
             if other_context:

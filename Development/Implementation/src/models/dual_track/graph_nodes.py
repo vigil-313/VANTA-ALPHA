@@ -211,27 +211,13 @@ class DualTrackGraphNodes:
             memory_context = memory.get("retrieved_context", {})
             conversation_summary = memory.get("conversation_summary")
             
-            # Extract conversation history from accumulated messages (the real source of truth)
-            conversation_history = []
-            for i in range(0, len(messages) - 1, 2):  # Skip current message, pair user/ai
-                if i + 1 < len(messages):
-                    user_msg = messages[i]
-                    ai_msg = messages[i + 1]
-                    if hasattr(user_msg, 'content') and hasattr(ai_msg, 'content'):
-                        conversation_history.append({
-                            "user_message": user_msg.content,
-                            "assistant_message": ai_msg.content
-                        })
+            # USE LANGGRAPH'S BUILT-IN MESSAGE HANDLING - No manual parsing needed!
+            # The messages list IS the conversation history, managed by add_messages reducer
             
-            # DEBUG: Log what we have for memory debugging
-            logger.info(f"🔍 MEMORY DEBUG - Current messages count: {len(messages)}")
-            logger.info(f"🔍 MEMORY DEBUG - Conversation history count: {len(conversation_history)}")
-            logger.info(f"🔍 MEMORY DEBUG - Conversation history: {conversation_history}")
-            logger.info(f"🔍 MEMORY DEBUG - Memory context: {memory_context}")
-            
-            # Pass conversation history and context to local model
+            # Simply pass the conversation messages to the local model
+            # LangGraph handles all the conversation history automatically
             context = {
-                "conversation_history": conversation_history,  # ALL conversation history - no limits!
+                "messages": messages,  # LangGraph's conversation history
                 "retrieved_context": memory_context,
                 "user_preferences": memory.get("user_preferences", {}),
                 "memory_references": memory.get("memory_references", []),
@@ -239,7 +225,7 @@ class DualTrackGraphNodes:
                 "conversation_summary": conversation_summary
             }
             
-            logger.info(f"🔍 MEMORY DEBUG - Context passed to local model: {context}")
+            logger.info(f"🔍 SIMPLIFIED DEBUG - Message count: {len(messages)}, using LangGraph conversation history")
             
             # Process with local model using raw user input + context
             start_time = time.time()
