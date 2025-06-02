@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 from .config import LocalModelConfig, DEFAULT_CONFIG
 from .exceptions import LocalModelError, ModelLoadError, GenerationError, TimeoutError as DualTrackTimeoutError
+from .model_manager import model_manager
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,18 @@ class LocalModel:
     
     def __init__(self, config: Optional[LocalModelConfig] = None):
         """Initialize the local model."""
-        self.config = config or DEFAULT_CONFIG.local_model
+        # Use model manager configuration if available, otherwise fall back to config
+        if config is None:
+            try:
+                # Get current model configuration from model manager
+                manager_config = model_manager.get_current_config()
+                self.config = LocalModelConfig(**manager_config)
+                self.logger.info(f"Using model manager config: {model_manager.get_current_model().name}")
+            except Exception as e:
+                self.logger.warning(f"Could not use model manager config: {e}")
+                self.config = DEFAULT_CONFIG.local_model
+        else:
+            self.config = config
         self.logger = logging.getLogger(__name__)
         
         self.model = None
