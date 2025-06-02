@@ -44,6 +44,13 @@ logs/
 models/**/*/
 !models/**/README.md
 !models/registry/*.json
+# Ignore large model files
+*.gguf
+*.bin
+*.safetensors
+models/*.gguf
+models/*.bin
+models/*.safetensors
 
 # Editor directories and files
 .idea

@@ -21,8 +21,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from langchain_core.messages import AIMessage, HumanMessage
 
 from ...langgraph.state.vanta_state import VANTAState, ActivationStatus, ProcessingPath
-# TODO: INVESTIGATE MEMORY SYSTEM - build_prompt_with_memory import causing issues
-# from ...langgraph.nodes.memory_nodes import build_prompt_with_memory
+from ...langgraph.nodes.memory_nodes import build_prompt_with_memory
 from .router import ProcessingRouter
 from .local_model import LocalModelController
 from .api_client import APIModelController
@@ -208,12 +207,14 @@ class DualTrackGraphNodes:
             
             memory = state.get("memory", {})
             
-            # TODO: INVESTIGATE MEMORY SYSTEM - build_prompt_with_memory causing local processing to fail
             # Build enhanced prompt with memory context
             memory_context = memory.get("retrieved_context", {})
             conversation_summary = memory.get("conversation_summary")
-            # TEMPORARY: Use simple prompt until memory system is fixed
-            enhanced_prompt = user_message.content
+            enhanced_prompt = build_prompt_with_memory(
+                user_input=user_message.content,
+                memory_context=memory_context,
+                conversation_summary=conversation_summary
+            )
             
             context = {
                 "conversation_history": memory.get("conversation_history", [])[-3:],  # Last 3 for local
