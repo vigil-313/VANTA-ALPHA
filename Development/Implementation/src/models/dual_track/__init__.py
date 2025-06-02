@@ -17,11 +17,27 @@ from .router import ProcessingRouter, RoutingDecision, QueryFeatures
 from .local_model import LocalModel, LocalModelController, LocalModelResponse
 from .api_client import APIClient, APIModelController, APIModelResponse
 from .integrator import ResponseIntegrator, IntegrationResult
-from .optimizer import (
-    DualTrackOptimizer, MetricsCollector, ResourceMonitor, AdaptiveOptimizer,
-    PerformanceMetrics, ResourceConstraints, OptimizationConfig, OptimizationStrategy,
-    create_default_optimizer, create_optimized_config
-)
+# Optional optimizer imports (requires psutil)
+try:
+    from .optimizer import (
+        DualTrackOptimizer, MetricsCollector, ResourceMonitor, AdaptiveOptimizer,
+        PerformanceMetrics, ResourceConstraints, OptimizationConfig, OptimizationStrategy,
+        create_default_optimizer, create_optimized_config
+    )
+    OPTIMIZER_AVAILABLE = True
+except ImportError:
+    # Optimizer features not available without psutil
+    OPTIMIZER_AVAILABLE = False
+    DualTrackOptimizer = None
+    MetricsCollector = None
+    ResourceMonitor = None
+    AdaptiveOptimizer = None
+    PerformanceMetrics = None
+    ResourceConstraints = None
+    OptimizationConfig = None
+    OptimizationStrategy = None
+    create_default_optimizer = None
+    create_optimized_config = None
 
 # Configuration
 from .config import (

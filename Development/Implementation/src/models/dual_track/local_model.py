@@ -77,7 +77,8 @@ class LocalModel:
                 return True
             
             try:
-                self.logger.info(f"Loading local model from {self.config.model_path}")
+                actual_path = self.config.model_path or "(using model manager path)"
+                self.logger.info(f"Loading local model from {actual_path}")
                 start_time = time.time()
                 
                 # Import llama-cpp-python (lazy import)

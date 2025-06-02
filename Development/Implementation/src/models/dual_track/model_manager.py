@@ -3,6 +3,7 @@ Model Manager for switching between different local models.
 """
 
 import os
+import json
 import logging
 from typing import Dict, List, Optional
 from dataclasses import dataclass
@@ -30,6 +31,7 @@ class ModelManager:
     def __init__(self, models_dir: str = "../../models"):
         self.models_dir = Path(models_dir)
         self.models_dir.mkdir(exist_ok=True)
+        self.config_file = self.models_dir / "current_model.json"
         
         # Predefined model configurations
         self.available_models = {
@@ -74,7 +76,8 @@ class ModelManager:
             )
         }
         
-        self.current_model_key = "llama2-7b-q2"  # Default
+        # Load persisted current model or use default
+        self.current_model_key = self._load_current_model() or "llama31-8b-q8"
     
     def list_models(self) -> Dict[str, ModelInfo]:
         """List all available model configurations."""
@@ -147,6 +150,7 @@ class ModelManager:
             return False
         
         self.current_model_key = model_key
+        self._save_current_model(model_key)
         logger.info(f"Switched to model: {self.available_models[model_key].name}")
         return True
     
@@ -184,6 +188,35 @@ class ModelManager:
             report.append(f"  Description: {model.description}")
         
         return "\n".join(report)
+    
+    def _load_current_model(self) -> Optional[str]:
+        """Load the current model from persistence."""
+        try:
+            if self.config_file.exists():
+                with open(self.config_file, 'r') as f:
+                    data = json.load(f)
+                    model_key = data.get('current_model')
+                    if model_key and model_key in self.available_models:
+                        logger.info(f"Loaded persisted model: {model_key}")
+                        return model_key
+                    else:
+                        logger.warning(f"Invalid persisted model: {model_key}")
+        except Exception as e:
+            logger.warning(f"Failed to load current model config: {e}")
+        return None
+    
+    def _save_current_model(self, model_key: str) -> None:
+        """Save the current model to persistence."""
+        try:
+            data = {
+                'current_model': model_key,
+                'last_updated': str(Path(__file__).stat().st_mtime)
+            }
+            with open(self.config_file, 'w') as f:
+                json.dump(data, f, indent=2)
+            logger.info(f"Persisted current model: {model_key}")
+        except Exception as e:
+            logger.error(f"Failed to save current model config: {e}")
 
 
 # Global model manager instance
