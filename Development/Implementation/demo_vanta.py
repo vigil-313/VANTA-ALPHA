@@ -141,7 +141,8 @@ def demo_interaction():
             
             # 1. Router decision
             print("🎯 ANALYZING QUERY...")
-            state = nodes.enhanced_router_node(state)
+            router_update = nodes.enhanced_router_node(state)
+            state.update(router_update)  # Merge update instead of overwriting
             processing = state.get('processing', {})
             print_routing_info(processing)
             print()
@@ -151,15 +152,21 @@ def demo_interaction():
             
             if path in ['local', 'parallel', 'staged']:
                 print("🧠 Processing with local model...")
-                state = nodes.enhanced_local_processing_node(state)
+                local_update = nodes.enhanced_local_processing_node(state)
+                if local_update:  # Only update if we got something back
+                    state.update(local_update)
             
             if path in ['api', 'parallel', 'staged']:
                 print("☁️  Processing with API model...")
-                state = nodes.enhanced_api_processing_node(state)
+                api_update = nodes.enhanced_api_processing_node(state)
+                if api_update:  # Only update if we got something back
+                    state.update(api_update)
             
             # 3. Integration
             print("🔧 Integrating responses...")
-            state = nodes.enhanced_integration_node(state)
+            integration_update = nodes.enhanced_integration_node(state)
+            if integration_update:
+                state.update(integration_update)
             
             # 4. Display results
             messages = state.get('messages', [])
